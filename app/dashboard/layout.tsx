@@ -1,22 +1,25 @@
-// export default function Layout({
-//     children,
-// }: {
-//     children: React.ReactNode;
-// }) {
-//     return (
-//         <div className="flex flex-col gap-4">
-//             <div className="flex flex-col gap-4">{children}</div>
-//         </div>
-//     );
-// }
-'use client';
+import { cookies } from "next/headers";
 
-export default function DashboardLayout({children}: {children: React.ReactNode}) {
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/app-sidebar"
+
+export default async function Layout({ children }: { children: React.ReactNode }) {
+    const cookieStore = await cookies();
+    const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
+
     return (
-        <div className="flex flex-col gap-4 h-screen">
-            <div className="flex flex-col gap-4 flex-1 bg-blue-200">
-                {children}
-            </div>
-        </div>
-    );
+        <SidebarProvider defaultOpen={defaultOpen}>
+            <AppSidebar />
+            <SidebarInset className="[--parent-radius:theme(borderRadius.xl)]">                
+                <main className="flex flex-col h-full w-full">
+                    <nav className="bg-red-200 rounded-t-[var(--parent-radius)]">
+                        <SidebarTrigger />
+                    </nav>
+                    <div className="flex flex-col h-full w-full">
+                        {children}
+                    </div>
+                </main>
+            </SidebarInset>
+        </SidebarProvider>
+    )
 }
