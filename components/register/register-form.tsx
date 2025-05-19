@@ -1,5 +1,5 @@
 'use client';
-
+import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
 import { z } from "zod";
@@ -52,8 +52,19 @@ export function RegisterForm({
 
     // form submission handler
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
-        // TODO: process registration data
         console.log(data);
+        // const { email, password } = data;
+        // const { data: authData, error } = await supabase.auth.signUp({
+        //     email, 
+        //     password
+        // });
+
+        // if (error) {
+        //     console.error('Supabase sign-up error: ', error);
+        //     form.setError('email', { type: 'manual', message: error.message });
+        // } else {
+        //     console.log('Registraion successful', authData);
+        // }
     }
 
     return (
