@@ -1,6 +1,6 @@
 'use client';
 import { supabase } from "@/lib/supabase/client";
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
 import { z } from "zod";
@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useState } from "react";
+import { signIn } from '@/lib/auth/actions'
 
 // form validation schema
 const formSchema = z.object({
@@ -45,30 +46,14 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
 
         console.log(data);
-        // try {
-        //     setLoading(true);
-        //     const { email, password } = data;
-        //     const { data: loginData, error } = await supabase.auth.signInWithPassword({
-        //         email,
-        //         password,
-        //     });
-
-        //     if (error) {
-        //         console.error('Supabase sign-in error: ', error);
-        //         form.setError('email', { type: 'manual', message: error.message });
-        //     } else {
-        //         console.log('Login successful', loginData);
-        //         router.push('/dashboard/home');
-        //     }
-        // } catch (error) {
-        //     if (error instanceof Error) {
-        //         console.error('Supabase sign-in error: ', error);
-        //         form.setError('email', { type: 'manual', message: error.message });
-        //     }
-            
-        // } finally {
-        //     setLoading(false);
-        // }
+        try {
+            const success = await signIn(data);
+            if (success) {
+                router.push('/dashboard/home');
+            }
+        } catch (error) {
+            console.error('Login failed: ', error)
+        }
     }
 
     return (

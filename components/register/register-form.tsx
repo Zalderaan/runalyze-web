@@ -18,9 +18,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { signUp } from '@/lib/auth/actions';
+// import { useUserContext } from "@/context/userContext";
 
 // form validation schema
 const formSchema = z.object({
+    username: z.string(),
     email: z.string().email({
         message: "Invalid email address",
     }),
@@ -40,10 +43,13 @@ export function RegisterForm({
     ...props
 }: React.ComponentPropsWithoutRef<"div">) {
 
+    // const { signIn, signUp, signOut } = useUserContext();
+
     // define form
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
+            username: "",
             email: "",
             password: "",
             confirmPassword: "",
@@ -53,18 +59,12 @@ export function RegisterForm({
     // form submission handler
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
         console.log(data);
-        // const { email, password } = data;
-        // const { data: authData, error } = await supabase.auth.signUp({
-        //     email, 
-        //     password
-        // });
-
-        // if (error) {
-        //     console.error('Supabase sign-up error: ', error);
-        //     form.setError('email', { type: 'manual', message: error.message });
-        // } else {
-        //     console.log('Registraion successful', authData);
-        // }
+        const { username, email, password } = data;
+        try {
+            await signUp(data)
+        } catch (error) {
+            form.setError('email', { type: 'manual', message: 'Registration failed' });
+        }
     }
 
     return (
@@ -87,6 +87,19 @@ export function RegisterForm({
                                         <FormLabel>Email</FormLabel>
                                         <FormControl>
                                             <Input placeholder="user@example.com" type="email" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="username"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Username</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Enter username" type="text" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { LogOutIcon, UserIcon } from "lucide-react";
+import { signOut } from '@/lib/auth/actions'
 
 export function NavUser({
     user,
@@ -18,8 +19,12 @@ export function NavUser({
     const router = useRouter();
 
     const handleSignOut = async () => {
-        console.log('logged out successfully!');
-        router.push('/login');
+        try {
+            await signOut();
+            router.push('/login');
+        } catch (error) {
+            console.error('Logout error: ', error)
+        }
     }
 
     return (
