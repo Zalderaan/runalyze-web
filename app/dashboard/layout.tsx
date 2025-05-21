@@ -10,16 +10,14 @@ export default async function Layout({ children }: { children: React.ReactNode }
     return (
         <SidebarProvider defaultOpen={defaultOpen}>
             <AppSidebar />
-            <SidebarInset className="[--parent-radius:theme(borderRadius.xl)]">                
-                <main className="flex flex-col h-full w-full">
-                    <nav className="bg-red-200 rounded-t-[var(--parent-radius)]">
-                        <SidebarTrigger />
-                    </nav>
-                    <div className="flex flex-col h-full w-full">
-                        {children}
-                    </div>
-                </main>
-            </SidebarInset>
+            <main className="flex flex-col h-full w-full">
+                <header className="p-4 border-b-2">
+                    <SidebarTrigger />
+                </header>
+                <section className="p-4">
+                    {children}
+                </section>
+            </main>
         </SidebarProvider>
     )
 }

@@ -43,15 +43,14 @@ export function AppSidebar() {
 
     // const user = useAuth();
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar collapsible="icon">
             <SidebarHeader>
                 <SidebarGroup>
-                    <SidebarGroupLabel>Nigga</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
                             <SidebarMenuItem>
                                 <SidebarMenuButton size="lg">
-                                    <span>Testing</span>
+                                    <span>Runalyze</span>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                         </SidebarMenu>

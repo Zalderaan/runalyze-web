@@ -44,15 +44,17 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     const router = useRouter();
     // form submission handler
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
-
         console.log(data);
         try {
+            setLoading(true);
             const success = await signIn(data);
             if (success) {
                 router.push('/dashboard/home');
             }
         } catch (error) {
             console.error('Login failed: ', error)
+        } finally {
+            setLoading(false);
         }
     }
 
