@@ -30,7 +30,7 @@ const formSchema = z.object({
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
     // states
     const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState<boolean>(false);
 
     // define form 
     const form = useForm<z.infer<typeof formSchema>>({

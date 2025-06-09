@@ -53,7 +53,10 @@ export function NavUser({
                         align="end"
                         sideOffset={4}
                     >
-                        <DropdownMenuItem className="flex flex-row items-center justify-start">
+                        <DropdownMenuItem 
+                            className="flex flex-row items-center justify-start"
+                            onClick={() => router.push('/dashboard/user')}
+                        >
                             <UserIcon />
                             <span>Go to profile</span>
                         </DropdownMenuItem>

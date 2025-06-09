@@ -25,6 +25,7 @@ export default function HomePage() {
             <section className="flex flex-row gap-4">
                 <div className="w-1/3">
                     <LatestAnalysis /> {/* // TODO: conditional rendering (no video uploaded yet ? <EmptyCard> : <LatestAnalysis /> )   */}
+                    {/* <NoAnalysis /> */}
                 </div>
             </section>
         </div>
