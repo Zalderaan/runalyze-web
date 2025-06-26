@@ -29,4 +29,19 @@ export async function POST(req: NextRequest) {
         { userId: users.id, username: users.username, email: users.email }, 
         { status: 200 }
     )
-} 
+}
+
+// export async function GET(req: NextRequest) {
+//     const { id } = await req.json();
+
+//     // find user details by user ID
+//     const { data: user_details, error } = await supabase
+//         .from('users')
+//         .select('*')
+//         .eq('id', id)
+//         .single();
+
+//     if (error || user_details) {
+//         return NextResponse.json({ message: "Could not find user details according to ID" }, { status: 404 });
+//     }
+// }

@@ -4,13 +4,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { LogOutIcon, UserIcon } from "lucide-react";
-import { signOut } from '@/lib/auth/actions'
+// import { signOut } from '@/lib/auth/actions'
+import { useAuth } from "@/context/user_context";
 
 export function NavUser({
     user,
 }: {
     user: {
-        name: string,
+        username: string,
         email: string,
         avatar?: string
     }
@@ -18,9 +19,11 @@ export function NavUser({
     const { isMobile } = useSidebar()
     const router = useRouter();
 
+    const { logout } = useAuth();
+
     const handleSignOut = async () => {
         try {
-            await signOut();
+            await logout();
             router.push('/login');
         } catch (error) {
             console.error('Logout error: ', error)
@@ -38,11 +41,11 @@ export function NavUser({
                             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                         >
                             <Avatar className="w-8 aspect-square rounded-lg">
-                                <AvatarImage src={user.avatar} alt={user.name} />
-                                <AvatarFallback className="rounded-lg bg-amber-200">G</AvatarFallback>
+                                <AvatarImage src={user.avatar} alt={user.username} />
+                                <AvatarFallback className="rounded-lg bg-amber-200">{user.username.toString().toUpperCase()[0]}</AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">
-                                <span className="truncate font-semibold">{user.name}</span>
+                                <span className="truncate font-semibold">{user.username}</span>
                                 <span className="truncate text-xs">{user.email}</span>
                             </div>
                         </SidebarMenuButton>

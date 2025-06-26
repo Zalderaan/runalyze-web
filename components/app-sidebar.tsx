@@ -1,3 +1,6 @@
+'use client';
+
+import { useAuth } from '@/context/user_context';
 import { Calendar, Home, Inbox, Search } from "lucide-react"
 import {
     Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup, 
@@ -29,12 +32,8 @@ const items = [
     },
 ]
 
-const user = {
-    name: "test",
-    email: "sample@example.com"
-}
-
 export function AppSidebar() {
+    const auth = useAuth();
 
     // const user = useAuth();
     return (
@@ -72,7 +71,13 @@ export function AppSidebar() {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter>
-                <NavUser user={user}></NavUser>
+                {auth.isLoading ? (
+                    <div>Loading user...</div>
+                ) : auth.user ? (
+                    <NavUser user={auth.user} />
+                ) : (
+                    <div>Not authenticated</div>
+                )}                
             </SidebarFooter>
         </Sidebar>
     )

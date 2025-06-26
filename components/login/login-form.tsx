@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, ControllerRenderProps } from "react-hook-form";
 import {
     Form, FormControl, FormDescription, FormField,
     FormItem, FormLabel, FormMessage,
@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useState } from "react";
 import { signIn } from '@/lib/auth/actions'
+import { useAuth } from "@/context/user_context";
 
 // form validation schema
 const formSchema = z.object({
@@ -31,6 +32,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     // states
     const [error, setError] = useState("");
     const [loading, setLoading] = useState<boolean>(false);
+    const { login, isLoading } = useAuth();
 
     // define form 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -46,13 +48,15 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
         console.log(data);
         try {
-            setLoading(true);
-            const success = await signIn(data);
-            if (success) {
-                router.push('/dashboard/home');
-            }
+            // setLoading(true);
+            // const success = await signIn(data);
+            // if (success) {
+            //     router.push('/dashboard/home');
+            // }
+            await login(data.email, data.password);
         } catch (error) {
-            console.error('Login failed: ', error)
+            console.error('Login failed: ', error);
+            setError("Invalid credentials");
         } finally {
             setLoading(false);
         }
@@ -74,7 +78,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                             <FormField
                                 control={form.control}
                                 name="email"
-                                render={({ field }) => (
+                                render={({ field }: { field: ControllerRenderProps<z.infer<typeof formSchema>, "email"> }) => (
                                     <FormItem>
                                         <FormLabel>Email</FormLabel>
                                         <FormControl>
@@ -87,7 +91,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                             <FormField
                                 control={form.control}
                                 name="password"
-                                render={({ field }) => (
+                                render={({ field }: { field: ControllerRenderProps<z.infer<typeof formSchema>, "password"> }) => (
                                     <FormItem>
                                         <FormLabel>Password</FormLabel>
                                         <FormControl>
@@ -98,7 +102,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                                 )}
                             />
                             <div className='flex flex-col gap-2 w-full'>
-                                <Button className='w-full' type="submit">{loading ? 'Signing in...' : 'Sign-in'}</Button>
+                                <Button className='w-full' type="submit">{isLoading ? 'Signing in...' : 'Sign-in'}</Button>
                                 <Button variant={'outline'} className='w-full'>Sign-in with Google</Button>
                             </div>
                         </form>

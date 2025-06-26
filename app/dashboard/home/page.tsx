@@ -13,6 +13,9 @@ import {
 } from "@/components/ui/card";
 import { SquarePlus } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { ChartAreaDefault } from "@/components/home/chart-area-default"
+import { RecommendedDrill } from "@/components/home/recommended-drill";
+import { SmartTip } from "@/components/home/smart-tip";
 
 export default function HomePage() {
     return (
@@ -27,6 +30,15 @@ export default function HomePage() {
                     <LatestAnalysis /> {/* // TODO: conditional rendering (no video uploaded yet ? <EmptyCard> : <LatestAnalysis /> )   */}
                     {/* <NoAnalysis /> */}
                 </div>
+                <RecommendedDrill></RecommendedDrill>
+            </section>
+
+            <section className="flex flex-row w-full justify-center items-center bg-red-200">
+                <SmartTip />
+            </section>
+            
+            <section>
+                <ChartAreaDefault></ChartAreaDefault>
             </section>
         </div>
     );

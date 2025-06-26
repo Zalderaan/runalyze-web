@@ -15,6 +15,8 @@ import { Label } from "@/components/ui/label";
 import { SquarePlus } from 'lucide-react';
 import { useState } from "react";
 import { supabase } from '@/lib/supabase'
+import { Results } from "@/components/analyze/results";
+import { useAuth } from "@/context/user_context";
 
 export default function AnalyzePage() {
     const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -23,7 +25,8 @@ export default function AnalyzePage() {
             download_url: string;
             analysis_summary: any;
         } | null>(null);
-        
+    const { user } = useAuth();
+
     // TODO: validate file size and length
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>){
         const file = e.target.files?.[0]
@@ -52,12 +55,14 @@ export default function AnalyzePage() {
 
     async function handleAnalyze() {
         if (!videoFile) return;
+        if (!user) return;
         
         setIsProcessing(true);
         
         try {
             const formData = new FormData();
             formData.append("file", videoFile);  // Key must match FastAPI's `UploadFile` param name
+            formData.append("user_id", user.id.toString());
 
             // Send directly to FastAPI
             const response = await fetch('http://localhost:8000/process-video/', {
@@ -79,7 +84,7 @@ export default function AnalyzePage() {
     }
 
     return (
-        <div className="flex flex-col justify-start items-center h-full w-full gap-4 py-12">
+        <div className="flex flex-col justify-start items-center h-full w-full gap-4 py-12 bg-red-200">
             <h1 className="text-4xl font-bold">Analyze Running Form</h1>
             <h3 className="text-xl">Get insights on your running form</h3>
             <Input 
@@ -107,6 +112,10 @@ export default function AnalyzePage() {
             >
                 {isProcessing ? 'Processing...' : 'Analyze Video'}
             </Button>
+
+            <div>
+                { results ? <Results download_url={results.download_url} analysis_summary={results.analysis_summary}/> : 'Results will appear here: ' }
+            </div>
         </div>
     );
 }
