@@ -1,6 +1,8 @@
 'use client';
 
 import { HistoryItem } from "@/components/history/history-item";
+import { useHistory } from "@/hooks/useHIstory";
+
 // * UI IMPORTS
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 
@@ -15,6 +17,9 @@ export default function HistoryPage() {
     const { thumbnail, title, date, form_score } = sampleData;
 
     // TODO: get user analyses
+    const { history, isLoading, error } = useHistory();
+
+    console.log(history);
     // * const analyses = fetch(==get all history endpoint==)
     return (
         <>

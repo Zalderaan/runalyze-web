@@ -34,23 +34,7 @@ export default function AnalyzePage() {
     }
 
     async function handleUpload() {
-        console.log(videoFile)
-        if(!videoFile) return;
-        const { data, error } = await supabase.storage
-            .from('videos')
-            .upload(`user-uploads/${videoFile.name}`, videoFile, {
-                cacheControl: '3600',
-                upsert: false
-            });
-        if (error) {
-            alert('Upload failed: ' + error.message);
-            console.log(error);
-        } else {
-            // TODO: maybe reset the form or something
-            alert('Upload successful!');
-        }
-
-        console.log("data: ", data);
+        
     }
 
     async function handleAnalyze() {
