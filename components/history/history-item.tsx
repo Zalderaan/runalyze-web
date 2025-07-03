@@ -17,7 +17,7 @@ interface historyIemProps {
     thumbnail: string, //* or file?
     title: string,
     date: Date,
-    form_score: number
+    form_score: string
 }
 
 export function HistoryItem({ ...props }: historyIemProps) {

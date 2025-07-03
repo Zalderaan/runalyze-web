@@ -67,7 +67,7 @@ export default function HomePage() {
                         <NoAnalysis /> 
                     )}
                 </div>
-                <RecommendedDrill></RecommendedDrill>
+                <ChartAreaDefault></ChartAreaDefault>
             </section>
 
             <section className="flex flex-row w-full justify-center items-center bg-red-200">
@@ -75,7 +75,7 @@ export default function HomePage() {
             </section>
             
             <section>
-                <ChartAreaDefault></ChartAreaDefault>
+                <RecommendedDrill></RecommendedDrill>
             </section>
         </div>
     );
