@@ -21,6 +21,7 @@ import { useAuth } from "@/context/user_context";
 export default function AnalyzePage() {
     const [videoFile, setVideoFile] = useState<File | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [results, setResults] = useState<{
             download_url: string;
             analysis_summary: any;
@@ -33,9 +34,6 @@ export default function AnalyzePage() {
         setVideoFile(file || null);
     }
 
-    async function handleUpload() {
-        
-    }
 
     async function handleAnalyze() {
         if (!videoFile) return;

@@ -2,10 +2,20 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/user_context';
 
 interface HistoryItem {
+    id: number;
+    created_at: string;
+    head_position: number;
+    back_position: number;
+    arm_flexion: number;
+    right_knee: number;
+    left_knee: number;
+    foot_strike: number;
     overall_score: number;
-    title: string,
-    created_at: string
+    video_id: number;
+    user_id: number;
 }
+
+let hasFetched = false;
 
 export function useHistory() {
     const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -14,6 +24,9 @@ export function useHistory() {
     const { user } = useAuth();
 
     const fetchHistory = async () => {
+        if (hasFetched) return;
+        hasFetched = true;
+
         setIsLoading(true);
         setError(null);
 
@@ -35,12 +48,17 @@ export function useHistory() {
         }
     }
 
+    const getLatestAnalysis = () => {
+        return history.length > 0 ? history[0] : null;
+    };
+
     // fetch history when component mounts or user changes
     useEffect(() => {
         if (user) {
             fetchHistory();
         } else {
             setHistory([]);
+            hasFetched = false; // optional reset if user logs out
         }
     }, [user]);
 
@@ -48,6 +66,7 @@ export function useHistory() {
         history,
         isLoading,
         error,
-        fetchHistory
+        fetchHistory,
+        getLatestAnalysis
     }
 }

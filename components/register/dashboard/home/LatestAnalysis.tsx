@@ -19,17 +19,22 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 interface LatestAnalysisProps {
-    title: string,
-    total_score: number,
-    head_pos: number,
-    back_pos: number,
-    arms_pos: number,
-    front_knee: number,
-    back_knee: number,
-    foot_strike: number
+    analysis: {
+        id: number;
+        created_at: string;
+        head_position: number;
+        back_position: number;
+        arm_flexion: number;
+        right_knee: number;
+        left_knee: number;
+        foot_strike: number;
+        overall_score: number;
+        video_id: number;
+        user_id: number;
+    }
 }
 
-export function LatestAnalysis() {
+export function LatestAnalysis({ analysis } : LatestAnalysisProps) {
     return (
         <Card className="flex flex-col w-full h-full border-2 border-dashed cursor-pointer p-0 gap-0 rounded-(--card-radius) [--card-radius:var(--radius-xl)]">
             <CardHeader className="h-full w-full p-0 rounded-t-(--card-radius)">
@@ -49,41 +54,41 @@ export function LatestAnalysis() {
                     <section className="flex flex-row flex-0 w-full justify-between items-start">
                         <div className="flex flex-col">
                             <span className="font-bold">Latest Analysis</span>
-                            <span className="text-xs">date</span>
+                            <span className="text-xs">{analysis.created_at}</span>
                         </div>
                         <div className="flex flex-col">
                             <span className="text-xs">Score</span>
-                            <span className="font-bold">90%</span>
+                            <span className="font-bold">{analysis.overall_score.toFixed(0)}%</span>
                         </div>
                     </section>
 
                     <div className="flex flex-col flex-1 justify-center pb-2">
                         <section className="flex flex-row w-full justify-between items-center">
                             <div className="flex flex-col">
-                                <span className="text-xs">Score</span>
-                                <span className="font-bold">90%</span>
+                                <span className="text-xs">Head Pos.</span>
+                                <span className="font-bold">{analysis.head_position.toFixed(0)}%</span>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-xs">Score</span>
-                                <span className="font-bold">90%</span>
+                                <span className="text-xs">Back Pos.</span>
+                                <span className="font-bold">{analysis.back_position.toFixed(0)}%</span>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-xs">Score</span>
-                                <span className="font-bold">90%</span>
+                                <span className="text-xs">Arms Pos.</span>
+                                <span className="font-bold">{analysis.arm_flexion.toFixed(0)}%</span>
                             </div>
                         </section>
                         <section className="flex flex-row w-full justify-between items-center">
                             <div className="flex flex-col">
-                                <span className="text-xs">Score</span>
-                                <span className="font-bold">90%</span>
+                                <span className="text-xs">Right Knee</span>
+                                <span className="font-bold">{analysis.right_knee.toFixed(0)}%</span>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-xs">Score</span>
-                                <span className="font-bold">90%</span>
+                                <span className="text-xs">Left Knee</span>
+                                <span className="font-bold">{analysis.left_knee.toFixed(0)}%</span>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-xs">Score</span>
-                                <span className="font-bold">90%</span>
+                                <span className="text-xs">Foot Strike</span>
+                                <span className="font-bold">{analysis.foot_strike.toFixed(0)}%</span>
                             </div>
                         </section>
                     </div>
