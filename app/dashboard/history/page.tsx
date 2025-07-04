@@ -1,7 +1,7 @@
 'use client';
 
 import { HistoryItem } from "@/components/history/history-item";
-import { useHistory } from "@/hooks/useHIstory";
+import { useHistory } from "@/hooks/useHistory";
 
 // * UI IMPORTS
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';

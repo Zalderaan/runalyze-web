@@ -67,6 +67,6 @@ export function useHistory() {
         isLoading,
         error,
         fetchHistory,
-        getLatestAnalysis
+        getLatestAnalysis,
     }
 }

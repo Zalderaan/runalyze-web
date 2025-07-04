@@ -2,7 +2,7 @@
 
 import { LatestAnalysis } from "@/components/register/dashboard/home/LatestAnalysis";
 import { NoAnalysis } from "@/components/register/dashboard/home/NoAnalysis";
-import { useHistory } from "@/hooks/useHIstory";
+import { useHistory } from "@/hooks/useHistory";
 import {
     Card,
     CardHeader,

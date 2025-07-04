@@ -12,6 +12,7 @@ import {
     CardDescription,
     CardContent,
 } from "@/components/ui/card";
+import { Link } from 'lucide-react';
 
 interface historyIemProps {
     thumbnail: string, //* or file?
@@ -23,7 +24,7 @@ interface historyIemProps {
 export function HistoryItem({ ...props }: historyIemProps) {
     const { thumbnail, title, date, form_score } = props;
     return (
-        <Card className="flex flex-row w-full p-0">
+        <Card className="flex flex-row w-full p-0 cursor-pointer">
             <div className='bg-red-200'>
                 <Image
                     src={thumbnail}
