@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/user_context';
 
 interface HistoryItem {
@@ -21,11 +21,15 @@ export function useHistory() {
     const [history, setHistory] = useState<HistoryItem[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+
+    const [isLoadingDetails, setIsLoadingDetails] = useState<boolean>(false);
+    const [detailsError, setDetailsError] = useState<string | null>(null);
+
     const { user } = useAuth();
 
     const fetchHistory = async () => {
-        if (hasFetched) return;
-        hasFetched = true;
+        // if (hasFetched) return;
+        // hasFetched = true;
 
         setIsLoading(true);
         setError(null);
@@ -52,6 +56,28 @@ export function useHistory() {
         return history.length > 0 ? history[0] : null;
     };
 
+    const getAnalysisDetails = useCallback(async (aid: string) => {
+        setIsLoadingDetails(true);
+        setDetailsError(null);
+
+        try {
+            const response = await fetch(`/api/history/${aid}`);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to get analysis details');
+            }
+
+            const data = await response.json();
+            return data.analysis;
+        } catch (error) {
+            console.error("Error getting analysis details: ", error);
+            setError(error instanceof Error ? error.message : 'Error fetching analysis details');
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
     // fetch history when component mounts or user changes
     useEffect(() => {
         if (user) {
@@ -66,7 +92,10 @@ export function useHistory() {
         history,
         isLoading,
         error,
+        isLoadingDetails,
+        detailsError,
         fetchHistory,
         getLatestAnalysis,
+        getAnalysisDetails,
     }
 }

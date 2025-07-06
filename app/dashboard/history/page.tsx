@@ -5,6 +5,8 @@ import { useHistory } from "@/hooks/useHistory";
 
 // * UI IMPORTS
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
+import Link from "next/link";
+import { RunAnalysis } from "@/components/register/dashboard/home/RunAnalysis";
 
 const sampleData = {
     thumbnail: '/run1.jpg',
@@ -14,6 +16,7 @@ const sampleData = {
 }
 
 export default function HistoryPage() {
+    const link = "/dashboard/history"
     const { thumbnail, title, date, form_score } = sampleData;
 
     // get user anlyses
@@ -32,6 +35,8 @@ export default function HistoryPage() {
         return <div>No analysis yet!</div>
     }
     
+    // TODO: categorize monthly
+
     return (
         // <>
         //     <h1 className="text-2xl font-bold mb-4">Your analyses</h1>
@@ -115,15 +120,11 @@ export default function HistoryPage() {
         // </>
         <div className="space-y-4">
             <h1 className="text-2xl font-bold mb-4">Your analyses</h1>
-            {history.map(item => (
-                <HistoryItem 
-                    key={item.id}
-                    thumbnail={`${thumbnail}`}
-                    title={`${new Date(item.created_at).toLocaleDateString()}`}
-                    date={new Date(item.created_at)}
-                    form_score={`${Number(item.overall_score.toFixed(0))}%`}             
-                />
-            ))}
+            <div className="flex flex-row space-x-2">
+                {history.map(item => (
+                    <RunAnalysis key={item.id} analysis={item}/>
+                ))}
+            </div>
         </div>
     );
 }

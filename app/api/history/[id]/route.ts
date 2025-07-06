@@ -5,11 +5,12 @@ import { decrypt } from '@/lib/auth/session';
 
 export async function GET(
     req: NextRequest, 
-    { params }: { params: { id: string }}
+    { params } : { params: { id: string }}
 ) {
     try {
             // get user id
-            const analysisID = params.id;
+            const paramsObj = await params;
+            const analysisID = paramsObj.id;
             const cookieStore = await cookies();
             const cookie = cookieStore.get("session")?.value;
             if (!cookie) {

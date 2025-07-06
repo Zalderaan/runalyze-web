@@ -1,6 +1,6 @@
 'use client';
 
-import { LatestAnalysis } from "@/components/register/dashboard/home/LatestAnalysis";
+import { RunAnalysis } from "@/components/register/dashboard/home/RunAnalysis";
 import { NoAnalysis } from "@/components/register/dashboard/home/NoAnalysis";
 import { useHistory } from "@/hooks/useHistory";
 import {
@@ -62,7 +62,7 @@ export default function HomePage() {
                             </CardContent>
                         </Card>
                     ) : latestAnalysis != null? (
-                        <LatestAnalysis analysis={ latestAnalysis }/>
+                        <RunAnalysis analysis={ latestAnalysis }/>
                     ) : ( 
                         <NoAnalysis /> 
                     )}

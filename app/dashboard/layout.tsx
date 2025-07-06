@@ -1,3 +1,5 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
 import { cookies } from "next/headers";
 
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"

@@ -7,27 +7,28 @@ import {
     SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { NavUser } from "./nav-user"
+import Link from "next/link"
 
 // Menu items.
 const items = [
     {
         title: "Home",
-        url: "home",
+        url: "/dashboard/home",
         icon: Home,
     },
     {
         title: "History",
-        url: "history",
+        url: "/dashboard/history",
         icon: Inbox,
     },
     {
         title: "Analyze",
-        url: "analyze",
+        url: "/dashboard/analyze",
         icon: Calendar,
     },
     {
         title: "Drills",
-        url: "drills",
+        url: "/dashboard/drills",
         icon: Search,
     },
 ]
@@ -59,10 +60,10 @@ export function AppSidebar() {
                             {items.map((item) => (
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton asChild>
-                                        <a href={item.url}>
+                                        <Link href={item.url}>
                                             <item.icon />
                                             <span>{item.title}</span>
-                                        </a>
+                                        </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             ))}
