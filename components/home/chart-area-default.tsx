@@ -40,9 +40,9 @@ export function ChartAreaDefault() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Area Chart</CardTitle>
+        <CardTitle>Run Analysis Stats</CardTitle>
         <CardDescription>
-          Showing total visitors for the last 6 months
+          Your overall stats in your latest runs
         </CardDescription>
       </CardHeader>
       <CardContent>

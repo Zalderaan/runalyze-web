@@ -37,6 +37,20 @@ export interface Analysis {
 }
 
 export function RunAnalysis({ analysis } : Analysis) {
+    // format the date and time from created_at
+    const createdAt = new Date(analysis.created_at);
+    const formattedDate = createdAt.toLocaleDateString('en-US', {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    });
+
+    const formattedTime = createdAt.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
     return (
         <Link href={`/dashboard/history/${analysis.id}`}>
             <Card className="flex flex-col w-full h-full border-2 border-dashed cursor-pointer p-0 gap-0 rounded-(--card-radius) [--card-radius:var(--radius-xl)]">
@@ -56,8 +70,8 @@ export function RunAnalysis({ analysis } : Analysis) {
                     <div className="w-full h-full flex flex-col px-2 rounded-b-(--card-radius) gap-2">
                         <section className="flex flex-row flex-0 w-full justify-between items-start">
                             <div className="flex flex-col">
-                                <span className="font-bold">Latest Analysis</span>
-                                <span className="text-xs">{analysis.created_at}</span>
+                                <span className="font-bold">{formattedDate}</span>
+                                <span className="text-xs">{formattedTime}</span>
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-xs">Score</span>

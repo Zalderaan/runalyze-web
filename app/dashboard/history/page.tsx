@@ -1,6 +1,5 @@
 'use client';
 
-import { HistoryItem } from "@/components/history/history-item";
 import { useHistory } from "@/hooks/useHistory";
 
 // * UI IMPORTS
@@ -120,9 +119,11 @@ export default function HistoryPage() {
         // </>
         <div className="space-y-4">
             <h1 className="text-2xl font-bold mb-4">Your analyses</h1>
-            <div className="flex flex-row space-x-2">
+            <div className="flex flex-wrap w-full bg-red-200 space-x-2 space-y-2">
                 {history.map(item => (
-                    <RunAnalysis key={item.id} analysis={item}/>
+                    <div key={item.id} className="w-[450px]">
+                        <RunAnalysis key={item.id} analysis={item}/>
+                    </div>
                 ))}
             </div>
         </div>
