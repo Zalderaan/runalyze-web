@@ -68,15 +68,15 @@ export function RegisterForm({
     }
 
     return (
-        <div className={cn(className)} {...props}>
-            <Card>
+        <div className={cn("w-full max-w-md mx-auto p-4 sm:p-6", className)} {...props}>
+            <Card className="w-full">
                 <CardHeader>
-                    <span className='text-2xl font-medium'>Register</span>
-                    <CardDescription>
-                        Create to your account
+                    <span className='text-2xl sm:text-3xl font-medium'>Register</span>
+                    <CardDescription className="text-sm sm:text-base">
+                        Create your account
                     </CardDescription>
                 </CardHeader>
-                <CardContent className='flex flex-col gap-4 items-center'>
+                <CardContent className='flex flex-col gap-4 items-center px-4 sm:px-6'>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
                             <FormField
@@ -84,11 +84,16 @@ export function RegisterForm({
                                 name="email"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Email</FormLabel>
+                                        <FormLabel className="text-sm sm:text-base">Email</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="user@example.com" type="email" {...field} />
+                                            <Input 
+                                                placeholder="user@example.com" 
+                                                type="email" 
+                                                className="h-10 sm:h-11 text-sm sm:text-base"
+                                                {...field} 
+                                            />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="text-xs sm:text-sm" />
                                     </FormItem>
                                 )}
                             />
@@ -97,25 +102,35 @@ export function RegisterForm({
                                 name="username"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Username</FormLabel>
+                                        <FormLabel className="text-sm sm:text-base">Username</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="Enter username" type="text" {...field} />
+                                            <Input 
+                                                placeholder="Enter username" 
+                                                type="text" 
+                                                className="h-10 sm:h-11 text-sm sm:text-base"
+                                                {...field} 
+                                            />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="text-xs sm:text-sm" />
                                     </FormItem>
                                 )}
                             />
-                            <div className="flex flex-col space-y-2">
+                            <div className="flex flex-col space-y-2 sm:space-y-3">
                                 <FormField
                                     control={form.control}
                                     name="password"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Password</FormLabel>
+                                            <FormLabel className="text-sm sm:text-base">Password</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Enter your password" type="password" {...field} />
+                                                <Input 
+                                                    placeholder="Enter your password" 
+                                                    type="password" 
+                                                    className="h-10 sm:h-11 text-sm sm:text-base"
+                                                    {...field} 
+                                                />
                                             </FormControl>
-                                            <FormMessage />
+                                            <FormMessage className="text-xs sm:text-sm" />
                                         </FormItem>
                                     )}
                                 />
@@ -127,25 +142,30 @@ export function RegisterForm({
                                         <FormItem>
                                             {/* <FormLabel>Confirm Password</FormLabel> */}
                                             <FormControl>
-                                                <Input placeholder="Confirm password" type="password" {...field} />
+                                                <Input 
+                                                    placeholder="Confirm password" 
+                                                    type="password" 
+                                                    className="h-10 sm:h-11 text-sm sm:text-base"
+                                                    {...field} 
+                                                />
                                             </FormControl>
-                                            <FormMessage />
+                                            <FormMessage className="text-xs sm:text-sm" />
                                         </FormItem>
                                     )}
                                 />
                             </div>
 
-                            <div className='flex flex-col gap-2 w-full'>
-                                <Button className='w-full' type="submit">Sign up</Button>
-                                <Button variant={'outline'} className='w-full'>Sign up with Google</Button>
+                            <div className='flex flex-col gap-2 sm:gap-3 w-full pt-2'>
+                                <Button className='w-full h-10 sm:h-11 text-sm sm:text-base' type="submit">Sign up</Button>
+                                {/* <Button variant={'outline'} className='w-full h-10 sm:h-11 text-sm sm:text-base'>Sign up with Google</Button> */}
                             </div>
                         </form>
                     </Form>
                 </CardContent>
-                <CardFooter className='flex flex-col gap-4 items-center'>
-                    <p className='text-sm'>Already have an account?{' '}
+                <CardFooter className='flex flex-col gap-4 items-center px-4 sm:px-6'>
+                    <p className='text-sm sm:text-base'>Already have an account?{' '}
                         <span className='text-blue-500 underline cursor-pointer hover:text-blue-950'>
-                            <Link href='/login'>
+                            <Link href='/auth/login'>
                                 Sign In
                             </Link>
                         </span>

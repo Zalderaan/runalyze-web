@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/user_context';
+import router from 'next/router';
 
 interface HistoryItem {
     id: number;
@@ -13,6 +14,9 @@ interface HistoryItem {
     overall_score: number;
     video_id: number;
     user_id: number;
+    videos: {
+        thumbnail_url: string;
+    }
 }
 
 let hasFetched = false;
@@ -24,6 +28,9 @@ export function useHistory() {
 
     const [isLoadingDetails, setIsLoadingDetails] = useState<boolean>(false);
     const [detailsError, setDetailsError] = useState<string | null>(null);
+
+    const [isLoadingDelete, setIsLoadingDelete] = useState<boolean>(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     const { user } = useAuth();
 
@@ -88,14 +95,41 @@ export function useHistory() {
         }
     }, [user]);
 
+    const deleteAnalysis = async (analysisId: string) => {
+        setIsLoadingDelete(true);
+        setDeleteError(null);
+
+        try {
+            const response = await fetch(`/api/history/${analysisId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete analysis');
+            }
+
+            const result = await response.json();
+            console.log(result.message);
+            
+            // Refresh the history list after successful deletion
+            await fetchHistory();
+            return { success: true, message: result.message }
+        } catch (error) {
+            console.error("Error deleting analysis: ", error);
+        }
+    }
+
     return {
         history,
         isLoading,
         error,
         isLoadingDetails,
         detailsError,
+        isLoadingDelete,
+        deleteError,
         fetchHistory,
         getLatestAnalysis,
         getAnalysisDetails,
+        deleteAnalysis
     }
 }

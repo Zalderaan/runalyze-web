@@ -16,12 +16,17 @@ export async function GET(req: NextRequest){
         }
         const session = await decrypt(cookie);
         const userID = session?.userId;
-        console.log(userID)
+        // console.log(userID)
 
         // query db
         const { data, error } = await supabase
             .from('analysis_results')
-            .select('*')
+            .select(`
+                *, 
+                videos (
+                    thumbnail_url
+                )
+            `)
             .eq('user_id', userID)
             .order('created_at', { ascending: false });
     

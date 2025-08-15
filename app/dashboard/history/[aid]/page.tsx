@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useHistory } from "@/hooks/useHistory";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
     Card,
@@ -13,13 +13,61 @@ import {
     CardDescription,
     CardContent,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { TrashIcon } from "lucide-react";
+// import { useRouter } from "next/router";
 
+interface DetailedFeedback {
+    head_position: {
+        angle: number;
+        score: number;
+        drills: any[];
+        analysis: string;
+        performance_level: string;
+    };
+    back_position: {
+        angle: number;
+        score: number;
+        drills: any[];
+        analysis: string;
+        performance_level: string;
+    };
+    arm_flexion: {
+        angle: number;
+        score: number;
+        drills: any[];
+        analysis: string;
+        performance_level: string;
+    };
+    right_knee: {
+        angle: number;
+        score: number;
+        drills: any[];
+        analysis: string;
+        performance_level: string;
+    };
+    left_knee: {
+        angle: number;
+        score: number;
+        drills: any[];
+        analysis: string;
+        performance_level: string;
+    };
+    foot_strike: {
+        angle: number;
+        score: number;
+        drills: any[];
+        analysis: string;
+        performance_level: string;
+    };
+}
 
 interface AnalysisDetails {
     id: number;
     user_id: number;
     video_id: number;
     video_url: string;
+    thumbnail_url?: string;
     created_at: string;
     head_position: number;
     back_position: number;
@@ -28,17 +76,23 @@ interface AnalysisDetails {
     left_knee: number;
     foot_strike: number;
     overall_score: number;
+    overall_assessment: string;
+    detailed_feedback: DetailedFeedback;
 }
 
 export default function AnalysisDetails() {
     const [analysisDetails, setAnalysisDetails] = useState<AnalysisDetails | null>(null);
-    const { getAnalysisDetails, isLoadingDetails, detailsError } = useHistory();
+    const {
+        getAnalysisDetails, isLoadingDetails, detailsError,
+        deleteAnalysis, isLoadingDelete, deleteError
+    } = useHistory();
     const params = useParams();
     const analysisId = params.aid as string;
 
     const fetchedRef = useRef(false);
     useEffect(() => {
         if (fetchedRef.current || !analysisId) return;
+        fetchedRef.current = true; // Add this line
 
         async function fetchDetails() {
             if (analysisId) {
@@ -51,97 +105,336 @@ export default function AnalysisDetails() {
     }, [analysisId, getAnalysisDetails]);
 
     console.log(analysisDetails);
-    const { id, video_id, user_id, overall_score, video_url, head_position, back_position, arm_flexion, right_knee, left_knee, foot_strike } = analysisDetails || {};
+    const { id, video_id, user_id, video_url,
+        overall_score, overall_assessment, detailed_feedback,
+        head_position, back_position, arm_flexion, right_knee, left_knee, foot_strike } = analysisDetails || {};
+
+    const router = useRouter();
+
+    const handleDelete = async () => {
+        const result = await deleteAnalysis(analysisId);
+        if (result?.success) {
+            router.push('/dashboard/history')
+        } else {
+            console.error('Delete failed: ', result?.message);
+        }
+    };
 
     if (isLoadingDetails == true && analysisDetails == null) {
         return (
-            <div className="flex flex-row space-x-8 w-full">
-                <Skeleton className="h-[400px] w-1/2" /> {/* // TODO: this will contain video thumbnail */}
-                <div className="grid grid-cols-3 gap-4 items-center w-1/2"> {/* // TODO: this will contain analysis details */}
-                    <div className="border rounded-lg px-4 py-8 bg-gray-50 shadow-sm">
-                        <Skeleton className="h-6 w-2/3 mb-2 bg-gray-300/50" /> {/* Title */}
-                        <Skeleton className="h-10 w-1/2 mb-4 bg-gray-200" /> {/* Score/value */}
-                        <Skeleton className="h-4 w-full mb-1 bg-gray-200/66" /> {/* Description line 1 */}
-                        <Skeleton className="h-4 w-4/5 bg-gray-100" /> {/* Description line 2 */}
+            <div className="space-y-8 w-full">
+                {/* Overall Score Header Skeleton */}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <Skeleton className="h-8 w-40 mb-2 bg-gray-300/50" />
+                            <Skeleton className="h-4 w-80 bg-gray-200/66" />
+                        </div>
+                        <div className="text-right">
+                            <Skeleton className="h-4 w-24 mb-2 bg-gray-200/50" />
+                            <Skeleton className="h-10 w-16 bg-blue-200/50" />
+                        </div>
                     </div>
-                    <div className="border rounded-lg p-8 bg-gray-50 shadow-sm">
-                        <Skeleton className="h-6 w-2/3 mb-2 bg-gray-300/50" />
-                        <Skeleton className="h-10 w-1/2 mb-4 bg-gray-200" />
-                        <Skeleton className="h-4 w-full mb-1 bg-gray-200/66" />
-                        <Skeleton className="h-4 w-4/5 bg-gray-100" />
+                </div>
+
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    {/* Video Section Skeleton */}
+                    <div className="xl:col-span-2">
+                        <div className="bg-gray-900 rounded-xl overflow-hidden shadow-lg">
+                            <Skeleton className="w-full h-[400px] lg:h-[500px] bg-gray-600" />
+                        </div>
                     </div>
-                    <div className="border rounded-lg p-8 bg-gray-50 shadow-sm">
-                        <Skeleton className="h-6 w-2/3 mb-2 bg-gray-300/50" />
-                        <Skeleton className="h-10 w-1/2 mb-4 bg-gray-200" />
-                        <Skeleton className="h-4 w-full mb-1 bg-gray-200/66" />
-                        <Skeleton className="h-4 w-4/5 bg-gray-100" />
+
+                    {/* Analysis Metrics Skeleton */}
+                    <div className="xl:col-span-1">
+                        <Skeleton className="h-6 w-32 mb-4 bg-gray-300/50" />
+                        <div className="grid grid-cols-1 gap-3">
+                            {[1, 2, 3, 4, 5, 6].map((i) => (
+                                <div key={i} className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                                    <div className="flex-1">
+                                        <Skeleton className="h-5 w-24 mb-2 bg-gray-300/50" />
+                                        <Skeleton className="h-3 w-full bg-gray-200/66" />
+                                        <Skeleton className="h-3 w-4/5 bg-gray-200/66 mt-1" />
+                                    </div>
+                                    <div className="ml-4 text-right">
+                                        <Skeleton className="h-8 w-12 mb-2 bg-gray-200" />
+                                        <Skeleton className="h-5 w-16 bg-gray-100 rounded-full" />
+                                    </div>
+                                </div>
+                            ))}
+                            
+                            {/* Delete Button Skeleton */}
+                            <div className="mt-6 pt-4 border-t border-gray-200">
+                                <Skeleton className="h-10 w-full bg-gray-200" />
+                            </div>
+                        </div>
                     </div>
-                    <div className="border rounded-lg p-8 bg-gray-50 shadow-sm">
-                        <Skeleton className="h-6 w-2/3 mb-2 bg-gray-300/50" />
-                        <Skeleton className="h-10 w-1/2 mb-4 bg-gray-200" />
-                        <Skeleton className="h-4 w-full mb-1 bg-gray-200/66" />
-                        <Skeleton className="h-4 w-4/5 bg-gray-100" />
-                    </div>
-                    <div className="border rounded-lg p-8 bg-gray-50 shadow-sm">
-                        <Skeleton className="h-6 w-2/3 mb-2 bg-gray-300/50" />
-                        <Skeleton className="h-10 w-1/2 mb-4 bg-gray-200" />
-                        <Skeleton className="h-4 w-full mb-1 bg-gray-200/66" />
-                        <Skeleton className="h-4 w-4/5 bg-gray-100" />
-                    </div>
-                    <div className="border rounded-lg p-8 bg-gray-50 shadow-sm">
-                        <Skeleton className="h-6 w-2/3 mb-2 bg-gray-300/50" />
-                        <Skeleton className="h-10 w-1/2 mb-4 bg-gray-200" />
-                        <Skeleton className="h-4 w-full mb-1 bg-gray-200/66" />
-                        <Skeleton className="h-4 w-4/5 bg-gray-100" />
+                </div>
+
+                {/* Drills Section Skeleton */}
+                <div className="w-full">
+                    <Skeleton className="h-8 w-48 mb-6 bg-gray-300/50" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="border rounded-lg p-6 bg-white shadow-sm">
+                                {/* Card Header */}
+                                <div className="mb-4">
+                                    <Skeleton className="h-6 w-3/4 mb-2 bg-gray-300/50" />
+                                    <Skeleton className="h-4 w-1/2 bg-blue-200/50" />
+                                </div>
+                                {/* Instructions */}
+                                <div className="mb-4">
+                                    <Skeleton className="h-4 w-20 mb-2 bg-gray-300/50" />
+                                    <div className="space-y-1">
+                                        <Skeleton className="h-3 w-full bg-gray-200/66" />
+                                        <Skeleton className="h-3 w-5/6 bg-gray-200/66" />
+                                        <Skeleton className="h-3 w-4/5 bg-gray-200/66" />
+                                    </div>
+                                </div>
+                                {/* Duration and Frequency */}
+                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <Skeleton className="h-4 w-16 mb-1 bg-gray-300/50" />
+                                        <Skeleton className="h-3 w-full bg-gray-200/66" />
+                                    </div>
+                                    <div>
+                                        <Skeleton className="h-4 w-16 mb-1 bg-gray-300/50" />
+                                        <Skeleton className="h-3 w-full bg-gray-200/66" />
+                                    </div>
+                                </div>
+                                {/* Focus Note */}
+                                <div className="bg-blue-50 p-3 rounded-lg">
+                                    <Skeleton className="h-3 w-full bg-blue-200/50" />
+                                    <Skeleton className="h-3 w-4/5 bg-blue-200/50 mt-1" />
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
         )
     }
+    // Get all drills from areas that need improvement
+    const getAllDrills = () => {
+        const allDrills: any[] = [];
+        if (detailed_feedback) {
+            Object.entries(detailed_feedback).forEach(([area, data]) => {
+                if (data.drills && data.drills.length > 0) {
+                    data.drills.forEach((drill: any) => {
+                        allDrills.push({
+                            ...drill,
+                            area: area.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+                        });
+                    });
+                }
+            });
+        }
+        return allDrills;
+    };
+
+    // Helper function to get score color classes
+    const getScoreColors = (score: number | undefined) => {
+        if (!score && score !== 0) return { text: 'text-gray-600', bg: 'bg-gray-100 text-gray-700' };
+        if (score >= 80) return { text: 'text-green-600', bg: 'bg-green-100 text-green-700' };
+        if (score >= 60) return { text: 'text-yellow-600', bg: 'bg-yellow-100 text-yellow-700' };
+        return { text: 'text-red-600', bg: 'bg-red-100 text-red-700' };
+    };
+
+    const drills = getAllDrills();
+
     return (
-        <div className="flex flex-row space-x-8">
-            <div className="flex flex-row justify-center items-center bg-gray-100 h-[400px] w-2/5">
-                <video src={video_url} controls className="max-h-full max-w-full object-contain"></video>
+        <div className="space-y-8 w-full">
+            {/* Overall Score Header */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">Analysis #{id}</h1>
+                        <p className="text-gray-600 mt-1">{overall_assessment}</p>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-sm text-gray-500 uppercase tracking-wide">Overall Score</p>
+                        <p className="text-4xl font-bold text-blue-600">{overall_score?.toFixed(0)}%</p>
+                    </div>
+                </div>
             </div>
 
-            <div className="flex w-1/5 h-full bg-red-200">
-                <Card className="w-full">
-                    <CardHeader>
-                        <CardTitle>Overall Score</CardTitle>
-                        <CardDescription>Testing</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <span>{overall_score?.toFixed(0)} %</span>
-                    </CardContent>
-                </Card>
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                {/* Video Section - Takes more space on larger screens */}
+                <div className="xl:col-span-2">
+                    <div className="bg-gray-900 rounded-xl overflow-hidden shadow-lg">
+                        <video 
+                            src={video_url} 
+                            controls 
+                            className="w-full h-[400px] lg:h-[500px] object-contain bg-black"
+                            poster={analysisDetails?.thumbnail_url}
+                        >
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                </div>
+
+                {/* Analysis Metrics Grid - Optimized for vertical space */}
+                <div className="xl:col-span-1">
+                    <h2 className="text-xl font-semibold mb-4 text-gray-900">Form Analysis</h2>
+                    <div className="grid grid-cols-1 gap-3">
+                        <div className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex-1">
+                                <h4 className="font-medium text-gray-900">Head Position</h4>
+                                <p className="text-xs text-gray-500 line-clamp-2">{detailed_feedback?.head_position?.analysis}</p>
+                            </div>
+                            <div className="ml-4 text-right">
+                                <span className={`text-2xl font-bold ${getScoreColors(head_position).text}`}>
+                                    {head_position?.toFixed(0) || 0}%
+                                </span>
+                                <div className={`text-xs px-2 py-1 rounded-full mt-1 ${getScoreColors(head_position).bg}`}>
+                                    {detailed_feedback?.head_position?.performance_level || 'Unknown'}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex-1">
+                                <h4 className="font-medium text-gray-900">Back Position</h4>
+                                <p className="text-xs text-gray-500 line-clamp-2">{detailed_feedback?.back_position?.analysis}</p>
+                            </div>
+                            <div className="ml-4 text-right">
+                                <span className={`text-2xl font-bold ${getScoreColors(back_position).text}`}>
+                                    {back_position?.toFixed(0) || 0}%
+                                </span>
+                                <div className={`text-xs px-2 py-1 rounded-full mt-1 ${getScoreColors(back_position).bg}`}>
+                                    {detailed_feedback?.back_position?.performance_level || 'Unknown'}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex-1">
+                                <h4 className="font-medium text-gray-900">Arm Flexion</h4>
+                                <p className="text-xs text-gray-500 line-clamp-2">{detailed_feedback?.arm_flexion?.analysis}</p>
+                            </div>
+                            <div className="ml-4 text-right">
+                                <span className={`text-2xl font-bold ${getScoreColors(arm_flexion).text}`}>
+                                    {arm_flexion?.toFixed(0) || 0}%
+                                </span>
+                                <div className={`text-xs px-2 py-1 rounded-full mt-1 ${getScoreColors(arm_flexion).bg}`}>
+                                    {detailed_feedback?.arm_flexion?.performance_level || 'Unknown'}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex-1">
+                                <h4 className="font-medium text-gray-900">Right Knee</h4>
+                                <p className="text-xs text-gray-500 line-clamp-2">{detailed_feedback?.right_knee?.analysis}</p>
+                            </div>
+                            <div className="ml-4 text-right">
+                                <span className={`text-2xl font-bold ${getScoreColors(right_knee).text}`}>
+                                    {right_knee?.toFixed(0) || 0}%
+                                </span>
+                                <div className={`text-xs px-2 py-1 rounded-full mt-1 ${getScoreColors(right_knee).bg}`}>
+                                    {detailed_feedback?.right_knee?.performance_level || 'Unknown'}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex-1">
+                                <h4 className="font-medium text-gray-900">Left Knee</h4>
+                                <p className="text-xs text-gray-500 line-clamp-2">{detailed_feedback?.left_knee?.analysis}</p>
+                            </div>
+                            <div className="ml-4 text-right">
+                                <span className={`text-2xl font-bold ${getScoreColors(left_knee).text}`}>
+                                    {left_knee?.toFixed(0) || 0}%
+                                </span>
+                                <div className={`text-xs px-2 py-1 rounded-full mt-1 ${getScoreColors(left_knee).bg}`}>
+                                    {detailed_feedback?.left_knee?.performance_level || 'Unknown'}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex-1">
+                                <h4 className="font-medium text-gray-900">Foot Strike</h4>
+                                <p className="text-xs text-gray-500 line-clamp-2">{detailed_feedback?.foot_strike?.analysis}</p>
+                            </div>
+                            <div className="ml-4 text-right">
+                                <span className={`text-2xl font-bold ${getScoreColors(foot_strike).text}`}>
+                                    {foot_strike?.toFixed(0) || 0}%
+                                </span>
+                                <div className={`text-xs px-2 py-1 rounded-full mt-1 ${getScoreColors(foot_strike).bg}`}>
+                                    {detailed_feedback?.foot_strike?.performance_level || 'Unknown'}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* Delete Button positioned at bottom */}
+                        <div className="mt-6 pt-4 border-t border-gray-200">
+                            <Button
+                                variant="destructive"
+                                className="w-full flex items-center justify-center gap-2"
+                                onClick={handleDelete}
+                                disabled={isLoadingDelete}
+                            >
+                                {isLoadingDelete ? (
+                                    'Deleting...'
+                                ) : (
+                                    <>
+                                        <TrashIcon className="h-4 w-4" />
+                                        Delete Analysis
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 items-center w-2/5">
-                <div className="flex flex-col justify-start bg-gray-50 h-full border rounded-lg p-4 py-8 shadow-sm">
-                    <h4 className="font-medium">Head Position</h4>
-                    <span className="font-bold text-4xl">{head_position?.toFixed(0)}%</span>
+            {/* Recommended Drills Section */}
+            {drills.length > 0 && (
+                <div className="w-full">
+                    <h2 className="text-2xl font-bold mb-6">Recommended Drills</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {drills.map((drill, index) => (
+                            <Card key={index} className="h-full">
+                                <CardHeader>
+                                    <CardTitle className="text-lg">{drill.area}</CardTitle>
+                                    <CardDescription className="text-sm text-blue-600">
+                                        Priority: {drill.performance_recommendation?.priority_level || 'Medium'}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div>
+                                        <h4 className="font-medium text-sm text-gray-700 mb-2">Instructions:</h4>
+                                        <ul className="list-disc list-inside space-y-1">
+                                            {drill.instructions?.steps?.map((step: string, stepIndex: number) => (
+                                                <li key={stepIndex} className="text-sm text-gray-600">{step}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <span className="font-medium text-gray-700">Duration:</span>
+                                            <p className="text-gray-600">{drill.duration}</p>
+                                        </div>
+                                        <div>
+                                            <span className="font-medium text-gray-700">Frequency:</span>
+                                            <p className="text-gray-600">{drill.frequency}</p>
+                                        </div>
+                                    </div>
+                                    {drill.area_focus_note && (
+                                        <div className="bg-blue-50 p-3 rounded-lg">
+                                            <p className="text-sm text-blue-800">
+                                                <span className="font-medium">Focus: </span>
+                                                {drill.area_focus_note}
+                                            </p>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
                 </div>
-                <div className="flex flex-col justify-start bg-gray-50 h-full border rounded-lg px-4 py-8 shadow-sm">
-                    <h4 className="font-medium">Back Position</h4>
-                    <span className="font-bold text-4xl">{back_position?.toFixed(0)}%</span>
-                </div>
-                <div className="flex flex-col justify-start bg-gray-50 h-full border rounded-lg px-4 py-8 shadow-sm">
-                    <h4 className="font-medium">Arm Flexion</h4>
-                    <span className="font-bold text-4xl">{arm_flexion?.toFixed(0)}%</span>
-                </div>
-                <div className="flex flex-col justify-start bg-gray-50 h-full border rounded-lg px-4 py-8 shadow-sm">
-                    <h4 className="font-medium">Right Knee</h4>
-                    <span className="font-bold text-4xl">{right_knee?.toFixed(0)}%</span>
-                </div>
-                <div className="flex flex-col justify-start bg-gray-50 h-full border rounded-lg px-4 py-8 shadow-sm">
-                    <h4 className="font-medium">Left Knee</h4>
-                    <span className="font-bold text-4xl">{left_knee?.toFixed(0)}%</span>
-                </div>
-                <div className="flex flex-col justify-start bg-gray-50 h-full border rounded-lg px-4 py-8 shadow-sm">
-                    <h4 className="font-medium">Foot Strike</h4>
-                    <span className="font-bold text-4xl">{foot_strike?.toFixed(0)}%</span>
-                </div>
-            </div>
+            )}
         </div>
     );
 }

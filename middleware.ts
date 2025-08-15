@@ -14,7 +14,7 @@ const protectedRoutes = [
     "/dashboard/drills",
     "/dashboard/user",
 ];
-const publicRoutes = ["/login", "/register"];
+const publicRoutes = ["/auth/login", "/auth/register"];
 
 export default async function middleware(req: NextRequest) {
     console.log("middleware called!")
@@ -28,7 +28,7 @@ export default async function middleware(req: NextRequest) {
     // console.log(session);
 
     if (isProtectedRoute && !session?.userId) {
-        return NextResponse.redirect(new URL("/login", req.nextUrl));
+        return NextResponse.redirect(new URL("/auth/login", req.nextUrl));
     }
 
     if (isPublicRoute && session?.userId) {

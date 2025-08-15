@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/context/user_context';
-import { Calendar, Home, Inbox, Search } from "lucide-react"
+import { Home, History, SquareActivity ,   } from "lucide-react"
 import {
     Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup, 
     SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
@@ -19,17 +19,17 @@ const items = [
     {
         title: "History",
         url: "/dashboard/history",
-        icon: Inbox,
+        icon: History,
     },
     {
         title: "Analyze",
         url: "/dashboard/analyze",
-        icon: Calendar,
+        icon: SquareActivity ,
     },
     {
         title: "Drills",
         url: "/dashboard/drills",
-        icon: Search,
+        icon: SquareActivity ,
     },
 ]
 

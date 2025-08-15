@@ -1,5 +1,6 @@
 'use client';
 import { supabase } from "@/lib/supabase/client";
+import { ArrowLeft } from "lucide-react"
 import { redirect, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
@@ -47,8 +48,9 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     // form submission handler
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
         console.log(data);
+        setError(""); // Clear previous errors
         try {
-            // setLoading(true);
+            setLoading(true);
             // const success = await signIn(data);
             // if (success) {
             //     router.push('/dashboard/home');
@@ -56,23 +58,27 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
             await login(data.email, data.password);
         } catch (error) {
             console.error('Login failed: ', error);
-            setError("Invalid credentials");
+            setError("Invalid email or password. Please try again.");
         } finally {
             setLoading(false);
         }
     }
 
     return (
-        <div className={cn(className)} {...props}>
-            <Card>
+        <div className={cn("w-full max-w-md mx-auto p-4 sm:p-6", className)} {...props}>
+            <Card className="w-full">
                 <CardHeader>
-                    <h1 className='text-2xl font-medium'>Login</h1>
-                    <CardDescription>
+                    <h1 className='text-2xl sm:text-3xl font-medium'>Login</h1>
+                    <CardDescription className="text-sm sm:text-base">
                         Sign-in to your account
                     </CardDescription>
                 </CardHeader>
-                <CardContent className='flex flex-col gap-4 items-center'>
-                    {/* // TODO: ADD FORM  */}
+                <CardContent className='flex flex-col gap-4 items-center px-4 sm:px-6'>
+                    {error && (
+                        <div className="mb-2 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md w-full">
+                            {error}
+                        </div>
+                    )}
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
                             <FormField
@@ -80,11 +86,16 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                                 name="email"
                                 render={({ field }: { field: ControllerRenderProps<z.infer<typeof formSchema>, "email"> }) => (
                                     <FormItem>
-                                        <FormLabel>Email</FormLabel>
+                                        <FormLabel className="text-sm sm:text-base">Email</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="user@example.com" type="email" {...field} />
+                                            <Input 
+                                                placeholder="user@example.com" 
+                                                type="email" 
+                                                className="h-10 sm:h-11 text-sm sm:text-base"
+                                                {...field} 
+                                            />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="text-xs sm:text-sm" />
                                     </FormItem>
                                 )}
                             />
@@ -93,25 +104,43 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                                 name="password"
                                 render={({ field }: { field: ControllerRenderProps<z.infer<typeof formSchema>, "password"> }) => (
                                     <FormItem>
-                                        <FormLabel>Password</FormLabel>
+                                        <FormLabel className="text-sm sm:text-base">Password</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="Enter your password" type="password" {...field} />
+                                            <Input 
+                                                placeholder="Enter your password" 
+                                                type="password" 
+                                                className="h-10 sm:h-11 text-sm sm:text-base"
+                                                {...field} 
+                                            />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="text-xs sm:text-sm" />
                                     </FormItem>
                                 )}
                             />
-                            <div className='flex flex-col gap-2 w-full'>
-                                <Button className='w-full' type="submit">{isLoading ? 'Signing in...' : 'Sign-in'}</Button>
-                                <Button variant={'outline'} className='w-full'>Sign-in with Google</Button>
+                            <div className='flex flex-col gap-2 sm:gap-3 w-full pt-2'>
+                                <Button 
+                                    className='w-full h-10 sm:h-11 text-sm sm:text-base' 
+                                    type="submit"
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? (
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            Signing in...
+                                        </div>
+                                    ) : (
+                                        'Sign In'
+                                    )}
+                                </Button>
+                                <Button variant={'outline'} className='w-full h-10 sm:h-11 text-sm sm:text-base'>Sign in with Google</Button>
                             </div>
                         </form>
                     </Form>
                 </CardContent>
-                <CardFooter className='flex flex-col gap-4 items-center'>
-                    <p className='text-sm'>Don't have an account?{' '}
+                <CardFooter className='flex flex-col gap-4 items-center px-4 sm:px-6'>
+                    <p className='text-sm sm:text-base'>Don't have an account?{' '}
                         <span className='text-blue-500 underline cursor-pointer hover:text-blue-950'>
-                            <Link href='/register'>
+                            <Link href='/auth/register'>
                                 Sign Up
                             </Link>
                         </span>
