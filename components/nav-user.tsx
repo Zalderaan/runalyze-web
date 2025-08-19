@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { LogOutIcon, UserIcon } from "lucide-react";
+import { LogOutIcon, UserIcon, EllipsisVertical } from "lucide-react";
 // import { signOut } from '@/lib/auth/actions'
 import { useAuth } from "@/context/user_context";
 
@@ -35,7 +35,6 @@ export function NavUser({
             <SidebarMenuItem>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-
                         <SidebarMenuButton
                             size="lg"
                             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
@@ -44,16 +43,17 @@ export function NavUser({
                                 <AvatarImage src={user.avatar} alt={user.username} />
                                 <AvatarFallback className="rounded-lg bg-amber-200">{user.username.toString().toUpperCase()[0]}</AvatarFallback>
                             </Avatar>
-                            <div className="flex flex-col">
+                            <div className="flex flex-col flex-1 min-w-0 pr-2">
                                 <span className="truncate font-semibold">{user.username}</span>
                                 <span className="truncate text-xs">{user.email}</span>
                             </div>
+                            <EllipsisVertical className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ml-auto" />
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                        side={isMobile ? "bottom" : "right"}
-                        align="end"
+                        side={isMobile ? "bottom" : "top"}
+                        align='end'
                         sideOffset={4}
                     >
                         <DropdownMenuItem 

@@ -26,11 +26,6 @@ const items = [
         url: "/dashboard/analyze",
         icon: SquareActivity ,
     },
-    {
-        title: "Drills",
-        url: "/dashboard/drills",
-        icon: SquareActivity ,
-    },
 ]
 
 export function AppSidebar() {

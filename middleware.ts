@@ -11,7 +11,6 @@ import { decrypt } from '@/lib/auth/session';
 const protectedRoutes = [
     "/dashboard/home",
     "/dashboard/analyze",
-    "/dashboard/drills",
     "/dashboard/user",
 ];
 const publicRoutes = ["/auth/login", "/auth/register"];

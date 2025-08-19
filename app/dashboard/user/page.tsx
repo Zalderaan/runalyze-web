@@ -86,7 +86,7 @@ export default function UserPage() {
                     <CardHeader className="text-center pb-4">
                         <div className="flex justify-center mb-4">
                             <Avatar className="h-24 w-24">
-                                <AvatarImage src={user.avatar} alt={user.username} />
+                                {/* <AvatarImage src={user.avatar} alt={user.username} /> */}
                                 <AvatarFallback className="text-lg font-semibold">
                                     {getInitials(user.username)}
                                 </AvatarFallback>
