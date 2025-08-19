@@ -2,11 +2,6 @@
 
 import {
     Card,
-    CardHeader,
-    CardFooter,
-    CardTitle,
-    CardAction,
-    CardDescription,
     CardContent,
 } from "@/components/ui/card";
 import { SquarePlus } from "lucide-react";

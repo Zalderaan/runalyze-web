@@ -1,5 +1,4 @@
 'use client';
-import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
 import { z } from "zod";
@@ -8,14 +7,12 @@ import { useForm } from "react-hook-form";
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { signUp } from '@/lib/auth/actions';
@@ -59,10 +56,9 @@ export function RegisterForm({
     // form submission handler
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
         console.log(data);
-        const { username, email, password } = data;
         try {
             await signUp(data)
-        } catch (error) {
+        } catch {
             form.setError('email', { type: 'manual', message: 'Registration failed' });
         }
     }

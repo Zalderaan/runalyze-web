@@ -1,17 +1,5 @@
 'use client';
-import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardHeader,
-    CardFooter,
-    CardTitle,
-    CardAction,
-    CardDescription,
-    CardContent,
-} from '@/components/ui/card';
-import Link from 'next/link';
 import { LoginForm } from '@/components/login/login-form';
-import { ArrowLeft } from 'lucide-react';
 
 export default function LoginPage() {
     return (

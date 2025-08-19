@@ -5,11 +5,6 @@ import { NoAnalysis } from "@/components/home/NoAnalysis";
 import { useHistory } from "@/hooks/useHistory";
 import {
     Card,
-    CardHeader,
-    CardFooter,
-    CardTitle,
-    CardAction,
-    CardDescription,
     CardContent,
 } from "@/components/ui/card";
 import { SquarePlus, TrendingUp, Clock, Target, Activity } from "lucide-react";
@@ -36,7 +31,7 @@ export default function HomePage() {
         fetchHistory();
         hasFetchedRef.current = true;
     }
-    }, []);
+    }, [fetchHistory, history.length, isLoading]);
 
     // Calculate quick stats
     const totalAnalyses = history.length;

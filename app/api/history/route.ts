@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { supabase } from '@/lib/supabase'
 import { cookies } from 'next/headers'
 import { decrypt } from '@/lib/auth/session';
 
-export async function GET(req: NextRequest){
+export async function GET(){
     try {
         // get user id
         const cookieStore = await cookies();

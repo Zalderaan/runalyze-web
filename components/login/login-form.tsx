@@ -1,22 +1,17 @@
 'use client';
-import { supabase } from "@/lib/supabase/client";
-import { ArrowLeft } from "lucide-react"
-import { redirect, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, ControllerRenderProps } from "react-hook-form";
 import {
-    Form, FormControl, FormDescription, FormField,
+    Form, FormControl, FormField,
     FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useState } from "react";
-import { signIn } from '@/lib/auth/actions'
 import { useAuth } from "@/context/user_context";
 
 // form validation schema
@@ -32,7 +27,6 @@ const formSchema = z.object({
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
     // states
     const [error, setError] = useState("");
-    const [loading, setLoading] = useState<boolean>(false);
     const { login, isLoading } = useAuth();
 
     // define form 
@@ -44,13 +38,11 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         },
     });
 
-    const router = useRouter();
     // form submission handler
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
         console.log(data);
         setError(""); // Clear previous errors
         try {
-            setLoading(true);
             // const success = await signIn(data);
             // if (success) {
             //     router.push('/dashboard/home');
@@ -59,8 +51,6 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         } catch (error) {
             console.error('Login failed: ', error);
             setError("Invalid email or password. Please try again.");
-        } finally {
-            setLoading(false);
         }
     }
 
@@ -138,7 +128,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                     </Form>
                 </CardContent>
                 <CardFooter className='flex flex-col gap-4 items-center px-4 sm:px-6'>
-                    <p className='text-sm sm:text-base'>Don't have an account?{' '}
+                    <p className='text-sm sm:text-base'>Don&apos;t have an account?{' '}
                         <span className='text-blue-500 underline cursor-pointer hover:text-blue-950'>
                             <Link href='/auth/register'>
                                 Sign Up

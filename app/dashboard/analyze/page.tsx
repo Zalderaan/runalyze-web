@@ -4,19 +4,15 @@ import { Button } from "@/components/ui/button";
 import {
     Card,
     CardHeader,
-    CardFooter,
     CardTitle,
-    CardAction,
     CardDescription,
     CardContent,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { 
     Upload, 
     Video, 
-    Play, 
     CheckCircle2, 
     AlertCircle, 
     FileVideo,
@@ -26,17 +22,16 @@ import {
     Info
 } from 'lucide-react';
 import { useState } from "react";
-import { supabase } from '@/lib/supabase'
 import { Results } from "@/components/analyze/results";
 import { useAuth } from "@/context/user_context";
 
 export default function AnalyzePage() {
     const [videoFile, setVideoFile] = useState<File | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [results, setResults] = useState<{
             download_url: string;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             analysis_summary: any;
         } | null>(null);
     const { user } = useAuth();

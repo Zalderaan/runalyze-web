@@ -8,14 +8,8 @@
 import {
     Card,
     CardHeader,
-    CardFooter,
-    CardTitle,
-    CardAction,
-    CardDescription,
     CardContent,
 } from "@/components/ui/card";
-import { SquarePlus } from "lucide-react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Metric } from "./Metrics";

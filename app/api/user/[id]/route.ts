@@ -4,15 +4,16 @@ import { supabase } from '@/lib/supabase';
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } } // Access the 'id' from params
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const { id } = await params // Get the user ID from the route parameters
+        const paramsObj = await params;
+        const uid = paramsObj.id;
 
     // find user details by user ID
     const { data: user_details, error } = await supabase
         .from('users')
         .select('*')
-        .eq('id', id)
+        .eq('id', uid)
         .single();
 
     if (error) {

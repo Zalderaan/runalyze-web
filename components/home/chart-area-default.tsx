@@ -125,7 +125,7 @@ export function ChartAreaDefault({ history }: ChartAreaDefaultProps) {
                     const data = payload?.[0]?.payload;
                     return data ? `Analysis ${data.analysis} - ${value}` : value;
                   }}
-                  formatter={(value, name) => [
+                  formatter={(value) => [
                     `${Number(value).toFixed(1)}%`,
                     "Score"
                   ]}

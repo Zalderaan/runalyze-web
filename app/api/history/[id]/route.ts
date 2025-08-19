@@ -5,7 +5,8 @@ import { decrypt } from '@/lib/auth/session';
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
+
 ) {
     try {
         // get user id
@@ -74,10 +75,11 @@ export async function GET(
 
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const analysisID = (await params).id;
+        const paramsObj = await params;
+        const analysisID = paramsObj.id;
 
         const cookieStore = await cookies();
         const cookie = cookieStore.get("session")?.value;

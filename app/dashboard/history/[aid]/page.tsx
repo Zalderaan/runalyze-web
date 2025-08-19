@@ -7,20 +7,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
     Card,
     CardHeader,
-    CardFooter,
     CardTitle,
-    CardAction,
     CardDescription,
     CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TrashIcon } from "lucide-react";
-// import { useRouter } from "next/router";
 
 interface DetailedFeedback {
     head_position: {
         angle: number;
         score: number;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         drills: any[];
         analysis: string;
         performance_level: string;
@@ -28,6 +26,7 @@ interface DetailedFeedback {
     back_position: {
         angle: number;
         score: number;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         drills: any[];
         analysis: string;
         performance_level: string;
@@ -35,6 +34,7 @@ interface DetailedFeedback {
     arm_flexion: {
         angle: number;
         score: number;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         drills: any[];
         analysis: string;
         performance_level: string;
@@ -42,6 +42,7 @@ interface DetailedFeedback {
     right_knee: {
         angle: number;
         score: number;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         drills: any[];
         analysis: string;
         performance_level: string;
@@ -49,6 +50,7 @@ interface DetailedFeedback {
     left_knee: {
         angle: number;
         score: number;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         drills: any[];
         analysis: string;
         performance_level: string;
@@ -56,6 +58,7 @@ interface DetailedFeedback {
     foot_strike: {
         angle: number;
         score: number;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         drills: any[];
         analysis: string;
         performance_level: string;
@@ -83,8 +86,8 @@ interface AnalysisDetails {
 export default function AnalysisDetails() {
     const [analysisDetails, setAnalysisDetails] = useState<AnalysisDetails | null>(null);
     const {
-        getAnalysisDetails, isLoadingDetails, detailsError,
-        deleteAnalysis, isLoadingDelete, deleteError
+        getAnalysisDetails, isLoadingDetails,
+        deleteAnalysis, isLoadingDelete
     } = useHistory();
     const params = useParams();
     const analysisId = params.aid as string;
@@ -105,7 +108,7 @@ export default function AnalysisDetails() {
     }, [analysisId, getAnalysisDetails]);
 
     console.log(analysisDetails);
-    const { id, video_id, user_id, video_url,
+    const { id, video_url,
         overall_score, overall_assessment, detailed_feedback,
         head_position, back_position, arm_flexion, right_knee, left_knee, foot_strike } = analysisDetails || {};
 
@@ -216,10 +219,13 @@ export default function AnalysisDetails() {
     }
     // Get all drills from areas that need improvement
     const getAllDrills = () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const allDrills: any[] = [];
         if (detailed_feedback) {
-            Object.entries(detailed_feedback).forEach(([area, data]) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            Object.entries(detailed_feedback).forEach(([area, data]: [string, any]) => {
                 if (data.drills && data.drills.length > 0) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     data.drills.forEach((drill: any) => {
                         allDrills.push({
                             ...drill,

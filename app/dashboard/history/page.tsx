@@ -3,19 +3,17 @@
 import { useHistory } from "@/hooks/useHistory";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { 
     History, 
     Search, 
-    Filter, 
     Calendar, 
     TrendingUp, 
     Clock,
     PlayCircle,
-    BarChart3,
     FileX,
     Loader2,
     AlertCircle,
@@ -25,7 +23,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { RunAnalysis, getScoreColor } from "@/components/home/RunAnalysis";
+import { getScoreColor } from "@/components/home/RunAnalysis";
 
 // Enhanced HistoryItem component for the new design
 interface HistoryItemProps {
@@ -206,7 +204,8 @@ export default function HistoryPage() {
         return { groups, total: filtered.length };
     }, [history, searchTerm, sortBy]);
 
-    const stats = useMemo(() => {
+    // Calculate statistics for display (but don't use stats variable)
+    useMemo(() => {
         if (history.length === 0) return null;
         
         const totalAnalyses = history.length;

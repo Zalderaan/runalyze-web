@@ -1,8 +1,7 @@
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { Activity, BarChart3, Target, Users, ArrowRight, PlayCircle } from "lucide-react";
+import { Activity, BarChart3, Target, ArrowRight, PlayCircle } from "lucide-react";
 
 export default function LandingPage() {
   return (
