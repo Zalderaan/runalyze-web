@@ -2,7 +2,7 @@
 
 import { RunAnalysis } from "@/components/home/RunAnalysis";
 import { NoAnalysis } from "@/components/home/NoAnalysis";
-import { useHistory } from "@/hooks/useHistory";
+import { useHistory } from "@/hooks/use-history";
 import {
     Card,
     CardContent,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useHistory } from "@/hooks/useHistory";
+import { useHistory } from "@/hooks/use-history";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
