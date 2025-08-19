@@ -115,13 +115,7 @@ export async function DELETE(
             );
         }
 
-        // // Delete video files from storage (optional)
-        // if (analysisData.video?.video_url) {
-        //     // Extract file path from URL and delete from storage
-        //     // This depends on your storage structure
-        // }
-
-        // Delete analysis record (should cascade to feedback if set up properly)
+        // Delete analysis record first (should cascade to feedback if set up properly)
         const { error: deleteError } = await supabase
             .from('analysis_results')
             .delete()
@@ -134,6 +128,27 @@ export async function DELETE(
                 { message: "Failed to delete analysis" },
                 { status: 500 }
             );
+        }
+
+        // Delete the video record from the videos table
+        // This will trigger the delete-video-storage edge function via database trigger
+        if (analysisData.video_id) {
+            const { error: videoDeleteError } = await supabase
+                .from('videos')
+                .delete()
+                .eq('id', analysisData.video_id);
+
+            if (videoDeleteError) {
+                console.error("Error deleting video record: ", videoDeleteError);
+                // Note: Analysis is already deleted, but video cleanup failed
+                return NextResponse.json(
+                    { 
+                        message: "Analysis deleted but video cleanup failed",
+                        warning: "Video files may still exist in storage"
+                    },
+                    { status: 200 } // Still return success since main deletion worked
+                );
+            }
         }
 
         return NextResponse.json(
