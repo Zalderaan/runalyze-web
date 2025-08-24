@@ -24,7 +24,8 @@ export async function GET(){
             .select(`
                 *, 
                 videos (
-                    thumbnail_url
+                    thumbnail_url,
+                    video_url
                 )
             `)
             .eq('user_id', userID)
@@ -38,7 +39,12 @@ export async function GET(){
             );
             
         }
-        return NextResponse.json({ history: data }, { status: 200 });
+        const history = data.map(item => ({
+            ...item,
+            thumbnail_url: item.videos?.[0]?.thumbnail_url ?? "",
+            video_url: item.videos?.[0]?.video_url ?? "",
+        }));
+        return NextResponse.json({ history }, { status: 200 });
     } catch (error) {
         console.error("Error getting user history: ", error);
         return NextResponse.json(

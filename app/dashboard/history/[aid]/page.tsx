@@ -65,6 +65,18 @@ interface DetailedFeedback {
     };
 }
 
+interface Video {
+    video_id: number;
+    user_id: number;
+    analysis_results_id: number;
+    video_url: string;
+    thumbnail_url: string;
+    uploaded_at: Date;
+}
+
+interface Feedback {
+
+}
 interface AnalysisDetails {
     id: number;
     user_id: number;
@@ -100,6 +112,7 @@ export default function AnalysisDetails() {
         async function fetchDetails() {
             if (analysisId) {
                 const details = await getAnalysisDetails(analysisId);
+                console.log(details);
                 setAnalysisDetails(details);
             }
         }

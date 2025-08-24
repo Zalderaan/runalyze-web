@@ -27,15 +27,15 @@ export default function HomePage() {
     const hasFetchedRef = useRef(false);
 
     useEffect(() => {
-    if (!hasFetchedRef.current && history.length === 0 && !isLoading) {
-        fetchHistory();
-        hasFetchedRef.current = true;
-    }
+        if (!hasFetchedRef.current && history.length === 0 && !isLoading) {
+            fetchHistory();
+            hasFetchedRef.current = true;
+        }
     }, [fetchHistory, history.length, isLoading]);
 
     // Calculate quick stats
     const totalAnalyses = history.length;
-    const avgScore = history.length > 0 ? 
+    const avgScore = history.length > 0 ?
         Math.round(history.reduce((sum, item) => sum + item.overall_score, 0) / history.length) : 0;
     const recentAnalyses = history.slice(0, 3);
 
@@ -47,7 +47,7 @@ export default function HomePage() {
                     <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
                     <p className="text-gray-600 mt-1">Track your running form and improvement over time</p>
                 </div>
-                <Button 
+                <Button
                     onClick={() => router.push('/dashboard/analyze')}
                     className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
                 >
@@ -69,7 +69,7 @@ export default function HomePage() {
                         </div>
                     </div>
                 </Card>
-                
+
                 <Card className="p-6">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-green-100 rounded-lg">
@@ -81,7 +81,7 @@ export default function HomePage() {
                         </div>
                     </div>
                 </Card>
-                
+
                 <Card className="p-6">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-purple-100 rounded-lg">
@@ -95,7 +95,7 @@ export default function HomePage() {
                         </div>
                     </div>
                 </Card>
-                
+
                 <Card className="p-6">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-orange-100 rounded-lg">
@@ -104,8 +104,8 @@ export default function HomePage() {
                         <div>
                             <p className="text-sm text-gray-600">Last Analysis</p>
                             <p className="text-2xl font-bold text-gray-900">
-                                {latestAnalysis ? 
-                                    new Date(latestAnalysis.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) 
+                                {latestAnalysis ?
+                                    new Date(latestAnalysis.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                                     : 'None'
                                 }
                             </p>
@@ -121,26 +121,27 @@ export default function HomePage() {
                     {/* Latest Analysis */}
                     <div>
                         <h2 className="text-xl font-semibold text-gray-900 mb-4">Latest Analysis</h2>
-                        { isLoading ? (
+                        {isLoading ? (
                             <Card className="p-8">
                                 <CardContent className="flex items-center justify-center">
                                     <div className="animate-pulse text-gray-500">Loading latest analysis...</div>
                                 </CardContent>
-                            </Card>                        
+                            </Card>
                         ) : error ? (
                             <Card className="p-8 border-red-200 bg-red-50">
                                 <CardContent className="flex items-center justify-center">
                                     <p className="text-red-600">Error loading latest analysis.</p>
                                 </CardContent>
                             </Card>
-                        ) : latestAnalysis != null? (
+                        ) : latestAnalysis != null ? (
                             <RunAnalysis analysis={{
-                                    ...latestAnalysis,
-                                    thumbnail_url: latestAnalysis.videos?.thumbnail_url ?? "",
-                                }}
-                            />
-                        ) : ( 
-                            <NoAnalysis /> 
+                                ...latestAnalysis,
+                                thumbnail_url: Array.isArray(latestAnalysis.videos)
+                                    ? latestAnalysis.videos[0]?.thumbnail_url ?? ""
+                                    : latestAnalysis.videos?.thumbnail_url ?? "",
+                            }} />
+                        ) : (
+                            <NoAnalysis />
                         )}
                     </div>
 
@@ -164,8 +165,8 @@ export default function HomePage() {
                         <div>
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-xl font-semibold text-gray-900">Recent Analyses</h2>
-                                <Button 
-                                    variant="ghost" 
+                                <Button
+                                    variant="ghost"
                                     size="sm"
                                     onClick={() => router.push('/dashboard/history')}
                                     className="text-blue-600 hover:text-blue-700"
@@ -175,8 +176,8 @@ export default function HomePage() {
                             </div>
                             <div className="space-y-3">
                                 {recentAnalyses.map((analysis) => (
-                                    <Card 
-                                        key={analysis.id} 
+                                    <Card
+                                        key={analysis.id}
                                         className="p-4 hover:shadow-md transition-shadow cursor-pointer"
                                         onClick={() => router.push(`/dashboard/history/${analysis.id}`)}
                                     >
@@ -194,10 +195,9 @@ export default function HomePage() {
                                                 </p>
                                             </div>
                                             <div className="text-right">
-                                                <p className={`text-lg font-bold ${
-                                                    analysis.overall_score >= 80 ? 'text-green-600' :
-                                                    analysis.overall_score >= 60 ? 'text-yellow-600' : 'text-red-600'
-                                                }`}>
+                                                <p className={`text-lg font-bold ${analysis.overall_score >= 80 ? 'text-green-600' :
+                                                        analysis.overall_score >= 60 ? 'text-yellow-600' : 'text-red-600'
+                                                    }`}>
                                                     {analysis.overall_score.toFixed(0)}%
                                                 </p>
                                             </div>
