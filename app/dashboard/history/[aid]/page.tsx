@@ -66,14 +66,14 @@ interface DetailedFeedback {
     };
 }
 
-interface Video {
-    video_id: number;
-    user_id: number;
-    analysis_results_id: number;
-    video_url: string;
-    thumbnail_url: string;
-    uploaded_at: Date;
-}
+// interface Video {
+//     video_id: number;
+//     user_id: number;
+//     analysis_results_id: number;
+//     video_url: string;
+//     thumbnail_url: string;
+//     uploaded_at: Date;
+// }
 
 interface AnalysisDetails {
     id: number;
@@ -251,12 +251,12 @@ export default function AnalysisDetails() {
     };
 
     // Helper function to get score color classes
-    const getScoreColors = (score: number | undefined) => {
-        if (!score && score !== 0) return { text: 'text-gray-600', bg: 'bg-gray-100 text-gray-700' };
-        if (score >= 80) return { text: 'text-green-600', bg: 'bg-green-100 text-green-700' };
-        if (score >= 60) return { text: 'text-yellow-600', bg: 'bg-yellow-100 text-yellow-700' };
-        return { text: 'text-red-600', bg: 'bg-red-100 text-red-700' };
-    };
+    // const getScoreColors = (score: number | undefined) => {
+    //     if (!score && score !== 0) return { text: 'text-gray-600', bg: 'bg-gray-100 text-gray-700' };
+    //     if (score >= 80) return { text: 'text-green-600', bg: 'bg-green-100 text-green-700' };
+    //     if (score >= 60) return { text: 'text-yellow-600', bg: 'bg-yellow-100 text-yellow-700' };
+    //     return { text: 'text-red-600', bg: 'bg-red-100 text-red-700' };
+    // };
 
     const drills = getAllDrills();
 
