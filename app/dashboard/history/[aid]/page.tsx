@@ -75,9 +75,6 @@ interface Video {
     uploaded_at: Date;
 }
 
-interface Feedback {
-
-}
 interface AnalysisDetails {
     id: number;
     user_id: number;
@@ -121,10 +118,11 @@ export default function AnalysisDetails() {
         fetchDetails();
     }, [analysisId, getAnalysisDetails]);
 
-    console.log(analysisDetails);
+    // console.log(analysisDetails);
     const { id, video_url,
         overall_score, overall_assessment, detailed_feedback,
-        head_position, back_position, arm_flexion, right_knee, left_knee, foot_strike } = analysisDetails || {};
+        } = analysisDetails || {};
+        // head_position, back_position, arm_flexion, right_knee, left_knee, foot_strike 
 
     const router = useRouter();
 

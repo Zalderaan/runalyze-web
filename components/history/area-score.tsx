@@ -1,12 +1,12 @@
 import {
     Dialog,
-    DialogClose,
+    // DialogClose,
     DialogContent,
-    DialogDescription,
-    DialogFooter,
+    // DialogDescription,
+    // DialogFooter,
     DialogHeader,
-    DialogOverlay,
-    DialogPortal,
+    // DialogOverlay,
+    // DialogPortal,
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog'
