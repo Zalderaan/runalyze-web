@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TrashIcon } from "lucide-react";
+import { AreaScore } from "@/components/history/area-score";
 
 interface DetailedFeedback {
     head_position: {
@@ -178,7 +179,7 @@ export default function AnalysisDetails() {
                                     </div>
                                 </div>
                             ))}
-                            
+
                             {/* Delete Button Skeleton */}
                             <div className="mt-6 pt-4 border-t border-gray-200">
                                 <Skeleton className="h-10 w-full bg-gray-200" />
@@ -281,9 +282,9 @@ export default function AnalysisDetails() {
                 {/* Video Section - Takes more space on larger screens */}
                 <div className="xl:col-span-2">
                     <div className="bg-gray-900 rounded-xl overflow-hidden shadow-lg">
-                        <video 
-                            src={video_url} 
-                            controls 
+                        <video
+                            src={video_url}
+                            controls
                             className="w-full h-[400px] lg:h-[500px] object-contain bg-black"
                             poster={analysisDetails?.thumbnail_url}
                         >
@@ -296,96 +297,48 @@ export default function AnalysisDetails() {
                 <div className="xl:col-span-1">
                     <h2 className="text-xl font-semibold mb-4 text-gray-900">Form Analysis</h2>
                     <div className="grid grid-cols-1 gap-3">
-                        <div className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex-1">
-                                <h4 className="font-medium text-gray-900">Head Position</h4>
-                                <p className="text-xs text-gray-500 line-clamp-2">{detailed_feedback?.head_position?.analysis}</p>
-                            </div>
-                            <div className="ml-4 text-right">
-                                <span className={`text-2xl font-bold ${getScoreColors(head_position).text}`}>
-                                    {head_position?.toFixed(0) || 0}%
-                                </span>
-                                <div className={`text-xs px-2 py-1 rounded-full mt-1 ${getScoreColors(head_position).bg}`}>
-                                    {detailed_feedback?.head_position?.performance_level || 'Unknown'}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex-1">
-                                <h4 className="font-medium text-gray-900">Back Position</h4>
-                                <p className="text-xs text-gray-500 line-clamp-2">{detailed_feedback?.back_position?.analysis}</p>
-                            </div>
-                            <div className="ml-4 text-right">
-                                <span className={`text-2xl font-bold ${getScoreColors(back_position).text}`}>
-                                    {back_position?.toFixed(0) || 0}%
-                                </span>
-                                <div className={`text-xs px-2 py-1 rounded-full mt-1 ${getScoreColors(back_position).bg}`}>
-                                    {detailed_feedback?.back_position?.performance_level || 'Unknown'}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex-1">
-                                <h4 className="font-medium text-gray-900">Arm Flexion</h4>
-                                <p className="text-xs text-gray-500 line-clamp-2">{detailed_feedback?.arm_flexion?.analysis}</p>
-                            </div>
-                            <div className="ml-4 text-right">
-                                <span className={`text-2xl font-bold ${getScoreColors(arm_flexion).text}`}>
-                                    {arm_flexion?.toFixed(0) || 0}%
-                                </span>
-                                <div className={`text-xs px-2 py-1 rounded-full mt-1 ${getScoreColors(arm_flexion).bg}`}>
-                                    {detailed_feedback?.arm_flexion?.performance_level || 'Unknown'}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex-1">
-                                <h4 className="font-medium text-gray-900">Right Knee</h4>
-                                <p className="text-xs text-gray-500 line-clamp-2">{detailed_feedback?.right_knee?.analysis}</p>
-                            </div>
-                            <div className="ml-4 text-right">
-                                <span className={`text-2xl font-bold ${getScoreColors(right_knee).text}`}>
-                                    {right_knee?.toFixed(0) || 0}%
-                                </span>
-                                <div className={`text-xs px-2 py-1 rounded-full mt-1 ${getScoreColors(right_knee).bg}`}>
-                                    {detailed_feedback?.right_knee?.performance_level || 'Unknown'}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex-1">
-                                <h4 className="font-medium text-gray-900">Left Knee</h4>
-                                <p className="text-xs text-gray-500 line-clamp-2">{detailed_feedback?.left_knee?.analysis}</p>
-                            </div>
-                            <div className="ml-4 text-right">
-                                <span className={`text-2xl font-bold ${getScoreColors(left_knee).text}`}>
-                                    {left_knee?.toFixed(0) || 0}%
-                                </span>
-                                <div className={`text-xs px-2 py-1 rounded-full mt-1 ${getScoreColors(left_knee).bg}`}>
-                                    {detailed_feedback?.left_knee?.performance_level || 'Unknown'}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex-1">
-                                <h4 className="font-medium text-gray-900">Foot Strike</h4>
-                                <p className="text-xs text-gray-500 line-clamp-2">{detailed_feedback?.foot_strike?.analysis}</p>
-                            </div>
-                            <div className="ml-4 text-right">
-                                <span className={`text-2xl font-bold ${getScoreColors(foot_strike).text}`}>
-                                    {foot_strike?.toFixed(0) || 0}%
-                                </span>
-                                <div className={`text-xs px-2 py-1 rounded-full mt-1 ${getScoreColors(foot_strike).bg}`}>
-                                    {detailed_feedback?.foot_strike?.performance_level || 'Unknown'}
-                                </div>
-                            </div>
-                        </div>
-                        
+                        <AreaScore
+                            area="Head Position"
+                            score={detailed_feedback?.head_position?.score ?? 0}
+                            analysis={detailed_feedback?.head_position?.analysis ?? ""}
+                            perf_level={detailed_feedback?.head_position?.performance_level ?? "Unknown"}
+                        />
+
+                        <AreaScore
+                            area="Back Position"
+                            score={detailed_feedback?.back_position?.score ?? 0}
+                            analysis={detailed_feedback?.back_position?.analysis ?? ""}
+                            perf_level={detailed_feedback?.back_position?.performance_level ?? "Unknown"}
+                        />
+
+                        <AreaScore
+                            area="Arm Flexion"
+                            score={detailed_feedback?.arm_flexion?.score ?? 0}
+                            analysis={detailed_feedback?.arm_flexion?.analysis ?? ""}
+                            perf_level={detailed_feedback?.arm_flexion?.performance_level ?? "Unknown"}
+                        />
+
+                        <AreaScore
+                            area="Right Knee"
+                            score={detailed_feedback?.right_knee?.score ?? 0}
+                            analysis={detailed_feedback?.right_knee?.analysis ?? ""}
+                            perf_level={detailed_feedback?.right_knee?.performance_level ?? "Unknown"}
+                        />
+
+                        <AreaScore
+                            area="Left Knee"
+                            score={detailed_feedback?.left_knee?.score ?? 0}
+                            analysis={detailed_feedback?.left_knee?.analysis ?? ""}
+                            perf_level={detailed_feedback?.left_knee?.performance_level ?? "Unknown"}
+                        />
+
+                        <AreaScore
+                            area="Foot Strike"
+                            score={detailed_feedback?.foot_strike?.score ?? 0}
+                            analysis={detailed_feedback?.foot_strike?.analysis ?? ""}
+                            perf_level={detailed_feedback?.foot_strike?.performance_level ?? "Unknown"}
+                        />
+
                         {/* Delete Button positioned at bottom */}
                         <div className="mt-6 pt-4 border-t border-gray-200">
                             <Button

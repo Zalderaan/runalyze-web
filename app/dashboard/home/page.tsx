@@ -10,8 +10,6 @@ import {
 import { SquarePlus, TrendingUp, Clock, Target, Activity } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ChartAreaDefault } from "@/components/home/chart-area-default"
-import { RecommendedDrill } from "@/components/home/recommended-drill";
-import { SmartTip } from "@/components/home/smart-tip";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -154,12 +152,6 @@ export default function HomePage() {
 
                 {/* Sidebar */}
                 <div className="xl:col-span-1 space-y-6">
-                    {/* Smart Tip */}
-                    <div>
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4">Smart Tip</h2>
-                        <SmartTip />
-                    </div>
-
                     {/* Recent Analyses */}
                     {recentAnalyses.length > 0 && (
                         <div>
@@ -208,12 +200,6 @@ export default function HomePage() {
                         </div>
                     )}
                 </div>
-            </div>
-
-            {/* Recommended Drills Section */}
-            <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Recommended Drills</h2>
-                <RecommendedDrill />
             </div>
         </div>
     );
