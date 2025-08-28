@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { TrashIcon } from "lucide-react";
 import { AreaScore } from "@/components/history/area-score";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface DetailedFeedback {
     head_position: {
@@ -121,8 +122,8 @@ export default function AnalysisDetails() {
     // console.log(analysisDetails);
     const { id, video_url,
         overall_score, overall_assessment, detailed_feedback,
-        } = analysisDetails || {};
-        // head_position, back_position, arm_flexion, right_knee, left_knee, foot_strike 
+    } = analysisDetails || {};
+    // head_position, back_position, arm_flexion, right_knee, left_knee, foot_strike 
 
     const router = useRouter();
 
@@ -339,21 +340,38 @@ export default function AnalysisDetails() {
 
                         {/* Delete Button positioned at bottom */}
                         <div className="mt-6 pt-4 border-t border-gray-200">
-                            <Button
-                                variant="destructive"
-                                className="w-full flex items-center justify-center gap-2"
-                                onClick={handleDelete}
-                                disabled={isLoadingDelete}
-                            >
-                                {isLoadingDelete ? (
-                                    'Deleting...'
-                                ) : (
-                                    <>
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button
+                                        variant="destructive"
+                                        className="w-full flex items-center justify-center gap-2"
+                                        disabled={isLoadingDelete}
+                                    >
                                         <TrashIcon className="h-4 w-4" />
                                         Delete Analysis
-                                    </>
-                                )}
-                            </Button>
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Are you sure?</DialogTitle>
+                                        <DialogDescription>This action will remove this analysis from your account.</DialogDescription>
+                                    </DialogHeader>
+                                    <DialogFooter>
+                                        <Button asChild variant={'outline'}>
+                                            <DialogClose>
+                                                Go back
+                                            </DialogClose>
+                                        </Button>
+                                        <Button
+                                            variant={'destructive'}
+                                            onClick={handleDelete}
+                                            disabled={isLoadingDelete}
+                                        >
+                                            {isLoadingDelete ? "Deleting..." : "Yes, delete this analysis"}
+                                        </Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
                         </div>
                     </div>
                 </div>
