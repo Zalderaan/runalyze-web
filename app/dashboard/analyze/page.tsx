@@ -96,7 +96,7 @@ export default function AnalyzePage() {
                 method: 'POST',
                 body: formData,  // Headers are auto-set to `multipart/form-data`
             });
-
+            
             if (!response.ok) {
                 const errorText = await response.text();
                 let errorMessage = "Analysis failed. Please try again.";
@@ -110,7 +110,7 @@ export default function AnalyzePage() {
                         errorMessage = "Video file is too large. Please use a smaller file (under 50MB).";
                         break;
                     case 422:
-                        errorMessage = "Video format not supported. Please use MP4, MOV, or AVI format.";
+                        errorMessage = "Video format not supported or no body landmarks detected. Please use MP4, MOV, or AVI format.";
                         break;
                     case 500:
                         errorMessage = "Server error during analysis. Please try again in a few minutes.";
