@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { TrashIcon } from "lucide-react";
 import { AreaScore } from "@/components/history/area-score";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-
 interface DetailedFeedback {
     head_position: {
         angle: number;
@@ -24,6 +23,7 @@ interface DetailedFeedback {
         drills: any[];
         analysis: string;
         performance_level: string;
+        classification: string;
     };
     back_position: {
         angle: number;
@@ -32,6 +32,7 @@ interface DetailedFeedback {
         drills: any[];
         analysis: string;
         performance_level: string;
+        classification: string;
     };
     arm_flexion: {
         angle: number;
@@ -40,6 +41,7 @@ interface DetailedFeedback {
         drills: any[];
         analysis: string;
         performance_level: string;
+        classification: string;
     };
     right_knee: {
         angle: number;
@@ -48,6 +50,7 @@ interface DetailedFeedback {
         drills: any[];
         analysis: string;
         performance_level: string;
+        classification: string;
     };
     left_knee: {
         angle: number;
@@ -56,6 +59,7 @@ interface DetailedFeedback {
         drills: any[];
         analysis: string;
         performance_level: string;
+        classification: string;
     };
     foot_strike: {
         angle: number;
@@ -64,6 +68,7 @@ interface DetailedFeedback {
         drills: any[];
         analysis: string;
         performance_level: string;
+        classification: string;
     };
 }
 
@@ -301,6 +306,7 @@ export default function AnalysisDetails() {
                             score={detailed_feedback?.head_position?.score ?? 0}
                             analysis={detailed_feedback?.head_position?.analysis ?? ""}
                             perf_level={detailed_feedback?.head_position?.performance_level ?? "Unknown"}
+                            classification={detailed_feedback?.head_position?.classification ?? ""}
                         />
 
                         <AreaScore
@@ -308,6 +314,7 @@ export default function AnalysisDetails() {
                             score={detailed_feedback?.back_position?.score ?? 0}
                             analysis={detailed_feedback?.back_position?.analysis ?? ""}
                             perf_level={detailed_feedback?.back_position?.performance_level ?? "Unknown"}
+                            classification={detailed_feedback?.back_position?.classification ?? ""}    
                         />
 
                         <AreaScore
@@ -315,6 +322,7 @@ export default function AnalysisDetails() {
                             score={detailed_feedback?.arm_flexion?.score ?? 0}
                             analysis={detailed_feedback?.arm_flexion?.analysis ?? ""}
                             perf_level={detailed_feedback?.arm_flexion?.performance_level ?? "Unknown"}
+                            classification={detailed_feedback?.arm_flexion?.classification ?? ""}    
                         />
 
                         <AreaScore
@@ -322,6 +330,7 @@ export default function AnalysisDetails() {
                             score={detailed_feedback?.right_knee?.score ?? 0}
                             analysis={detailed_feedback?.right_knee?.analysis ?? ""}
                             perf_level={detailed_feedback?.right_knee?.performance_level ?? "Unknown"}
+                            classification={detailed_feedback?.right_knee?.classification ?? ""}    
                         />
 
                         <AreaScore
@@ -329,6 +338,7 @@ export default function AnalysisDetails() {
                             score={detailed_feedback?.left_knee?.score ?? 0}
                             analysis={detailed_feedback?.left_knee?.analysis ?? ""}
                             perf_level={detailed_feedback?.left_knee?.performance_level ?? "Unknown"}
+                            classification={detailed_feedback?.left_knee?.classification ?? ""}    
                         />
 
                         <AreaScore
@@ -336,6 +346,7 @@ export default function AnalysisDetails() {
                             score={detailed_feedback?.foot_strike?.score ?? 0}
                             analysis={detailed_feedback?.foot_strike?.analysis ?? ""}
                             perf_level={detailed_feedback?.foot_strike?.performance_level ?? "Unknown"}
+                            classification={detailed_feedback?.foot_strike?.classification ?? ""}    
                         />
 
                         {/* Delete Button positioned at bottom */}

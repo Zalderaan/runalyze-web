@@ -3,7 +3,7 @@
     "short_name": "Runalyze",
     "icons": [
         {
-            "src": "/berd-small.png",
+            "src": "/berd_small.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "maskable"
