@@ -172,8 +172,8 @@ export function AreaScore({ area, score, analysis, perf_level, classification }:
                             {imgSrc && (
                                 <div className="flex flex-col items-center">
                                     <Image src={imgSrc} alt={`${classification}`} height={100} width={100} />
-                                    <span className="text-xs mt-2 text-green-600">{!isIdealClassification
-                                    (area, classification) ? 'Ideal Position' : 'Your position'}</span>
+                                    <span className="text-xs mt-2 text-white">{!isIdealClassification
+                                    (area, classification) ? 'Your Position' : 'Ideal position'}</span>
                                 </div>
                             )}
 
