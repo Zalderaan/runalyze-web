@@ -24,6 +24,7 @@ import {
 import { useState } from "react";
 import { Results } from "@/components/analyze/results";
 import { useAuth } from "@/context/user_context";
+import Link from "next/link";
 
 export default function AnalyzePage() {
     const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -33,6 +34,7 @@ export default function AnalyzePage() {
             download_url: string;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             analysis_summary: any;
+            database_records: any;
         } | null>(null);
     const { user } = useAuth();
 
@@ -91,11 +93,13 @@ export default function AnalyzePage() {
             formData.append("user_id", user.id.toString());
 
             // Send directly to FastAPI
-            // const response = await fetch('http://localhost:8000/process-video/', {
-            const response = await fetch('https://runalyze-python.onrender.com/process-video/', {
+            const response = await fetch('http://localhost:8000/process-video/', {
+            // const response = await fetch('https://runalyze-python.onrender.com/process-video/', {
                 method: 'POST',
                 body: formData,  // Headers are auto-set to `multipart/form-data`
             });
+
+            console.log("response: ", response);
             
             if (!response.ok) {
                 const errorText = await response.text();
@@ -164,6 +168,7 @@ export default function AnalyzePage() {
                         <div className="space-y-2">
                             <h3 className="font-semibold text-blue-900">Tips for best results:</h3>
                             <ul className="text-sm text-blue-800 space-y-1">
+                                <li>• Allow for 2-3 meters of distance when taking the video</li>
                                 <li>• Record 6-10 seconds of side-view running footage</li>
                                 <li>• Ensure good lighting and stable camera position</li>
                                 <li>• Keep the runner in frame throughout the video</li>
@@ -447,6 +452,7 @@ export default function AnalyzePage() {
                     </CardHeader>
                     <CardContent>
                         <Results download_url={results.download_url} analysis_summary={results.analysis_summary}/>
+                        <Button asChild><Link href={`/dashboard/history/${results.database_records.analysis_id}`}>See details</Link></Button>
                     </CardContent>
                 </Card>
             )}

@@ -199,6 +199,9 @@ export default function HomePage() {
                             </div>
                         </div>
                     )}
+
+                    {/* Sample Analysis */}
+                    
                 </div>
             </div>
         </div>
