@@ -25,6 +25,7 @@ import { useState } from "react";
 import { Results } from "@/components/analyze/results";
 import { useAuth } from "@/context/user_context";
 import Link from "next/link";
+import { SampleDialog } from "@/components/sample/sample-dialog";
 
 export default function AnalyzePage() {
     const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -214,6 +215,9 @@ export default function AnalyzePage() {
                     </CardContent>
                 </Card>
             )}
+
+            {/* See Example Button */}
+            <SampleDialog />
 
             {/* Upload Section */}
             <div className="grid gap-6 lg:grid-cols-2">

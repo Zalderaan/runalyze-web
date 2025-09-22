@@ -1,1 +1,0 @@
-import * as mp from '@mediapipe/tasks-vision';

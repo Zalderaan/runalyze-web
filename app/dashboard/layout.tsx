@@ -11,7 +11,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
         <SidebarProvider defaultOpen={defaultOpen}>
             <AppSidebar />
             <main className="flex flex-col h-full w-full">
-                <header className="p-4 border-b-2">
+                <header className="p-4 border-b-2 sticky top-0 bg-white">
                     <SidebarTrigger />
                 </header>
                 <section className="p-4">
