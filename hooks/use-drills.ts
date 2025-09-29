@@ -10,7 +10,7 @@ interface Drill {
     performance_level: string;
 }
 
-export function useDrills() {
+export function useDrills(refreshKey?: number) {
     const [drills, setDrills] = useState<Drill[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -20,7 +20,7 @@ export function useDrills() {
 
     useEffect(() => {
         fetchDrills();
-    }, []);
+    }, [refreshKey]);
 
     async function fetchDrills() {
         setLoading(true);

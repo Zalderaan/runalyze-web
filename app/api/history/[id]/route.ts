@@ -6,7 +6,6 @@ import { decrypt } from '@/lib/auth/session';
 export async function GET(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
-
 ) {
     try {
         // get user id
