@@ -59,8 +59,8 @@ export function Step1BasicInfo() {
                                     <SelectValue placeholder="Select athlete's performance level" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="Poor">Poor</SelectItem>
-                                    <SelectItem value="Needs Improvement">Needs Improvement</SelectItem>
+                                    <SelectItem value="poor">Poor</SelectItem>
+                                    <SelectItem value="needs improvement">Needs Improvement</SelectItem>
                                 </SelectContent>
                             </Select>
                         </FormControl>

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useHistory } from "@/hooks/use-history";
 import { useParams, useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import {
     Card,
     CardHeader,
@@ -314,7 +315,7 @@ export default function AnalysisDetails() {
                             score={detailed_feedback?.back_position?.score ?? 0}
                             analysis={detailed_feedback?.back_position?.analysis ?? ""}
                             perf_level={detailed_feedback?.back_position?.performance_level ?? "Unknown"}
-                            classification={detailed_feedback?.back_position?.classification ?? ""}    
+                            classification={detailed_feedback?.back_position?.classification ?? ""}
                         />
 
                         <AreaScore
@@ -322,7 +323,7 @@ export default function AnalysisDetails() {
                             score={detailed_feedback?.arm_flexion?.score ?? 0}
                             analysis={detailed_feedback?.arm_flexion?.analysis ?? ""}
                             perf_level={detailed_feedback?.arm_flexion?.performance_level ?? "Unknown"}
-                            classification={detailed_feedback?.arm_flexion?.classification ?? ""}    
+                            classification={detailed_feedback?.arm_flexion?.classification ?? ""}
                         />
 
                         <AreaScore
@@ -330,7 +331,7 @@ export default function AnalysisDetails() {
                             score={detailed_feedback?.right_knee?.score ?? 0}
                             analysis={detailed_feedback?.right_knee?.analysis ?? ""}
                             perf_level={detailed_feedback?.right_knee?.performance_level ?? "Unknown"}
-                            classification={detailed_feedback?.right_knee?.classification ?? ""}    
+                            classification={detailed_feedback?.right_knee?.classification ?? ""}
                         />
 
                         <AreaScore
@@ -338,7 +339,7 @@ export default function AnalysisDetails() {
                             score={detailed_feedback?.left_knee?.score ?? 0}
                             analysis={detailed_feedback?.left_knee?.analysis ?? ""}
                             perf_level={detailed_feedback?.left_knee?.performance_level ?? "Unknown"}
-                            classification={detailed_feedback?.left_knee?.classification ?? ""}    
+                            classification={detailed_feedback?.left_knee?.classification ?? ""}
                         />
 
                         <AreaScore
@@ -346,7 +347,7 @@ export default function AnalysisDetails() {
                             score={detailed_feedback?.foot_strike?.score ?? 0}
                             analysis={detailed_feedback?.foot_strike?.analysis ?? ""}
                             perf_level={detailed_feedback?.foot_strike?.performance_level ?? "Unknown"}
-                            classification={detailed_feedback?.foot_strike?.classification ?? ""}    
+                            classification={detailed_feedback?.foot_strike?.classification ?? ""}
                         />
 
                         {/* Delete Button positioned at bottom */}
@@ -394,30 +395,53 @@ export default function AnalysisDetails() {
                     <h2 className="text-2xl font-bold mb-6">Recommended Drills</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {drills.map((drill, index) => (
-                            <Card key={index} className="h-full">
+                            <Card key={index} className="h-full shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200 rounded-xl">
                                 <CardHeader>
-                                    <CardTitle className="text-lg">{drill.area}</CardTitle>
-                                    <CardDescription className="text-sm text-blue-600">
-                                        Priority: {drill.performance_recommendation?.priority_level || 'Medium'}
+                                    <div className="flex flex-row items-center justify-between">
+                                        <CardTitle className="text-lg font-semibold text-gray-900">{drill.drill_name || "Untitled Drill"}</CardTitle>
+                                        <Badge variant="default" className="capitalize">{drill.area}</Badge>
+                                    </div>
+                                    <CardDescription className="flex flex-row space-x-2 mt-2">
+                                        <Badge
+                                            className={
+                                                drill.performance_recommendation?.priority_level === "high"
+                                                    ? "bg-red-500 text-white"
+                                                    : drill.performance_recommendation?.priority_level === "medium"
+                                                        ? "bg-yellow-400 text-black"
+                                                        : "bg-gray-200 text-gray-700"
+                                            }
+                                        >
+                                            Priority: {drill.performance_recommendation?.priority_level?.charAt(0).toUpperCase() + drill.performance_recommendation?.priority_level?.slice(1) || 'Medium'}
+                                        </Badge>
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    <div>
+                                    <div className="rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center min-h-[180px]">
+                                        {drill.video_url
+                                            ? <video src={drill.video_url} controls className="w-full max-h-60 object-contain bg-black rounded" />
+                                            : <div className="text-gray-400 italic py-8">No video provided</div>
+                                        }
+                                    </div>
+                                    <div className="bg-gray-50 rounded-lg p-3">
                                         <h4 className="font-medium text-sm text-gray-700 mb-2">Instructions:</h4>
-                                        <ul className="list-disc list-inside space-y-1">
-                                            {drill.instructions?.steps?.map((step: string, stepIndex: number) => (
-                                                <li key={stepIndex} className="text-sm text-gray-600">{step}</li>
-                                            ))}
-                                        </ul>
+                                        {Array.isArray(drill.instructions?.steps) ? (
+                                            <ul className="list-disc list-inside space-y-1">
+                                                {drill.instructions.steps.map((step: string, stepIndex: number) => (
+                                                    <li key={stepIndex} className="text-sm text-gray-600">{step}</li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="text-sm text-gray-600">{drill.instructions || "No instructions provided."}</p>
+                                        )}
                                     </div>
                                     <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div>
-                                            <span className="font-medium text-gray-700">Duration:</span>
-                                            <p className="text-gray-600">{drill.duration}</p>
+                                        <div className="flex items-center space-x-2">
+                                            <span className="font-medium text-gray-700">⏱ Duration:</span>
+                                            <span className="text-gray-600">{drill.duration || "-"}</span>
                                         </div>
-                                        <div>
-                                            <span className="font-medium text-gray-700">Frequency:</span>
-                                            <p className="text-gray-600">{drill.frequency}</p>
+                                        <div className="flex items-center space-x-2">
+                                            <span className="font-medium text-gray-700">🔁 Frequency:</span>
+                                            <span className="text-gray-600">{drill.frequency || "-"}</span>
                                         </div>
                                     </div>
                                     {drill.area_focus_note && (

@@ -1,7 +1,7 @@
 'use client'
 
 import { DrillsCard } from "@/components/admin/DrillsCard";
-import { useDrills } from "@/hooks/use-drills";
+import { useDrills } from "@/hooks/drills/use-drills";
 
 export function DrillsList({ refreshKey, searchTerm }: { refreshKey: number, searchTerm: string }) {
     const { drills, loading, error } = useDrills(refreshKey);
@@ -26,6 +26,7 @@ export function DrillsList({ refreshKey, searchTerm }: { refreshKey: number, sea
                 filteredDrills.map((drill) => (
                     <DrillsCard
                         key={drill.id}
+                        id={drill.id}
                         title={drill.drill_name}
                         area={drill.area}
                         performance_level={drill.performance_level}

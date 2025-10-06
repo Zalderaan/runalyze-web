@@ -10,13 +10,14 @@ export async function POST(req: NextRequest) {
     const performance_level = formData.get("performance_level") as string;
     const duration = formData.get("duration") as string | null;
     const frequency = formData.get("frequency") as string | null;
-    const instructions = formData.get("instructions") as string | null;
+    const instructionsRaw = formData.get("instructions") as string | null;
+    const instructions = instructionsRaw ? JSON.parse(instructionsRaw) : null;
     const sets = formData.get("sets") ? Number(formData.get("sets")) : null;
     const reps = formData.get("reps") ? Number(formData.get("reps")) : null;
     const videoFile = formData.get("video") as File | null;
 
     let video_url = null;
-    const uuid = crypto.randomUUID();    
+    const uuid = crypto.randomUUID();
 
     // upload videoFile to get video_url from supabase
     if (videoFile) {
@@ -37,7 +38,13 @@ export async function POST(req: NextRequest) {
                 { status: 500 }
             )
         }
-        video_url = data?.path || filePath;
+        
+        // get the uploaded video's public URL
+        const publicUrl = supabase.storage
+            .from("videos")
+            .getPublicUrl(filePath).data.publicUrl
+
+        video_url = publicUrl;
     }
 
     try {
@@ -80,7 +87,7 @@ export async function GET() {
             .select(`id, drill_name, area, performance_level, video_url`)
 
         if (error) {
-            console.error("Error getting user history: ", error);
+            console.error("Error getting drills: ", error);
             return NextResponse.json(
                 { message: "Error fetching drills", error: error instanceof Error ? error.message : error },
                 { status: 500 }

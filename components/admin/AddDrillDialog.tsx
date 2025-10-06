@@ -17,7 +17,7 @@ import { Plus } from "lucide-react";
 
 // Forms imports
 import {
-    step1Schema, step2Schema, fullFormSchema,
+    step1Schema, step2Schema,
     type Step1FormData, type Step2FormData, type FullFormData,
     step3Schema,
     step4Schema
@@ -31,8 +31,10 @@ import { Step2TrainingParameters } from "./Step2TrainingParameters";
 import { useState } from "react";
 import { Step3Instructions } from "./Step3Instructions";
 import { Step4Video } from "./Step4Video";
+import { useDrills } from "@/hooks/drills/use-drills";
 
 export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
+    const {addDrill, addLoading, addError} = useDrills(); 
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState<Partial<FullFormData>>({});
     const [isOpen, setIsOpen] = useState(false);
@@ -63,11 +65,11 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
     })
 
     async function onStepSubmit(values: z.infer<typeof currentSchema>) {
-        console.log('values: ', values);
-        console.log('formData: ', formData);
+        // console.log('values: ', values);
+        // console.log('formData: ', formData);
         const updatedData = { ...formData, ...values }
         setFormData(updatedData);
-        console.log('updated: ', updatedData)
+        // console.log('updated: ', updatedData)
         // move to the next step
         if (step < TOTAL_STEPS) {
             // form.reset();
@@ -79,27 +81,33 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
             const formPayload = new FormData();
             Object.entries(updatedData).forEach(([key, value]) => {
                 if (value !== undefined) {
-                    formPayload.append(key, value as any);
+                    if (key === "instructions") {
+                        formPayload.append("instructions", JSON.stringify(value));
+                    } else {
+                        formPayload.append(key, value as any);
+                    }
                 }
             });
 
             try {
-                const response = await fetch("/api/admin/drills", {
-                    method: "POST",
-                    body: formPayload,
-                });
-                if (!response.ok) {
-                    let errorMsg = "Failed to submit drill";
-                    try {
-                        const errorData = await response.json();
-                        errorMsg = `${errorData.message}: ${errorData.error}` || errorMsg;
-                        console.error("Backend error: ", errorData);
-                    } catch (parseErr) {
-                        console.error("Error parsing backend error: ", parseErr)
-                    }
-                    setSubmitError(errorMsg); // <-- set error here
-                    return;
-                }
+                await addDrill(formPayload);
+                
+                // const response = await fetch("/api/admin/drills", {
+                //     method: "POST",
+                //     body: formPayload,
+                // });
+                // if (!response.ok) {
+                //     let errorMsg = "Failed to submit drill";
+                //     try {
+                //         const errorData = await response.json();
+                //         errorMsg = `${errorData.message}: ${errorData.error}` || errorMsg;
+                //         console.error("Backend error: ", errorData);
+                //     } catch (parseErr) {
+                //         console.error("Error parsing backend error: ", parseErr)
+                //     }
+                //     setSubmitError(errorMsg); // <-- set error here
+                //     return;
+                // }
                 onSuccess?.();
                 setIsOpen(false);
                 setStep(1);
@@ -125,7 +133,7 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
                     Add Drill
                 </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-h-[80vh] overflow-y-auto">
                 <FormProvider {...form}>
                     <form onSubmit={form.handleSubmit(onStepSubmit)}>
                         <DialogHeader>
@@ -154,7 +162,12 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
                             {step < TOTAL_STEPS ? (
                                 <Button type="submit">Next</Button>
                             ) : (
-                                <Button type="submit">Submit</Button>
+                                <Button 
+                                    type="submit"
+                                    disabled={addLoading}
+                                >
+                                    {addLoading ? 'Adding drill...' : 'Add drill'}
+                                </Button>
                             )}
                         </DialogFooter>
                     </form>

@@ -3,11 +3,20 @@
 import { useEffect, useState } from "react";
 
 // Define the Drill interface
-interface Drill {
+export interface Drill {
     id: string | number;
     drill_name: string;
     area: string;
     performance_level: string;
+    video_url: string;
+    frequency: number;
+    sets: number;
+    reps: number;
+    instructions: {
+        steps: Array<string>
+    }
+    created_at: Date;
+    updated_at: Date;
 }
 
 export function useDrills(refreshKey?: number) {
@@ -17,6 +26,9 @@ export function useDrills(refreshKey?: number) {
 
     const [addLoading, setAddLoading] = useState(false);
     const [addError, setAddError] = useState<string | null>(null);
+
+    // const [drillLoading, setDrillLoading] = useState(false);
+    // const [drillError, setDrillError] = useState<string | null>(null);
 
     useEffect(() => {
         fetchDrills();
@@ -36,14 +48,33 @@ export function useDrills(refreshKey?: number) {
         }
     }
 
-    async function addDrill(newDrill: any) {
+    // async function getDrill(id: string | number) {
+    //     setDrillLoading(true);
+    //     setDrillError(null);
+    //     try {
+    //         const res = await fetch(`/api/admin/drills/${id}`)
+
+    //         if (!res.ok) {
+    //             const errorData = await res.json();
+    //             throw new Error(errorData.message || "Failed to fetch drill details");
+    //         }
+    //         const { drill } = await res.json();
+    //         return drill;
+    //     } catch (error) {
+    //         setDrillError(error instanceof Error ? error.message : String(error));
+    //         return null;
+    //     } finally {
+    //         setDrillLoading(false)
+    //     }
+    // }
+
+    async function addDrill(formPayload: any) {
         setAddLoading(true);
         setAddError(null);
         try {
             const res = await fetch("/api/admin/drills", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(newDrill),
+                body: formPayload,
             });
             if (res.ok) {
                 fetchDrills(); // Refresh list after adding
@@ -57,5 +88,15 @@ export function useDrills(refreshKey?: number) {
         }
     }
 
-    return { drills, loading, error, addDrill, addLoading, addError };
+    return { 
+        drills, 
+        loading, 
+        error, 
+        addDrill, 
+        addLoading, 
+        addError,
+        // getDrill,
+        // drillLoading,
+        // drillError
+    };
 }

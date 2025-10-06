@@ -3,7 +3,6 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from "next/navigation";
 import { signIn, signOut } from '@/lib/auth/actions'; // Import signIn and signOut
 import { decrypt } from '@/lib/auth/session';
-import Cookies from 'js-cookie';
 
 interface User {
     id: string; 
@@ -16,6 +15,7 @@ interface AuthContextType {
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
     isLoading: boolean;
+    isLoggingOut: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,6 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
     const router = useRouter();
 
     // Load user from session on initial load
@@ -71,7 +72,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // logout function
     const logout = async () => {
-        setIsLoading(true);
+        setIsLoggingOut(true);
         try {
             // Call your signOut server action
             await signOut();
@@ -80,7 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } catch (error) {
             console.error("Logout error:", error);
         } finally {
-            setIsLoading(false);
+            setIsLoggingOut(false);
         }
     };
 
@@ -88,7 +89,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user,
         login,
         logout,
-        isLoading
+        isLoading,
+        isLoggingOut
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
