@@ -85,6 +85,7 @@ export async function GET() {
         const { data, error } = await supabase
             .from('drills')
             .select(`id, drill_name, area, performance_level, video_url`)
+            .order('created_at', {ascending: false})
 
         if (error) {
             console.error("Error getting drills: ", error);

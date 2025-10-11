@@ -56,14 +56,14 @@ export function NavUser({
                         align='end'
                         sideOffset={4}
                     >
-                        <DropdownMenuItem 
+                        {/* <DropdownMenuItem 
                             className="flex flex-row items-center justify-start"
                             onClick={() => router.push('/dashboard/user')}
                         >
                             <UserIcon />
                             <span>Go to profile</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
+                        </DropdownMenuItem> */}
+                        {/* <DropdownMenuSeparator /> */}
                         <DropdownMenuItem
                             className="flex flex-row items-center justify-start"
                             onClick={handleSignOut}

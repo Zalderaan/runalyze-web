@@ -4,10 +4,11 @@ import { useRouter } from "next/navigation";
 import { signIn, signOut } from '@/lib/auth/actions'; // Import signIn and signOut
 import { decrypt } from '@/lib/auth/session';
 
-interface User {
+export interface User {
     id: string; 
     email: string;
     username: string;
+    user_role: "admin" | "user";
 }
 
 interface AuthContextType {
@@ -57,13 +58,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const userData = await signIn({ email, password });
             if (userData) {
                 setUser(userData);
-                console.log(user);
+                console.log('this is user in context: ', userData);
                 router.push("/dashboard/home");
             } else {
                 throw new Error("Login failed");
             }
         } catch (error: any) {
             console.error("Login error:", error);
+            throw error;
             // Handle login error (e.g., display an error message)
         } finally {
             setIsLoading(false);

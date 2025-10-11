@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { type Drill } from '@/hooks/drills/use-drills';
 
-export function useGetDrill(id: string | number |undefined) {
+export function useGetDrill(id: string | number |undefined, refreshKey: number) {
     const [drill, setDrill] = useState<Drill | null>(null);
     const [drillLoading, setDrillLoading] = useState(false);
     const [drillError, setDrillError] = useState<string | null>(null);
@@ -12,7 +12,7 @@ export function useGetDrill(id: string | number |undefined) {
         if (id) {
             getDrill(id);
         }
-    }, [id]);
+    }, [id, refreshKey]);
 
     async function getDrill(id: string | number) {
         setDrillLoading(true);

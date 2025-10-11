@@ -12,7 +12,7 @@ export function Step4Video() {
                 name="video"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Instructions</FormLabel>
+                        <FormLabel>Video Demonstation</FormLabel>
                         <FormControl>
                             <Input
                                 type="file"

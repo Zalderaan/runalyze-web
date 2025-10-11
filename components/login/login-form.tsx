@@ -1,4 +1,5 @@
 'use client';
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
 import { z } from "zod";
@@ -13,6 +14,8 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/context/user_context";
+import { description } from "../home/chart-area-default";
+import { Check } from "lucide-react";
 
 // form validation schema
 const formSchema = z.object({
@@ -43,14 +46,19 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         console.log(data);
         setError(""); // Clear previous errors
         try {
-            // const success = await signIn(data);
-            // if (success) {
-            //     router.push('/dashboard/home');
-            // }
             await login(data.email, data.password);
-        } catch (error) {
+            toast.success(
+                <div className="flex flex-col">
+                    <strong>Login successful!</strong>
+                    <span className="text-xs text-gray-500">Welcome back!</span>
+                </div>,
+                {
+                    duration: 4000
+                }
+            )
+        } catch (error: any) {
             console.error('Login failed: ', error);
-            setError("Invalid email or password. Please try again.");
+            setError(error.message || "Invalid email or password. Please try again.");
         }
     }
 
@@ -78,11 +86,11 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                                     <FormItem>
                                         <FormLabel className="text-sm sm:text-base">Email</FormLabel>
                                         <FormControl>
-                                            <Input 
-                                                placeholder="user@example.com" 
-                                                type="email" 
+                                            <Input
+                                                placeholder="user@example.com"
+                                                type="email"
                                                 className="h-10 sm:h-11 text-sm sm:text-base"
-                                                {...field} 
+                                                {...field}
                                             />
                                         </FormControl>
                                         <FormMessage className="text-xs sm:text-sm" />
@@ -96,11 +104,11 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                                     <FormItem>
                                         <FormLabel className="text-sm sm:text-base">Password</FormLabel>
                                         <FormControl>
-                                            <Input 
-                                                placeholder="Enter your password" 
-                                                type="password" 
+                                            <Input
+                                                placeholder="Enter your password"
+                                                type="password"
                                                 className="h-10 sm:h-11 text-sm sm:text-base"
-                                                {...field} 
+                                                {...field}
                                             />
                                         </FormControl>
                                         <FormMessage className="text-xs sm:text-sm" />
@@ -108,8 +116,8 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                                 )}
                             />
                             <div className='flex flex-col gap-2 sm:gap-3 w-full pt-2'>
-                                <Button 
-                                    className='w-full h-10 sm:h-11 text-sm sm:text-base' 
+                                <Button
+                                    className='w-full h-10 sm:h-11 text-sm sm:text-base'
                                     type="submit"
                                     disabled={isLoading}
                                 >

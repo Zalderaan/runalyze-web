@@ -9,17 +9,24 @@ import {
     CardDescription,
     CardContent,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Edit, Repeat, Target } from 'lucide-react'
+import { ArrowLeft, Repeat, Target } from 'lucide-react'
 import { useGetDrill } from "@/hooks/drills/use-get-drill";
 import { DeleteDrillConfirmDialog } from "@/components/admin/DeleteDrillConfirmDialog";
 import { EditDrillDialog } from "@/components/admin/EditDrillDialog";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useRouter } from 'next/navigation'
+import Link from "next/link";
 
 export default function DrillDetails() {
+    const [refreshKey, setRefreshKey] = useState(0);
+    const router = useRouter();
     const params = useParams();
     const drill_id = params.id as string
 
-    const { drill, drillLoading, drillError } = useGetDrill(drill_id);
+    const { drill, drillLoading, drillError } = useGetDrill(drill_id, refreshKey);
+
+    console.log("This is drill: ", drill);
 
     if (drillLoading) return <div className="p-8">Loading drill...</div>
     if (drillError) return <div className="p-8 text-red-600">Error: {drillError}</div>
@@ -44,7 +51,16 @@ export default function DrillDetails() {
     };
 
     return (
-        <div className="container mx-auto p-6 max-w-4xl">
+        <div className="container mx-auto p-6 max-w-4xl space-y-2">
+            {/* Go back button at the top left */}
+            <div className="mb-4">
+                <Button asChild variant="outline">
+                    <Link href='/dashboard/drills/'>
+                        <ArrowLeft className="mr-2" />
+                        Go back
+                    </Link>
+                </Button>
+            </div>
             <Card>
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
                     <div className="space-y-1">
@@ -59,7 +75,7 @@ export default function DrillDetails() {
                         {/* <Button variant="outline" size="icon">
                             <Edit className="h-4 w-4" />
                         </Button> */}
-                        <EditDrillDialog />
+                        <EditDrillDialog drill={drill} onSuccess={() => setRefreshKey((k) => k + 1)} />
                         <DeleteDrillConfirmDialog drill_id={drill_id} />
                     </div>
                 </CardHeader>

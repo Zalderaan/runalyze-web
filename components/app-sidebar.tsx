@@ -1,9 +1,9 @@
 'use client';
 
 import { useAuth } from '@/context/user_context';
-import { Home, History, SquareActivity ,   } from "lucide-react"
+import { Home, History, SquareActivity, Dumbbell, LucidePersonStanding, } from "lucide-react"
 import {
-    Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup, 
+    Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup,
     SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { NavUser } from "./nav-user"
@@ -24,14 +24,27 @@ const items = [
     {
         title: "Analyze",
         url: "/dashboard/analyze",
-        icon: SquareActivity ,
+        icon: SquareActivity,
     },
 ]
 
-export function AppSidebar() {
-    const auth = useAuth();
+const admin_items = [
+    {
+        title: "Drills",
+        url: "/dashboard/drills",
+        icon: Dumbbell,
+    },
+    {
+        title: "Add Admin",
+        url: "/dashboard/new-admin",
+        icon: LucidePersonStanding
+    }
+]
 
-    // const user = useAuth();
+export function AppSidebar() {
+    const { user, isLoading } = useAuth();
+    console.log("This is user in sidebar: ", user);
+
     return (
         <Sidebar collapsible="icon">
             <SidebarHeader>
@@ -65,15 +78,36 @@ export function AppSidebar() {
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
+                <SidebarGroup>
+                    {user?.user_role === "admin" && (
+                        <>
+                            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+                            <SidebarGroupContent>
+                                <SidebarMenu>
+                                    {admin_items.map((item) => (
+                                        <SidebarMenuItem key={item.title}>
+                                            <SidebarMenuButton asChild>
+                                                <Link href={item.url}>
+                                                    <item.icon />
+                                                    <span>{item.title}</span>
+                                                </Link>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+                                    ))}
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </>
+                    )}
+                </SidebarGroup>
             </SidebarContent>
             <SidebarFooter>
-                {auth.isLoading ? (
+                {isLoading ? (
                     <div>Loading user...</div>
-                ) : auth.user ? (
-                    <NavUser user={auth.user} />
+                ) : user ? (
+                    <NavUser user={user} />
                 ) : (
                     <div>Not authenticated</div>
-                )}                
+                )}
             </SidebarFooter>
         </Sidebar>
     )

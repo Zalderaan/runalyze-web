@@ -1,3 +1,5 @@
+
+import { Toaster } from "@/components/ui/sonner";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -6,7 +8,7 @@ import QueryProvider from "../providers/QueryProvider";
 // import { UserProvider } from '@/context/userContext'
 
 const APP_NAME = "Runalyze";
-const APP_DEFAULT_TITLE = "Runalyze PWA";
+const APP_DEFAULT_TITLE = "Runalyze";
 const APP_TITLE_TEMPLATE = "%s - PWA App";
 const APP_DESCRIPTION = "Runners' Pose Estimation-based form-fixing tool";
 
@@ -71,10 +73,11 @@ export default function RootLayout({
         <div className="flex flex-col gap-4 h-screen">
           <QueryProvider>
             <AuthProvider>
-                {children}
+              {children}
             </AuthProvider>
           </QueryProvider>
         </div>
+        <Toaster richColors />
       </body>
     </html>
   );

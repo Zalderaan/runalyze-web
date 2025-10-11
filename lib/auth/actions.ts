@@ -10,10 +10,15 @@ export async function signIn({ email, password }: LoginUser) {
     });
 
     if (!res.ok) throw new Error('Invalid credentials');
-    const { userId, username } = await res.json();
+    const { userId, username, user_role } = await res.json();
     await createSession(userId);
-    console.log("user details: ", userId, email, username);
-    return { id: userId, email: email, username: username };
+    console.log("user details: ", userId, email, username, user_role);
+    return { 
+        id: userId, 
+        email: email, 
+        username: username,
+        user_role: user_role
+    };
 }
 
 export async function signUp({ username, email, password }: RegisterUser) {

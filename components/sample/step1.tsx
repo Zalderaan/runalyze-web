@@ -1,3 +1,5 @@
+'use client'
+
 import { Skeleton } from "@/components/ui/skeleton"
 import { useState } from "react"
 import Image from "next/image";

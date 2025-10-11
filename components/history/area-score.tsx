@@ -160,20 +160,24 @@ export function AreaScore({ area, score, analysis, perf_level, classification }:
                 </DialogTrigger>
                 <DialogContent>
                     <DialogHeader>              {/* Show props inside the dialog for debugging */}
-                        <div className="mb-4 p-2 bg-gray-50 rounded text-xs text-gray-700">
+                        {/* <div className="mb-4 p-2 bg-gray-50 rounded text-xs text-gray-700">
                             <div><strong>area:</strong> {area}</div>
                             <div><strong>score:</strong> {score}</div>
                             <div><strong>analysis:</strong> {analysis}</div>
                             <div><strong>perf_level:</strong> {perf_level}</div>
                             <div><strong>classification:</strong> {classification}</div>
-                        </div>
+                        </div> */}
+                        <DialogTitle>
+                            <span className='text-2xl font-semibold'>{area}</span>
+                            <p className='text-sm text-gray-500'>{analysis}</p>
+                        </DialogTitle>
 
                         <div className='flex flex-row bg-green-950 justify-around p-4 rounded'>
                             {imgSrc && (
                                 <div className="flex flex-col items-center">
                                     <Image src={imgSrc} alt={`${classification}`} height={100} width={100} />
                                     <span className="text-xs mt-2 text-white">{!isIdealClassification
-                                    (area, classification) ? 'Your Position' : 'Ideal position'}</span>
+                                        (area, classification) ? 'Your Position' : 'Ideal position'}</span>
                                 </div>
                             )}
 
@@ -185,10 +189,6 @@ export function AreaScore({ area, score, analysis, perf_level, classification }:
                                 </div>
                             )}
                         </div>
-                        <DialogTitle>
-                            <span className='text-2xl font-semibold'>{area}</span>
-                            <p className='text-sm text-gray-500'>{analysis}</p>
-                        </DialogTitle>
                     </DialogHeader>
                 </DialogContent>
             </Dialog>

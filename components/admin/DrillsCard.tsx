@@ -20,7 +20,7 @@ export interface DrillPreview {
 
 export function DrillsCard({ title, area, performance_level, id }: DrillPreview) {
     return (
-        <Link href={`/admin/drills/${id}`} className="block w-full h-full">
+        <Link href={`/dashboard/drills/${id}`} className="block w-full h-full">
             <Card>
                 <CardContent>
                     <span>

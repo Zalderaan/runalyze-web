@@ -15,11 +15,11 @@ export const step2Schema = z.object({
         .number({ invalid_type_error: "Sets is required" })
         .positive({ message: "Sets must be greater than 0" }),
     reps: z
-        .number({ invalid_type_error: "Sets is required" })
-        .positive({ message: "Sets must be greater than 0" }),
+        .number({ invalid_type_error: "Reps is required" })
+        .positive({ message: "reps must be greater than 0" }),
     frequency: z
-        .number({ invalid_type_error: "Sets is required" })
-        .positive({ message: "Sets must be greater than 0" }),
+        .number({ invalid_type_error: "Frequency is required" })
+        .positive({ message: "frequency must be greater than 0" }),
 });
 
 export const step3Schema = z.object({
@@ -32,6 +32,12 @@ export const step3Schema = z.object({
 export const step4Schema = z.object({
     video: z.instanceof(File, { message: "A valid video file is required" }),
 })
+
+export const step4SchemaEdit = z.object({
+    video: z
+        .instanceof(File, {message: "A valid video file is required" })
+        .optional()
+    })
 
 
 export const fullFormSchema = step1Schema
