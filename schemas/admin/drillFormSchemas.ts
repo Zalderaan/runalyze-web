@@ -48,4 +48,7 @@ export const fullFormSchema = step1Schema
 // export types for each schema
 export type Step1FormData = z.infer<typeof step1Schema>;
 export type Step2FormData = z.infer<typeof step2Schema>;
+export type Step3FormData = z.infer<typeof step3Schema>;
+export type Step4FormData = z.infer<typeof step4Schema>;
+export type Step4EditFormData = z.infer<typeof step4SchemaEdit>;
 export type FullFormData = z.infer<typeof fullFormSchema>;

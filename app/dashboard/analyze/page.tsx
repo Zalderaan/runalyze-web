@@ -10,11 +10,11 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-    Upload, 
-    Video, 
-    CheckCircle2, 
-    AlertCircle, 
+import {
+    Upload,
+    Video,
+    CheckCircle2,
+    AlertCircle,
     FileVideo,
     Clock,
     Zap,
@@ -27,44 +27,74 @@ import { useAuth } from "@/context/user_context";
 import Link from "next/link";
 import { SampleDialog } from "@/components/sample/sample-dialog";
 
+interface DatabaseRecords {
+    success: boolean;
+    video_id: number;
+    feedback_id: number;
+    analysis_id: number;
+}
+
+interface AnalysisMetric {
+    median_score: number;
+    raw_median_score: number;
+    typical_angle: number;
+    average_score: number;
+    min_score: number;
+    max_score: number;
+    frames_analyzed: number;
+    angle_range: string;
+    ideal_range: string;
+    consistency_score: number;
+}
+
+interface AnalysisSummary {
+    head_position: AnalysisMetric;
+    back_position: AnalysisMetric;
+    arm_flexion: AnalysisMetric;
+    left_knee: AnalysisMetric;
+    right_knee: AnalysisMetric;
+    foot_strike: AnalysisMetric;
+    overall_score: number;
+}
+
+
 export default function AnalyzePage() {
     const [videoFile, setVideoFile] = useState<File | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [results, setResults] = useState<{
-            download_url: string;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            analysis_summary: any;
-            database_records: any;
-        } | null>(null);
+        download_url: string;
+        analysis_summary: AnalysisSummary;
+        database_records: DatabaseRecords;
+    } | null>(null);
     const { user } = useAuth();
 
     // TODO: validate file size and length
-    function handleFileChange(e: React.ChangeEvent<HTMLInputElement>){
+    function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0]
-        
+
         // Clear previous errors when selecting new file
         setError(null);
         setResults(null);
-        
+
         // Validate file
         if (file) {
             const maxSize = 50 * 1024 * 1024; // 50MB
             const allowedTypes = ['video/mp4', 'video/mov', 'video/quicktime', 'video/avi', 'video/x-msvideo'];
-            
+
             if (file.size > maxSize) {
                 setError(`File size too large. Please select a video under 50MB. Current size: ${formatFileSize(file.size)}`);
                 setVideoFile(null);
                 return;
             }
-            
+
             if (!allowedTypes.includes(file.type.toLowerCase())) {
                 setError(`Unsupported file type. Please use MP4, MOV, or AVI format. Current type: ${file.type}`);
                 setVideoFile(null);
                 return;
             }
         }
-        
+
         setVideoFile(file || null);
     }
 
@@ -82,12 +112,12 @@ export default function AnalyzePage() {
             setError("Please sign in to analyze videos");
             return;
         }
-        
+
         // Clear previous errors and results
         setError(null);
         setResults(null);
         setIsProcessing(true);
-        
+
         try {
             const formData = new FormData();
             formData.append("file", videoFile);  // Key must match FastAPI's `UploadFile` param name
@@ -95,17 +125,17 @@ export default function AnalyzePage() {
 
             // Send directly to FastAPI
             const response = await fetch('http://localhost:8000/process-video/', {
-            // const response = await fetch('https://runalyze-python.onrender.com/process-video/', {
+                // const response = await fetch('https://runalyze-python.onrender.com/process-video/', {
                 method: 'POST',
                 body: formData,  // Headers are auto-set to `multipart/form-data`
             });
 
             console.log("response: ", response);
-            
+
             if (!response.ok) {
                 const errorText = await response.text();
                 let errorMessage = "Analysis failed. Please try again.";
-                
+
                 // Handle specific error cases
                 switch (response.status) {
                     case 400:
@@ -126,16 +156,19 @@ export default function AnalyzePage() {
                     default:
                         errorMessage = `Analysis failed (${response.status}): ${errorText}`;
                 }
-                
+
                 throw new Error(errorMessage);
             }
-            
-            const result = await response.json();
+
+            const text = await response.text();
+            console.log("raw response text: ", text);
+            const result = JSON.parse(text);
+            console.log("this is result: ", result);
             setResults(result);
-            
+
         } catch (error) {
             console.error('Error:', error);
-            
+
             if (error instanceof TypeError && error.message.includes('fetch')) {
                 setError("Unable to connect to analysis service. Please check your internet connection and try again.");
             } else {
@@ -190,8 +223,8 @@ export default function AnalyzePage() {
                                 <h3 className="font-semibold text-red-900">Analysis Failed</h3>
                                 <p className="text-sm text-red-800">{error}</p>
                                 <div className="flex gap-2 mt-3">
-                                    <Button 
-                                        variant="outline" 
+                                    <Button
+                                        variant="outline"
                                         size="sm"
                                         onClick={() => setError(null)}
                                         className="text-red-700 border-red-300 hover:bg-red-100"
@@ -199,8 +232,8 @@ export default function AnalyzePage() {
                                         Dismiss
                                     </Button>
                                     {videoFile && (
-                                        <Button 
-                                            variant="outline" 
+                                        <Button
+                                            variant="outline"
                                             size="sm"
                                             onClick={handleAnalyze}
                                             disabled={isProcessing}
@@ -233,20 +266,20 @@ export default function AnalyzePage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <Input 
-                            id="vid-upload" 
-                            type="file" 
+                        <Input
+                            id="vid-upload"
+                            type="file"
                             accept="video/*"
-                            className="hidden" 
+                            className="hidden"
                             onChange={handleFileChange}
                             disabled={isProcessing}
                         />
                         <Label htmlFor="vid-upload" className="cursor-pointer">
                             <div className={`
                                 border-2 border-dashed rounded-lg p-8 text-center transition-colors
-                                ${error && !videoFile ? 'border-red-300 bg-red-50' : 
-                                  videoFile ? 'border-green-300 bg-green-50' : 
-                                  'border-gray-300 hover:border-gray-400 hover:bg-gray-50'}
+                                ${error && !videoFile ? 'border-red-300 bg-red-50' :
+                                    videoFile ? 'border-green-300 bg-green-50' :
+                                        'border-gray-300 hover:border-gray-400 hover:bg-gray-50'}
                                 ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}
                             `}>
                                 {error && !videoFile ? (
@@ -292,7 +325,7 @@ export default function AnalyzePage() {
                         )}
 
                         {/* Action Button */}
-                        <Button 
+                        <Button
                             className="w-full"
                             onClick={handleAnalyze}
                             disabled={!videoFile || isProcessing}
@@ -326,12 +359,10 @@ export default function AnalyzePage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-4">
-                            <div className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                                videoFile ? 'bg-green-50 border border-green-200' : 'bg-gray-50'
-                            }`}>
-                                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                                    videoFile ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-500'
+                            <div className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${videoFile ? 'bg-green-50 border border-green-200' : 'bg-gray-50'
                                 }`}>
+                                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${videoFile ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-500'
+                                    }`}>
                                     {videoFile ? <CheckCircle2 className="h-4 w-4" /> : <span className="text-sm font-medium">1</span>}
                                 </div>
                                 <div>
@@ -340,14 +371,12 @@ export default function AnalyzePage() {
                                 </div>
                             </div>
 
-                            <div className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                                error ? 'bg-red-50 border border-red-200' :
+                            <div className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${error ? 'bg-red-50 border border-red-200' :
                                 isProcessing ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'
-                            }`}>
-                                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                                    error ? 'bg-red-100 text-red-600' :
-                                    isProcessing ? 'bg-blue-100 text-blue-600' : 'bg-gray-200 text-gray-500'
                                 }`}>
+                                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${error ? 'bg-red-100 text-red-600' :
+                                    isProcessing ? 'bg-blue-100 text-blue-600' : 'bg-gray-200 text-gray-500'
+                                    }`}>
                                     {error ? (
                                         <AlertCircle className="h-4 w-4" />
                                     ) : isProcessing ? (
@@ -366,12 +395,10 @@ export default function AnalyzePage() {
                                 </div>
                             </div>
 
-                            <div className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                                results ? 'bg-green-50 border border-green-200' : 'bg-gray-50'
-                            }`}>
-                                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                                    results ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-500'
+                            <div className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${results ? 'bg-green-50 border border-green-200' : 'bg-gray-50'
                                 }`}>
+                                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${results ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-500'
+                                    }`}>
                                     {results ? <CheckCircle2 className="h-4 w-4" /> : <span className="text-sm font-medium">3</span>}
                                 </div>
                                 <div>
@@ -455,7 +482,7 @@ export default function AnalyzePage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Results download_url={results.download_url} analysis_summary={results.analysis_summary}/>
+                        <Results download_url={results.download_url} analysis_summary={results.analysis_summary} />
                         <Button asChild><Link href={`/dashboard/history/${results.database_records.analysis_id}`}>See details</Link></Button>
                     </CardContent>
                 </Card>

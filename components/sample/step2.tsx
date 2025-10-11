@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton"
 import Image from "next/image"
-import { boolean } from "zod";
 
 export function Step2() {
     const [imgLoading, setImgLoading] = useState(true);

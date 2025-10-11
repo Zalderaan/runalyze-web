@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     // upload videoFile to get video_url from supabase
     if (videoFile) {
         const filePath = `drill-videos/${uuid}-${videoFile.name}`;
-        const { data, error } = await supabase.storage
+        const { error } = await supabase.storage
             .from("videos")
             .upload(filePath, videoFile, {
                 cacheControl: "3600",

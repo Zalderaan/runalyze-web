@@ -18,7 +18,7 @@ import { Plus } from "lucide-react";
 // Forms imports
 import {
     step1Schema, step2Schema,
-    type Step1FormData, type Step2FormData, type FullFormData,
+    type FullFormData,
     step3Schema,
     step4Schema
 } from "@/schemas/admin/drillFormSchemas"
@@ -34,7 +34,7 @@ import { Step4Video } from "./Step4Video";
 import { useDrills } from "@/hooks/drills/use-drills";
 
 export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
-    const {addDrill, addLoading, addError} = useDrills(); 
+    const { addDrill, addLoading, addError } = useDrills();
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState<Partial<FullFormData>>({});
     const [isOpen, setIsOpen] = useState(false);
@@ -48,6 +48,7 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
         4: step4Schema
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const stepDefaults: Record<number, any> = {
         1: { drill_name: "", area: undefined, performance_level: undefined },
         2: { sets: undefined, reps: undefined, frequency: undefined },
@@ -84,6 +85,7 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
                     if (key === "instructions") {
                         formPayload.append("instructions", JSON.stringify(value));
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         formPayload.append(key, value as any);
                     }
                 }
@@ -91,7 +93,7 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
 
             try {
                 await addDrill(formPayload);
-                
+
                 // const response = await fetch("/api/admin/drills", {
                 //     method: "POST",
                 //     body: formPayload,
@@ -152,6 +154,12 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
                             </div>
                         )}
 
+                        {addError && (
+                            <div className="text-red-600 text-sm mt-2 px-4">
+                                {addError}
+                            </div>
+                        )}
+
                         <DialogFooter className="flex flex-row items-center">
                             {step > 1 && (
                                 <Button type="button" variant="outline" onClick={prevStep}>
@@ -162,7 +170,7 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
                             {step < TOTAL_STEPS ? (
                                 <Button type="submit">Next</Button>
                             ) : (
-                                <Button 
+                                <Button
                                     type="submit"
                                     disabled={addLoading}
                                 >

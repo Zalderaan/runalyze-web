@@ -1,11 +1,9 @@
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Link } from "lucide-react";
-import { Step0 } from "./step0";
-import { Step1 } from "./step1";
-import { Step2 } from "./step2";
+import { Step0 } from "@/components/sample/step0";
+import { Step1 } from "@/components/sample/step1";
+import { Step2 } from "@/components/sample/step2";
 import { useState } from "react";
-import { description } from "../home/chart-area-default";
 
 export function SampleDialog() {
     const [open, setOpen] = useState(false);

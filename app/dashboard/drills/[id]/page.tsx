@@ -15,12 +15,10 @@ import { DeleteDrillConfirmDialog } from "@/components/admin/DeleteDrillConfirmD
 import { EditDrillDialog } from "@/components/admin/EditDrillDialog";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useRouter } from 'next/navigation'
 import Link from "next/link";
 
 export default function DrillDetails() {
     const [refreshKey, setRefreshKey] = useState(0);
-    const router = useRouter();
     const params = useParams();
     const drill_id = params.id as string
 

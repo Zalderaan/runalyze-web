@@ -3,13 +3,13 @@
     "short_name": "Runalyze",
     "icons": [
         {
-            "src": "/berd_small.png",
+            "src": "/Runalyze-logo.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "maskable"
         },
         {
-            "src": "/berd.png",
+            "src": "/Runalyze-logo.png",
             "sizes": "512x512",
             "type": "image/png"
         }

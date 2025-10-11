@@ -14,8 +14,6 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/context/user_context";
-import { description } from "../home/chart-area-default";
-import { Check } from "lucide-react";
 
 // form validation schema
 const formSchema = z.object({
@@ -56,9 +54,12 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                     duration: 4000
                 }
             )
-        } catch (error: any) {
-            console.error('Login failed: ', error);
-            setError(error.message || "Invalid email or password. Please try again.");
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                setError(error.message || "Invalid email or password. Please try again.");
+            } else {
+                setError("Invalid email or password. Please try again.");
+            }
         }
     }
 

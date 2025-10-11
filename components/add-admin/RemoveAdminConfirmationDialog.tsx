@@ -22,7 +22,7 @@ export function RemoveAdminConfirmationDialog({
     refreshUsers: () => void,
     currentUserId: number | string
 }) {
-    const { updateUserRole, isRoleUpdating, roleUpdateError } = useUpdateRole();
+    const { updateUserRole } = useUpdateRole();
 
     async function handleMakeAdmin() {
         await updateUserRole(userId, "user");
@@ -52,7 +52,7 @@ export function RemoveAdminConfirmationDialog({
                     <Button 
                         variant={'destructive'} 
                         onClick={handleMakeAdmin}
-                        disabled={isSelf}
+                        disabled={isSelf || isAdmin}
                     >
                         Yes, remove their admin privileges
                     </Button>

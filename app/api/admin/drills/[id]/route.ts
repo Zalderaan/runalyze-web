@@ -1,8 +1,24 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabase } from '@/lib/supabase'
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-    const { id } = await params;
+interface DrillUpdateFields {
+    drill_name?: string;
+    area?: string;
+    performance_level?: string;
+    sets?: string;
+    reps?: string;
+    frequency?: string;
+    instructions?: {
+        steps: string[];
+    } // Replace 'any' with a more specific type if possible
+    video_url?: string;
+}
+
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+
+    const paramsObj = await params;
+    const id = paramsObj.id;
+
     try {
         const { data, error } = await supabase
             .from('drills')
@@ -41,7 +57,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const formData = await req.formData();
     const drill_name = formData.get("drill_name") as string | null;
@@ -60,7 +76,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     // upload videoFile to get video_url from supabase
     if (videoFile) {
         const filePath = `drill-videos/${uuid}-${videoFile.name}`;
-        const { data, error } = await supabase.storage
+        const { error } = await supabase.storage
             .from("videos")
             .upload(filePath, videoFile, {
                 cacheControl: "3600",
@@ -86,7 +102,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 
     // build update object
-    const updateFields: any = {};
+    const updateFields: DrillUpdateFields = {};
     if (drill_name !== null) updateFields.drill_name = drill_name;
     if (area !== null) updateFields.area = area;
     if (performance_level !== null) updateFields.performance_level = performance_level;
@@ -97,7 +113,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         try {
             updateFields.instructions = JSON.parse(instructions);
         } catch {
-            updateFields.instructions = instructions; // fallback if not JSON
+            updateFields.instructions = { steps: [instructions] }; // wrap string in object
         }
     }
     if (video_url) updateFields.video_url = video_url;
@@ -144,7 +160,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
 
     try {

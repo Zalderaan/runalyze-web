@@ -3,7 +3,6 @@
 // UI Imports
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
@@ -14,11 +13,11 @@ import {
 import { Button } from "@/components/ui/button";
 
 // icons
-import { Edit, Plus } from "lucide-react";
+import { Edit } from "lucide-react";
 import { useState } from "react";
 
 // forms imports
-import { type FullFormData, step1Schema, step2Schema, step3Schema, step4Schema, step4SchemaEdit } from "@/schemas/admin/drillFormSchemas";
+import { type FullFormData, step1Schema, step2Schema, step3Schema, step4SchemaEdit } from "@/schemas/admin/drillFormSchemas";
 import { z } from "zod";
 
 // regular imports
@@ -48,6 +47,7 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
     }
 
     // get current values
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const stepDefaults: Record<number, any> = {
         1: {
             drill_name: drill.drill_name,
@@ -94,6 +94,7 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
                     if (key === "instructions") {
                         formPayload.append("instructions", JSON.stringify(value));
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         formPayload.append(key, value as any);
                     }
                 }
@@ -152,10 +153,24 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
                             <DialogDescription>Update an existing drill (Step {step} of 4)</DialogDescription>
                         </DialogHeader>
 
+                        {/* Show local updateDrillError */}
+                        {updateDrillError && (
+                            <div className="text-red-600 text-sm mt-2 px-4">
+                                {updateDrillError}
+                            </div>
+                        )}
+
+                        {/* Show hook error if any */}
+                        {updateError && (
+                            <div className="text-red-600 text-sm mt-2 px-4">
+                                {updateError}
+                            </div>
+                        )}
+
                         {step === 1 && <Step1BasicInfo />}
                         {step === 2 && <Step2TrainingParameters />}
                         {step === 3 && <Step3Instructions />}
-                        {step === 4 && <Step4VideoEdit video_url={drill.video_url}/>}
+                        {step === 4 && <Step4VideoEdit video_url={drill.video_url} />}
 
                         {updateError && (
                             <div className="text-red-600 text-sm mt-2 px-4">

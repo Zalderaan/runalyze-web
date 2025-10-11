@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 export function AddAdminConfrimationDialog({ isAdmin = false, userId, refreshUsers }: { isAdmin: boolean, userId: number | string, refreshUsers: () => void }) {
-    const { updateUserRole, isRoleUpdating, roleUpdateError } = useUpdateRole();
+    const { updateUserRole } = useUpdateRole();
     
     async function handleMakeAdmin() {
         await updateUserRole(userId, "admin");
