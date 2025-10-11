@@ -124,8 +124,8 @@ export default function AnalyzePage() {
             formData.append("user_id", user.id.toString());
 
             // Send directly to FastAPI
-            const response = await fetch('http://localhost:8000/process-video/', {
-                // const response = await fetch('https://runalyze-python.onrender.com/process-video/', {
+            // const response = await fetch('http://localhost:8000/process-video/', {
+                const response = await fetch('https://runalyze-python.onrender.com/process-video/', {
                 method: 'POST',
                 body: formData,  // Headers are auto-set to `multipart/form-data`
             });
