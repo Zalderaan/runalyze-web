@@ -57,6 +57,7 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
         2: {
             sets: drill.sets,
             reps: drill.reps,
+            rep_type: drill.rep_type,
             frequency: drill.frequency
         },
         3: { instructions: drill.instructions }, // Add step 3 default values when you define the schema

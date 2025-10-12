@@ -7,6 +7,7 @@ interface DrillUpdateFields {
     performance_level?: string;
     sets?: string;
     reps?: string;
+    rep_type?: string;
     frequency?: string;
     instructions?: {
         steps: string[];
@@ -65,6 +66,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const performance_level = formData.get("performance_level") as string | null;
     const sets = formData.get("sets") as string | null;
     const reps = formData.get("reps") as string | null;
+    const rep_type = formData.get("rep_type") as string | null;
     const frequency = formData.get("frequency") as string | null;
     const instructions = formData.get("instructions") as string | null;
 
@@ -108,6 +110,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (performance_level !== null) updateFields.performance_level = performance_level;
     if (sets !== null) updateFields.sets = sets;
     if (reps !== null) updateFields.reps = reps;
+    if (rep_type !== null) updateFields.rep_type = rep_type;
     if (frequency !== null) updateFields.frequency = frequency;
     if (instructions !== null) {
         try {
@@ -124,6 +127,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             .from('drills')
             .update(updateFields)
             .eq('id', id)
+            .select()
             .single()
 
         if (error) {

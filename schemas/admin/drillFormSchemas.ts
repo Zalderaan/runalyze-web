@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const step1Schema = z.object({
     drill_name: z.string().min(1, "Drill name is required"),
-    area: z.enum(["head_position", "back_position", "arm_swing", "right_knee", "left_knee", "foot_strike"], {
+    area: z.enum(["head_position", "back_position", "arm_flexion", "right_knee", "left_knee", "foot_strike"], {
         errorMap: () => ({ message: "Please select a valid area" }),
     }),
     performance_level: z.enum(["poor", "needs improvement"], {
@@ -17,6 +17,10 @@ export const step2Schema = z.object({
     reps: z
         .number({ invalid_type_error: "Reps is required" })
         .positive({ message: "reps must be greater than 0" }),
+    rep_type: z
+        .enum(["rep/s", "sec/s", "min/s", "meter/s"], {
+            errorMap: () => ({message: "Please select a valid rep type."})
+        }),
     frequency: z
         .number({ invalid_type_error: "Frequency is required" })
         .positive({ message: "frequency must be greater than 0" }),

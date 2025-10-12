@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
     const instructions = instructionsRaw ? JSON.parse(instructionsRaw) : null;
     const sets = formData.get("sets") ? Number(formData.get("sets")) : null;
     const reps = formData.get("reps") ? Number(formData.get("reps")) : null;
+    const rep_type = formData.get("rep_type") as string | null;
     const videoFile = formData.get("video") as File | null;
 
     let video_url = null;
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
         // insert drill
         const { data: newDrill, error: insertError } = await supabase
             .from('drills')
-            .insert([{ drill_name, area, performance_level, duration, frequency, video_url, instructions, sets, reps }])
+            .insert([{ drill_name, area, performance_level, duration, frequency, video_url, instructions, sets, reps, rep_type }])
             .select()
             .single()
 

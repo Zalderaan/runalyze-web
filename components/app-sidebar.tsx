@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/sidebar"
 import { NavUser } from "./nav-user"
 import Link from "next/link"
+import Image from "next/image"
 
 // Menu items.
 const items = [
@@ -52,8 +53,9 @@ export function AppSidebar() {
                     <SidebarGroupContent>
                         <SidebarMenu>
                             <SidebarMenuItem>
-                                <SidebarMenuButton size="lg">
-                                    <span>Runalyze</span>
+                                <SidebarMenuButton size="lg" className='flex flex-row space-x-5'>
+                                    <Image src="/Runalyze-logo.png" alt="runalyze-logo" width={20} height={20}/>
+                                    <span className='font-medium text-xl'>Runalyze</span>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                         </SidebarMenu>

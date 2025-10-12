@@ -35,7 +35,7 @@ export function Step1BasicInfo() {
                                 <SelectContent>
                                     <SelectItem value="head_position">Head Position</SelectItem>
                                     <SelectItem value="back_position">Back Position</SelectItem>
-                                    <SelectItem value="arm_swing">Arm Swing</SelectItem>
+                                    <SelectItem value="arm_flexion">Arm Flexion</SelectItem>
                                     <SelectItem value="right_knee">Right Knee</SelectItem>
                                     <SelectItem value="left_knee">Left Knee</SelectItem>
                                     <SelectItem value="foot_strike">Foot Strike</SelectItem>

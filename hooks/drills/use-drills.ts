@@ -12,6 +12,7 @@ export interface Drill {
     frequency: number;
     sets: number;
     reps: number;
+    rep_type: string;
     instructions: {
         steps: Array<string>
     }

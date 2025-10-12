@@ -114,7 +114,7 @@ export default function DrillDetails() {
                             <Repeat className="h-5 w-5 text-gray-600" />
                             <div>
                                 <p className="text-xs text-gray-500">Reps</p>
-                                <p className="text-lg font-semibold">{drill.reps}</p>
+                                <p className="text-lg font-semibold">{drill.reps} {drill.rep_type}</p>
                             </div>
                         </div>
                     </div>

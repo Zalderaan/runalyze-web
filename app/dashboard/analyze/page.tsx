@@ -161,9 +161,9 @@ export default function AnalyzePage() {
             }
 
             const text = await response.text();
-            console.log("raw response text: ", text);
+            // console.log("raw response text: ", text);
             const result = JSON.parse(text);
-            console.log("this is result: ", result);
+            // console.log("this is result: ", result);
             setResults(result);
 
         } catch (error) {
