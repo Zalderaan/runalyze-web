@@ -29,11 +29,14 @@ export function useUpdateDrill() {
                 setUpdateError(String(error))
             }
         } finally {
-            await fetch('http://localhost:8000/drills/clear-cache/', {
+            // await fetch('http://localhost:8000/drills/clear-cache/', {
+            //     method: "POST",
+            //     headers: { "Content-Type": "application/json" },
+            // });
+            await fetch('https://runalyze-python.onrender.com/drills/clear-cache/', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
             });
-            // await fetch('https://runalyze-python.onrender.com/drills/clear-cache/');
             setUpdateLoading(false)
         }
     }
