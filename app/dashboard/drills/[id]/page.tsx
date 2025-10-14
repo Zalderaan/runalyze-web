@@ -24,7 +24,7 @@ export default function DrillDetails() {
 
     const { drill, drillLoading, drillError } = useGetDrill(drill_id, refreshKey);
 
-    console.log("This is drill: ", drill);
+    // console.log("This is drill: ", drill);
 
     if (drillLoading) return <div className="p-8">Loading drill...</div>
     if (drillError) return <div className="p-8 text-red-600">Error: {drillError}</div>

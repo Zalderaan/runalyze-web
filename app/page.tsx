@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { Activity, BarChart3, Target, ArrowRight, PlayCircle } from "lucide-react";
+import { Activity, BarChart3, Target, ArrowRight } from "lucide-react";
 import { LandingHeader } from "@/components/landing/landing-header";
 
 export default function LandingPage() {
@@ -43,12 +43,6 @@ export default function LandingPage() {
             <Button asChild size="lg" className="text-lg px-8 py-3">
               <Link href="/auth/register">Start Analyzing
                 <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-
-            <Button asChild size="lg" className="text-lg px-8 py-3" variant={'outline'}>
-              <Link href="/auth/login">Watch Demo
-                <PlayCircle className="mr-2 h-5 w-5" />
               </Link>
             </Button>
           </div>
@@ -206,7 +200,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Activity className="h-6 w-6" />
@@ -227,7 +221,7 @@ export default function LandingPage() {
               </ul>
             </div>
 
-            <div>
+            {/* <div>
               <h4 className="font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-gray-400">
                 <li>Documentation</li>
@@ -235,7 +229,7 @@ export default function LandingPage() {
                 <li>Privacy Policy</li>
                 <li>Terms of Service</li>
               </ul>
-            </div>
+            </div> */}
           </div>
 
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">

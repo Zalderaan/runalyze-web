@@ -41,7 +41,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
     // form submission handler
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
-        console.log(data);
+        // console.log(data);
         setError(""); // Clear previous errors
         try {
             await login(data.email, data.password);
@@ -131,7 +131,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                                         'Sign In'
                                     )}
                                 </Button>
-                                <Button variant={'outline'} className='w-full h-10 sm:h-11 text-sm sm:text-base'>Sign in with Google</Button>
+                                {/* <Button variant={'outline'} className='w-full h-10 sm:h-11 text-sm sm:text-base'>Sign in with Google</Button> */}
                             </div>
                         </form>
                     </Form>

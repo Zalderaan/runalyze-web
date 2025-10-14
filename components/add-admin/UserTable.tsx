@@ -4,7 +4,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useUsers } from "@/hooks/users/use-users"
 import { Loader2, AlertCircle, Users } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Button } from "../ui/button"
 import { RemoveAdminConfirmationDialog } from "./RemoveAdminConfirmationDialog"
 import { AddAdminConfrimationDialog } from "./AddAdminDialog"
 import { useAuth } from "@/context/user_context"
@@ -86,13 +85,13 @@ export function UserTable() {
                                     <TableCell className="text-right">
                                         {
                                             one_user.user_role === "admin" ? (
-                                                <RemoveAdminConfirmationDialog 
-                                                    userId={one_user.id} 
-                                                    isAdmin={one_user.user_role === "admin"} 
+                                                <RemoveAdminConfirmationDialog
+                                                    userId={one_user.id}
+                                                    isAdmin={one_user.user_role === "admin"}
                                                     refreshUsers={refreshUsers}
                                                     currentUserId={user?.id ?? ""}
                                                 />
-                                            ) : <AddAdminConfrimationDialog userId={one_user.id} isAdmin={one_user.user_role === "admin"} refreshUsers={refreshUsers}/>
+                                            ) : <AddAdminConfrimationDialog userId={one_user.id} isAdmin={one_user.user_role === "admin"} refreshUsers={refreshUsers} />
                                         }
                                     </TableCell>
                                 </TableRow>
@@ -103,32 +102,41 @@ export function UserTable() {
 
                 {/* Mobile Card View */}
                 <div className="md:hidden divide-y divide-gray-200">
-                    {users.map((user) => (
-                        <div key={user.id} className="p-4 hover:bg-gray-50 transition-colors">
+                    {users.map((one_user) => (
+                        <div key={one_user.id} className="p-4 hover:bg-gray-50 transition-colors">
                             <div className="flex items-start justify-between mb-3">
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-sm font-semibold text-gray-900 truncate">
-                                        {user.username}
+                                        {one_user.username}
                                     </h3>
                                     <p className="text-sm text-gray-600 truncate mt-1">
-                                        {user.email}
+                                        {one_user.email}
                                     </p>
                                 </div>
                                 <span
                                     className={
-                                        user.user_role === "admin"
+                                        one_user.user_role === "admin"
                                             ? "inline-flex items-center rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 ml-3"
                                             : "inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ml-3"
                                     }
                                 >
-                                    {user.user_role || 'user'}
+                                    {one_user.user_role || 'user'}
                                 </span>
                             </div>
-                            {user.user_role !== "admin" && (
-                                <Button size="sm" variant="outline" className="w-full">
-                                    Make Admin
-                                </Button>
-                            )}
+                            {one_user.user_role === "admin" ? (
+                                <RemoveAdminConfirmationDialog
+                                    userId={one_user.id}
+                                    isAdmin={one_user.user_role === "admin"}
+                                    refreshUsers={refreshUsers}
+                                    currentUserId={user?.id ?? ""}
+                                    buttonClassName={"w-full"}
+                                />
+                            ) : <AddAdminConfrimationDialog 
+                            userId={one_user.id} 
+                            isAdmin={one_user.user_role === "admin"} 
+                            refreshUsers={refreshUsers}
+                            buttonClassName={"w-full"}
+                            />}
                         </div>
                     ))}
                 </div>

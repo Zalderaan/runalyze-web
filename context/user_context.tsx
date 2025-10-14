@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 const user = await getCurrentUser();
                 // await getAllCookies();
                 // await getEachCookie();
-                console.log("user from gcuser: ", user);
+                // console.log("user from gcuser: ", user);
                 if (user) {
                     setUser(user);
                 }
@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const userData = await signIn({ email, password });
             if (userData) {
                 setUser(userData);
-                console.log('this is user in context: ', userData);
+                // console.log('this is user in context: ', userData);
                 router.push("/dashboard/home");
             } else {
                 throw new Error("Login failed");
@@ -108,16 +108,16 @@ export const useAuth = () => {
 
 async function getCurrentUser() {
     // Example: get session cookie and decrypt
-    console.log("gcuser called")
+    // console.log("gcuser called")
     // const cookie = (typeof window === 'undefined')
     //     ? undefined
     //     : document.cookie.split('; ').find(row => row.startsWith('session='))?.split('=')[1];
     const cookie = document.cookie.split('; ').find(row => row.startsWith('session='))?.split('=')[1];
 
-    console.log("Cookie: ", cookie);
+    // console.log("Cookie: ", cookie);
     if (!cookie) return null;
     const session = await decrypt(cookie);
-    console.log("session decrypt ", session);
+    // console.log("session decrypt ", session);
 
     if (session?.userId) {
         try {
@@ -127,7 +127,7 @@ async function getCurrentUser() {
                 return null;
             }
             const data = await response.json();
-            console.log("data from gcuser: ", data);
+            // console.log("data from gcuser: ", data);
             return data.user;
         } catch (error) {
             console.error("Error fetching user details: ", error);
@@ -157,9 +157,9 @@ async function getCurrentUser() {
 // }
 
 async function getAllCookies() {
-    console.log("All cookies: ", document.cookie);
+    // console.log("All cookies: ", document.cookie);
 }
 
 async function getEachCookie() {
-    console.log("Cookie split result: ", document.cookie.split('; '));
+    // console.log("Cookie split result: ", document.cookie.split('; '));
 }

@@ -10,8 +10,9 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-export function AddAdminConfrimationDialog({ isAdmin = false, userId, refreshUsers }: { isAdmin: boolean, userId: number | string, refreshUsers: () => void }) {
+export function AddAdminConfrimationDialog({ isAdmin = false, userId, refreshUsers, buttonClassName = null }: { isAdmin: boolean, userId: number | string, refreshUsers: () => void, buttonClassName?: string | null, }) {
     const { updateUserRole } = useUpdateRole();
     
     async function handleMakeAdmin() {
@@ -23,7 +24,7 @@ export function AddAdminConfrimationDialog({ isAdmin = false, userId, refreshUse
         <>
             <Dialog>
                 <DialogTrigger asChild>
-                    <Button variant={'outline'} disabled={isAdmin}>Make admin</Button>
+                    <Button variant={'outline'} disabled={isAdmin} className={cn("...", buttonClassName)}>Make admin</Button>
                 </DialogTrigger>
                 <DialogContent>
                     <DialogHeader>

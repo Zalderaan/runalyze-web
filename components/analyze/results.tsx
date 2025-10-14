@@ -59,7 +59,7 @@ function ScoreBar({ score }: { score: number }) {
     const color = score >= 80 ? 'bg-green-500' : score >= 60 ? 'bg-yellow-500' : 'bg-red-500'
     return (
         <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-            <div 
+            <div
                 className={`h-full ${color} transition-all duration-500`}
                 style={{ width: `${score}%` }}
             />
@@ -84,17 +84,17 @@ function MetricCard({ label, score }: { label: string; score: number }) {
 
 export function Results({ download_url, analysis_summary }: ResultsProps) {
     const overallScore = Math.round(analysis_summary?.overall_score ?? 0)
-    
+
     return (
-        <div className="max-w-4xl mx-auto p-6">
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 mb-6 shadow-lg">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">Running Form Analysis</h2>
-                
-                <div className="bg-white rounded-lg p-6 mb-6 shadow-sm">
-                    <video 
-                        src={download_url} 
-                        controls 
-                        className="w-full rounded-lg shadow-md"
+        <div className="max-w-4xl mx-auto p-3 sm:p-6">
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 mb-4 sm:mb-6 shadow-lg">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">Running Form Analysis</h2>
+
+                <div className="bg-white rounded-lg p-2 sm:p-4 mb-4 sm:mb-6 shadow-sm">
+                    <video
+                        src={download_url}
+                        controls
+                        className="w-full rounded-lg shadow-md aspect-video"
                     />
                 </div>
 
@@ -110,29 +110,29 @@ export function Results({ download_url, analysis_summary }: ResultsProps) {
 
                 <div className="space-y-3">
                     <h3 className="text-lg font-semibold text-gray-800 mb-3">Form Breakdown</h3>
-                    <MetricCard 
-                        label="Head Position" 
-                        score={analysis_summary?.head_position.median_score ?? 0} 
+                    <MetricCard
+                        label="Head Position"
+                        score={analysis_summary?.head_position.median_score ?? 0}
                     />
-                    <MetricCard 
-                        label="Back Position" 
-                        score={analysis_summary?.back_position.median_score ?? 0} 
+                    <MetricCard
+                        label="Back Position"
+                        score={analysis_summary?.back_position.median_score ?? 0}
                     />
-                    <MetricCard 
-                        label="Arm Flexion" 
-                        score={analysis_summary?.arm_flexion.median_score ?? 0} 
+                    <MetricCard
+                        label="Arm Flexion"
+                        score={analysis_summary?.arm_flexion.median_score ?? 0}
                     />
-                    <MetricCard 
-                        label="Right Knee" 
-                        score={analysis_summary?.right_knee.median_score ?? 0} 
+                    <MetricCard
+                        label="Right Knee"
+                        score={analysis_summary?.right_knee.median_score ?? 0}
                     />
-                    <MetricCard 
-                        label="Left Knee" 
-                        score={analysis_summary?.left_knee.median_score ?? 0} 
+                    <MetricCard
+                        label="Left Knee"
+                        score={analysis_summary?.left_knee.median_score ?? 0}
                     />
-                    <MetricCard 
-                        label="Foot Strike" 
-                        score={analysis_summary?.foot_strike.median_score ?? 0} 
+                    <MetricCard
+                        label="Foot Strike"
+                        score={analysis_summary?.foot_strike.median_score ?? 0}
                     />
                 </div>
             </div>

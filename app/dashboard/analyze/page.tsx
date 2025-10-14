@@ -124,13 +124,13 @@ export default function AnalyzePage() {
             formData.append("user_id", user.id.toString());
 
             // Send directly to FastAPI
-            // const response = await fetch('http://localhost:8000/process-video/', {
-                const response = await fetch('https://runalyze-python.onrender.com/process-video/', {
+            const response = await fetch('http://localhost:8000/process-video/', {
+                // const response = await fetch('https://runalyze-python.onrender.com/process-video/', {
                 method: 'POST',
                 body: formData,  // Headers are auto-set to `multipart/form-data`
             });
 
-            console.log("response: ", response);
+            // console.log("response: ", response);
 
             if (!response.ok) {
                 const errorText = await response.text();
@@ -206,6 +206,7 @@ export default function AnalyzePage() {
                                 <li>• Record 6-10 seconds of side-view running footage</li>
                                 <li>• Ensure good lighting and stable camera position</li>
                                 <li>• Keep the runner in frame throughout the video</li>
+                                <li>• Use 720p or higher quality for your running footage</li>
                                 <li>• Use MP4, MOV, or AVI format (max 50MB)</li>
                             </ul>
                         </div>
@@ -481,8 +482,8 @@ export default function AnalyzePage() {
                             Your running form analysis is ready
                         </CardDescription>
                     </CardHeader>
+                    <Results download_url={results.download_url} analysis_summary={results.analysis_summary} />
                     <CardContent>
-                        <Results download_url={results.download_url} analysis_summary={results.analysis_summary} />
                         <Button asChild><Link href={`/dashboard/history/${results.database_records.analysis_id}`}>See details</Link></Button>
                     </CardContent>
                 </Card>

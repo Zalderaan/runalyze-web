@@ -17,7 +17,7 @@ export function DrillsList({ refreshKey, searchTerm }: { refreshKey: number, sea
         return <div className="p-4 text-red-600">Error: {error}</div>;
     }
 
-    console.log('filteredDrills: ', filteredDrills);
+    // console.log('filteredDrills: ', filteredDrills);
     return (
         <div className="p-4 space-y-4">
             {filteredDrills.length === 0 ? (

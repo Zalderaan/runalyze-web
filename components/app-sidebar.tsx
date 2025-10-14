@@ -44,7 +44,7 @@ const admin_items = [
 
 export function AppSidebar() {
     const { user, isLoading } = useAuth();
-    console.log("This is user in sidebar: ", user);
+    // console.log("This is user in sidebar: ", user);
 
     return (
         <Sidebar collapsible="icon">

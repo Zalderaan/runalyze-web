@@ -12,7 +12,7 @@ export async function signIn({ email, password }: LoginUser) {
     if (!res.ok) throw new Error('Invalid credentials');
     const { userId, username, user_role } = await res.json();
     await createSession(userId);
-    console.log("user details: ", userId, email, username, user_role);
+    // console.log("user details: ", userId, email, username, user_role);
     return { 
         id: userId, 
         email: email, 
@@ -35,6 +35,6 @@ export async function signUp({ username, email, password }: RegisterUser) {
 }
 
 export async function signOut() {
-    console.log("logout accessed!")
+    // console.log("logout accessed!")
     await deleteSession();
 }

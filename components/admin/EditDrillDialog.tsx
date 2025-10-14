@@ -74,11 +74,11 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
     });
 
     async function onStepSubmit(values: z.infer<typeof currentSchema>) {
-        console.log('values: ', values);
-        console.log('formData: ', formData);
+        // console.log('values: ', values);
+        // console.log('formData: ', formData);
         const updatedData = { ...formData, ...values }
         setFormData(updatedData);
-        console.log('updated: ', updatedData)
+        // console.log('updated: ', updatedData)
         // move to the next step
         if (step < TOTAL_STEPS) {
             const nextStep = step + 1;
@@ -103,8 +103,8 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
 
             try {
                 await updateDrill(formPayload, drill.id);
-                console.log('This is formPayload: ', updatedData);
-                console.log("Update drill submitted");
+                // console.log('This is formPayload: ', updatedData);
+                // console.log("Update drill submitted");
 
                 // const response = await fetch("/api/admin/drills", {
                 //     method: "POST",

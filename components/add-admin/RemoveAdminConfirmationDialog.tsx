@@ -10,19 +10,22 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useUpdateRole } from "@/hooks/users/use-updateRole";
+import { cn } from "@/lib/utils";
 
 export function RemoveAdminConfirmationDialog({ 
     isAdmin = false, 
     userId, 
     refreshUsers,
-    currentUserId
+    currentUserId,
+    buttonClassName = null,
 }: { 
     isAdmin: boolean, 
     userId: number | string, 
     refreshUsers: () => void,
-    currentUserId: number | string
+    currentUserId: number | string,
+    buttonClassName?: string | null
 }) {
-    const { updateUserRole } = useUpdateRole();
+    const { updateUserRole, isRoleUpdating } = useUpdateRole();
 
     async function handleMakeAdmin() {
         await updateUserRole(userId, "user");
@@ -34,7 +37,7 @@ export function RemoveAdminConfirmationDialog({
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant={'destructive'} disabled={isSelf}>
+                <Button variant={'destructive'} disabled={isSelf} className={cn("...", buttonClassName)}>
                     Remove admin
                 </Button>
             </DialogTrigger>
@@ -52,9 +55,13 @@ export function RemoveAdminConfirmationDialog({
                     <Button 
                         variant={'destructive'} 
                         onClick={handleMakeAdmin}
-                        disabled={isSelf || isAdmin}
+                        disabled={isSelf || !isAdmin || isRoleUpdating}
                     >
-                        Yes, remove their admin privileges
+                        {
+                            isRoleUpdating 
+                            ? "Removing admin privileges..."
+                            : "Yes, remove their admin privileges"
+                        }
                     </Button>
                 </DialogFooter>
             </DialogContent>

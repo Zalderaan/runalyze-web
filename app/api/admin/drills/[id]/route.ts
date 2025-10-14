@@ -122,7 +122,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (video_url) updateFields.video_url = video_url;
 
     try {
-        console.log('This is updateFields object: ', updateFields);
+        // console.log('This is updateFields object: ', updateFields);
         const { data, error } = await supabase
             .from('drills')
             .update(updateFields)
@@ -151,7 +151,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         )
 
     } catch (error) {
-        console.log("Error updating drill in route.ts: ", error);
+        // console.log("Error updating drill in route.ts: ", error);
         return NextResponse.json(
             {
                 message: "Server error while updating drill",
@@ -201,7 +201,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         );
 
     } catch (error) {
-        console.log("An unexpected error occurred: ", error);
+        // console.log("An unexpected error occurred: ", error);
         return NextResponse.json(
             {
                 message: "Server error",

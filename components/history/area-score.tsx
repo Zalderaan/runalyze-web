@@ -87,7 +87,7 @@ const getClassificationPic = (area: string, classification: string | undefined) 
     };
 
     const folder = areaMap[area]
-    console.log('folder: ', folder);
+    // console.log('folder: ', folder);
     const file = fileMap[folder][classification]
 
     return `/areas/${folder}/${file}`;

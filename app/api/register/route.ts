@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs'
 
 export async function POST(req: NextRequest) {
     try {
-        console.log('regiter POST api route accessed!')
+        // console.log('regiter POST api route accessed!')
         const { email, password, username } = await req.json();
 
         // Check if user exists

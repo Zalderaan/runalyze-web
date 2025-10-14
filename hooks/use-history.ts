@@ -109,7 +109,7 @@ export function useHistory() {
             }
 
             const result = await response.json();
-            console.log(result.message);
+            // console.log(result.message);
             
             // Refresh the history list after successful deletion
             await fetchHistory();

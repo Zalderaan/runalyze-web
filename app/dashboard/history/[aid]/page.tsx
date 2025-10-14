@@ -117,7 +117,7 @@ export default function AnalysisDetails() {
         async function fetchDetails() {
             if (analysisId) {
                 const details = await getAnalysisDetails(analysisId);
-                console.log(details);
+                // console.log(details);
                 setAnalysisDetails(details);
             }
         }
@@ -437,11 +437,11 @@ export default function AnalysisDetails() {
                                     <div className="grid grid-cols-2 gap-4 text-sm">
                                         <div className="flex items-center space-x-2">
                                             <span className="font-medium text-gray-700">⏱ Duration:</span>
-                                            <span className="text-gray-600">{drill.duration || "-"}</span>
+                                            <span className="text-gray-600 text-sm">{`${drill.sets} x ${drill.reps} ${drill.rep_type}` || "-"}</span>
                                         </div>
                                         <div className="flex items-center space-x-2">
                                             <span className="font-medium text-gray-700">🔁 Frequency:</span>
-                                            <span className="text-gray-600">{drill.frequency || "-"}</span>
+                                            <span className="text-gray-600">{`${drill.frequency}x/week` || "-"}</span>
                                         </div>
                                     </div>
                                     {drill.area_focus_note && (

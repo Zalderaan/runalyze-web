@@ -19,7 +19,7 @@ export default function HomePage() {
     const latestAnalysis = getLatestAnalysis();
     const router = useRouter();
 
-    console.log('latest analysis: ', latestAnalysis)
+    // console.log('latest analysis: ', latestAnalysis)
 
     // fetch history when component mounts
     const hasFetchedRef = useRef(false);

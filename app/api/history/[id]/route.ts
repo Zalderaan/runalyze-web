@@ -21,8 +21,8 @@ export async function GET(
         }
         const session = await decrypt(cookie);
         const userID = session?.userId;
-        console.log(userID)
-        console.log(analysisID)
+        // console.log(userID)
+        // console.log(analysisID)
 
         // query db
         const { data, error } = await supabase

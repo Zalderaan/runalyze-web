@@ -24,7 +24,10 @@ export function useDeleteDrill(id: string | number | undefined) {
                 setDrillError(errorData.message || "Failed to delete drill");
                 return;
             }
-
+            
+            // delete backend cache
+            // await fetch(`https://runalyze-python.onrender.com/drills/clear-cache/`)
+            await fetch('http://localhost:8000/drills/clear-cache/');
             setIsDrillDeleted(true) // successful delete
 
         } catch (error) {

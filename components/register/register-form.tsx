@@ -1,4 +1,5 @@
 'use client';
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
 import { z } from "zod";
@@ -16,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { signUp } from '@/lib/auth/actions';
+import { useAuth } from "@/context/user_context";
 // import { useUserContext } from "@/context/userContext";
 
 // form validation schema
@@ -41,6 +43,7 @@ export function RegisterForm({
 }: React.ComponentPropsWithoutRef<"div">) {
 
     // const { signIn, signUp, signOut } = useUserContext();
+    const { login } = useAuth();
 
     // define form
     const form = useForm<z.infer<typeof formSchema>>({
@@ -55,9 +58,20 @@ export function RegisterForm({
 
     // form submission handler
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
-        console.log(data);
+        // console.log(data);
         try {
-            await signUp(data)
+            await signUp(data);
+            await login(data.email, data.password);
+            toast.success(
+                <div className="flex flex-col">
+                    <strong>Registration successful!</strong>
+                    <span className="text-xs text-gray-500">Welcome to Runalyze!</span>
+                </div>,
+                {
+                    duration: 4000
+                }
+            )
+
         } catch {
             form.setError('email', { type: 'manual', message: 'Registration failed' });
         }
@@ -82,11 +96,11 @@ export function RegisterForm({
                                     <FormItem>
                                         <FormLabel className="text-sm sm:text-base">Email</FormLabel>
                                         <FormControl>
-                                            <Input 
-                                                placeholder="user@example.com" 
-                                                type="email" 
+                                            <Input
+                                                placeholder="user@example.com"
+                                                type="email"
                                                 className="h-10 sm:h-11 text-sm sm:text-base"
-                                                {...field} 
+                                                {...field}
                                             />
                                         </FormControl>
                                         <FormMessage className="text-xs sm:text-sm" />
@@ -100,11 +114,11 @@ export function RegisterForm({
                                     <FormItem>
                                         <FormLabel className="text-sm sm:text-base">Username</FormLabel>
                                         <FormControl>
-                                            <Input 
-                                                placeholder="Enter username" 
-                                                type="text" 
+                                            <Input
+                                                placeholder="Enter username"
+                                                type="text"
                                                 className="h-10 sm:h-11 text-sm sm:text-base"
-                                                {...field} 
+                                                {...field}
                                             />
                                         </FormControl>
                                         <FormMessage className="text-xs sm:text-sm" />
@@ -119,11 +133,11 @@ export function RegisterForm({
                                         <FormItem>
                                             <FormLabel className="text-sm sm:text-base">Password</FormLabel>
                                             <FormControl>
-                                                <Input 
-                                                    placeholder="Enter your password" 
-                                                    type="password" 
+                                                <Input
+                                                    placeholder="Enter your password"
+                                                    type="password"
                                                     className="h-10 sm:h-11 text-sm sm:text-base"
-                                                    {...field} 
+                                                    {...field}
                                                 />
                                             </FormControl>
                                             <FormMessage className="text-xs sm:text-sm" />
@@ -138,11 +152,11 @@ export function RegisterForm({
                                         <FormItem>
                                             {/* <FormLabel>Confirm Password</FormLabel> */}
                                             <FormControl>
-                                                <Input 
-                                                    placeholder="Confirm password" 
-                                                    type="password" 
+                                                <Input
+                                                    placeholder="Confirm password"
+                                                    type="password"
                                                     className="h-10 sm:h-11 text-sm sm:text-base"
-                                                    {...field} 
+                                                    {...field}
                                                 />
                                             </FormControl>
                                             <FormMessage className="text-xs sm:text-sm" />
