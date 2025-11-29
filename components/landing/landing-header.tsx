@@ -6,6 +6,8 @@ import Link from "next/link"
 
 export function LandingHeader() {
     const { user, logout, isLoggingOut } = useAuth();
+    const isAdmin = user?.user_role === "admin" || user?.user_role === "owner";
+    const isApplicant = user?.user_role === "admin_applicant";
 
     return (
         <>
@@ -21,7 +23,8 @@ export function LandingHeader() {
                             <div className="flex items-center gap-4">
                                 <span>Hello, {user.username}!</span>
                                 <Button asChild variant="default">
-                                    <Link href="/dashboard/home">Proceed to dashboard</Link>
+                                    <Link href={isAdmin ? "/dashboard/admin" : isApplicant ? "/dashboard/admin-application" : "/dashboard/home"}
+                                    >Proceed to dashboard</Link>
                                 </Button>
                                 <Button variant={"outline"} onClick={logout} disabled={isLoggingOut}>
                                     {

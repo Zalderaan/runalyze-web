@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabase } from '@/lib/supabase'
+import { cookies } from 'next/headers'
 
 interface DrillUpdateFields {
     drill_name?: string;
@@ -55,6 +56,58 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             { message: "Server error" },
             { status: 500 }
         )
+    }
+}
+
+export async function PATCH(
+    request: Request,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const cookieStore = await cookies();
+        const cookie = cookieStore.get("session")?.value;
+        if (!cookie) {
+            return NextResponse.json(
+                { message: "Not authenticated" },
+                { status: 401 }
+            );
+        }
+
+        const { id } = await params;
+        const body = await request.json();
+        const { action } = body; // 'helpful' or 'not_helpful'
+
+        const columnToUpdate = action === 'helpful' ? 'helpful_count' : 'not_helpful_count';
+
+        // Fetch both counts
+        const { data: drill } = await supabase
+            .from('drills')
+            .select('helpful_count, not_helpful_count')
+            .eq('id', id)
+            .single();
+
+        // Increment the appropriate column
+        const { data, error } = await supabase
+            .from('drills')
+            .update({ [columnToUpdate]: (drill?.[columnToUpdate] || 0) + 1 })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) {
+            return NextResponse.json(
+                { message: "Error updating helpful count", error: error.message },
+                { status: 500 }
+            );
+        }
+
+        return NextResponse.json({ data }, { status: 200 });
+    } catch (error) {
+        console.error("Error updating helpful count:", error);
+        return NextResponse.json(
+            { message: "Server error" },
+            { status: 500 }
+        );
     }
 }
 

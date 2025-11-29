@@ -45,6 +45,9 @@ export default function LandingPage() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
+            <Button asChild size="lg" className="text-lg px-8 py-3" variant={"outline"}>
+              <Link href="/auth/admin-application">Apply as a Coach</Link>
+            </Button>
           </div>
         </div>
       </section>

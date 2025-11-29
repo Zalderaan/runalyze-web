@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { ChartAreaDefault } from "@/components/home/chart-area-default"
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { RoleGuard } from "@/components/RoleGuard";
 
 export default function HomePage() {
 
@@ -37,173 +38,206 @@ export default function HomePage() {
         Math.round(history.reduce((sum, item) => sum + item.overall_score, 0) / history.length) : 0;
     const recentAnalyses = history.slice(0, 3);
 
+    // Calculate average joint angle scores
+    const jointAverages = history.length > 0 ? {
+        head_position: Math.round(history.reduce((sum, item) => sum + item.head_position, 0) / history.length),
+        back_position: Math.round(history.reduce((sum, item) => sum + item.back_position, 0) / history.length),
+        arm_flexion: Math.round(history.reduce((sum, item) => sum + item.arm_flexion, 0) / history.length),
+        right_knee: Math.round(history.reduce((sum, item) => sum + item.right_knee, 0) / history.length),
+        left_knee: Math.round(history.reduce((sum, item) => sum + item.left_knee, 0) / history.length),
+        foot_strike: Math.round(history.reduce((sum, item) => sum + item.foot_strike, 0) / history.length),
+    } : null;
+
     return (
-        <div className="space-y-8 max-w-7xl mx-auto p-6">
-            {/* Header Section */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-                    <p className="text-gray-600 mt-1">Track your running form and improvement over time</p>
-                </div>
-                <Button
-                    onClick={() => router.push('/dashboard/analyze')}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-                >
-                    <SquarePlus className="h-5 w-5" />
-                    New Analysis
-                </Button>
-            </div>
-
-            {/* Quick Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <Card className="p-6">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-100 rounded-lg">
-                            <Activity className="h-6 w-6 text-blue-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Total Analyses</p>
-                            <p className="text-2xl font-bold text-gray-900">{totalAnalyses}</p>
-                        </div>
-                    </div>
-                </Card>
-
-                <Card className="p-6">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-green-100 rounded-lg">
-                            <TrendingUp className="h-6 w-6 text-green-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Average Score</p>
-                            <p className="text-2xl font-bold text-gray-900">{avgScore}%</p>
-                        </div>
-                    </div>
-                </Card>
-
-                <Card className="p-6">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-purple-100 rounded-lg">
-                            <Target className="h-6 w-6 text-purple-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Best Score</p>
-                            <p className="text-2xl font-bold text-gray-900">
-                                {history.length > 0 ? Math.max(...history.map(h => h.overall_score)).toFixed(2) : '0.00'}%
-                            </p>
-                        </div>
-                    </div>
-                </Card>
-
-                <Card className="p-6">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-orange-100 rounded-lg">
-                            <Clock className="h-6 w-6 text-orange-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Last Analysis</p>
-                            <p className="text-2xl font-bold text-gray-900">
-                                {latestAnalysis ?
-                                    new Date(latestAnalysis.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                                    : 'None'
-                                }
-                            </p>
-                        </div>
-                    </div>
-                </Card>
-            </div>
-
-            {/* Main Content Grid */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                {/* Latest Analysis & Chart Section */}
-                <div className="xl:col-span-2 space-y-6">
-                    {/* Latest Analysis */}
+        <RoleGuard allowedRoles={["user"]}>
+            <div className="space-y-8 max-w-7xl mx-auto p-6">
+                {/* Header Section */}
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     <div>
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4">Latest Analysis</h2>
-                        {isLoading ? (
-                            <Card className="p-8">
-                                <CardContent className="flex items-center justify-center">
-                                    <div className="animate-pulse text-gray-500">Loading latest analysis...</div>
-                                </CardContent>
-                            </Card>
-                        ) : error ? (
-                            <Card className="p-8 border-red-200 bg-red-50">
-                                <CardContent className="flex items-center justify-center">
-                                    <p className="text-red-600">Error loading latest analysis.</p>
-                                </CardContent>
-                            </Card>
-                        ) : latestAnalysis != null ? (
-                            <RunAnalysis analysis={{
-                                ...latestAnalysis,
-                                thumbnail_url: Array.isArray(latestAnalysis.videos)
-                                    ? latestAnalysis.videos[0]?.thumbnail_url ?? ""
-                                    : latestAnalysis.videos?.thumbnail_url ?? "",
-                            }} />
-                        ) : (
-                            <NoAnalysis />
-                        )}
+                        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+                        <p className="text-gray-600 mt-1">Track your running form and improvement over time</p>
                     </div>
-
-                    {/* Progress Chart */}
-                    <div>
-                        <h2 className="text-xl font-semibold text-gray-900 mb-4">Progress Overview</h2>
-                        <ChartAreaDefault history={history} />
-                    </div>
+                    <Button
+                        onClick={() => router.push('/dashboard/analyze')}
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+                    >
+                        <SquarePlus className="h-5 w-5" />
+                        New Analysis
+                    </Button>
                 </div>
 
-                {/* Sidebar */}
-                <div className="xl:col-span-1 space-y-6">
-                    {/* Recent Analyses */}
-                    {recentAnalyses.length > 0 && (
-                        <div>
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-semibold text-gray-900">Recent Analyses</h2>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => router.push('/dashboard/history')}
-                                    className="text-blue-600 hover:text-blue-700"
-                                >
-                                    View All
-                                </Button>
+                {/* Quick Stats Row */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <Card className="p-6">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-blue-100 rounded-lg">
+                                <Activity className="h-6 w-6 text-blue-600" />
                             </div>
-                            <div className="space-y-3">
-                                {recentAnalyses.map((analysis) => (
-                                    <Card
-                                        key={analysis.id}
-                                        className="p-4 hover:shadow-md transition-shadow cursor-pointer"
-                                        onClick={() => router.push(`/dashboard/history/${analysis.id}`)}
+                            <div>
+                                <p className="text-sm text-gray-600">Total Analyses</p>
+                                <p className="text-2xl font-bold text-gray-900">{totalAnalyses}</p>
+                            </div>
+                        </div>
+                    </Card>
+
+                    <Card className="p-6">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-green-100 rounded-lg">
+                                <TrendingUp className="h-6 w-6 text-green-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Average Score</p>
+                                <p className="text-2xl font-bold text-gray-900">{avgScore}%</p>
+                            </div>
+                        </div>
+                    </Card>
+
+                    <Card className="p-6">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-purple-100 rounded-lg">
+                                <Target className="h-6 w-6 text-purple-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Best Score</p>
+                                <p className="text-2xl font-bold text-gray-900">
+                                    {history.length > 0 ? Math.max(...history.map(h => h.overall_score)).toFixed(2) : '0.00'}%
+                                </p>
+                            </div>
+                        </div>
+                    </Card>
+
+                    <Card className="p-6">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-orange-100 rounded-lg">
+                                <Clock className="h-6 w-6 text-orange-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Last Analysis</p>
+                                <p className="text-2xl font-bold text-gray-900">
+                                    {latestAnalysis ?
+                                        new Date(latestAnalysis.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                                        : 'None'
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </Card>
+                </div>
+
+                {/* Main Content Grid */}
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    {/* Latest Analysis & Chart Section */}
+                    <div className="xl:col-span-2 space-y-6">
+                        {/* Latest Analysis */}
+                        <div>
+                            <h2 className="text-xl font-semibold text-gray-900 mb-4">Latest Analysis</h2>
+                            {isLoading ? (
+                                <Card className="p-8">
+                                    <CardContent className="flex items-center justify-center">
+                                        <div className="animate-pulse text-gray-500">Loading latest analysis...</div>
+                                    </CardContent>
+                                </Card>
+                            ) : error ? (
+                                <Card className="p-8 border-red-200 bg-red-50">
+                                    <CardContent className="flex items-center justify-center">
+                                        <p className="text-red-600">Error loading latest analysis.</p>
+                                    </CardContent>
+                                </Card>
+                            ) : latestAnalysis != null ? (
+                                <RunAnalysis analysis={{
+                                    ...latestAnalysis,
+                                    thumbnail_url: Array.isArray(latestAnalysis.videos)
+                                        ? latestAnalysis.videos[0]?.thumbnail_url ?? ""
+                                        : latestAnalysis.videos?.thumbnail_url ?? "",
+                                }} />
+                            ) : (
+                                <NoAnalysis />
+                            )}
+                        </div>
+
+                        {/* Progress Chart */}
+                        <div>
+                            <h2 className="text-xl font-semibold text-gray-900 mb-4">Progress Overview</h2>
+                            <ChartAreaDefault history={history} />
+                        </div>
+                    </div>
+
+                    {/* Sidebar */}
+                    <div className="xl:col-span-1 space-y-6">
+                        {/* Recent Analyses */}
+                        {recentAnalyses.length > 0 && (
+                            <div>
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-xl font-semibold text-gray-900">Recent Analyses</h2>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => router.push('/dashboard/history')}
+                                        className="text-blue-600 hover:text-blue-700"
                                     >
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="font-medium text-gray-900">
-                                                    Analysis #{analysis.id}
-                                                </p>
-                                                <p className="text-sm text-gray-500">
-                                                    {new Date(analysis.created_at).toLocaleDateString('en-US', {
-                                                        month: 'short',
-                                                        day: 'numeric',
-                                                        year: 'numeric'
-                                                    })}
-                                                </p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className={`text-lg font-bold ${analysis.overall_score >= 80 ? 'text-green-600' :
+                                        View All
+                                    </Button>
+                                </div>
+                                <div className="space-y-3">
+                                    {recentAnalyses.map((analysis) => (
+                                        <Card
+                                            key={analysis.id}
+                                            className="p-4 hover:shadow-md transition-shadow cursor-pointer"
+                                            onClick={() => router.push(`/dashboard/history/${analysis.id}`)}
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <p className="font-medium text-gray-900">
+                                                        Analysis #{analysis.id}
+                                                    </p>
+                                                    <p className="text-sm text-gray-500">
+                                                        {new Date(analysis.created_at).toLocaleDateString('en-US', {
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                            year: 'numeric'
+                                                        })}
+                                                    </p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className={`text-lg font-bold ${analysis.overall_score >= 80 ? 'text-green-600' :
                                                         analysis.overall_score >= 60 ? 'text-yellow-600' : 'text-red-600'
-                                                    }`}>
-                                                    {analysis.overall_score.toFixed(0)}%
-                                                </p>
+                                                        }`}>
+                                                        {analysis.overall_score.toFixed(0)}%
+                                                    </p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </Card>
-                                ))}
+                                        </Card>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Sample Analysis */}
-                    
+                        {jointAverages && (
+                            <Card className="p-6">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Average Joint Scores</h3>
+                                <div className="space-y-3">
+                                    {Object.entries(jointAverages).map(([joint, score]) => (
+                                        <div key={joint} className="flex justify-between items-center">
+                                            <span className="text-sm text-gray-600 capitalize">
+                                                {joint.replace(/_/g, ' ')}
+                                            </span>
+                                            <span className={`font-semibold ${score >= 80 ? 'text-green-600' :
+                                                score >= 60 ? 'text-yellow-600' : 'text-red-600'
+                                                }`}>
+                                                {score}%
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </Card>
+                        )}
+
+                        {/* Sample Analysis */}
+
+                    </div>
                 </div>
             </div>
-        </div>
+        </RoleGuard>
+
     );
 }

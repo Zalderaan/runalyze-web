@@ -1,9 +1,9 @@
 'use client';
 
 import { useAuth } from '@/context/user_context';
-import { Dumbbell } from "lucide-react"
+import { Dumbbell, Home, PersonStanding } from "lucide-react"
 import {
-    Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup, 
+    Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup,
     SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { NavUser } from "./nav-user"
@@ -12,16 +12,29 @@ import Link from "next/link"
 // Menu items.
 const items = [
     {
+        title: "Admin Home",
+        url: "/dashboard/admin",
+        icon: Home,
+    },
+    {
         title: "Drills",
-        url: "/admin/drills",
+        url: "/dashboard/admin/drills",
         icon: Dumbbell,
     },
 ]
 
+const ownerItems = [
+    {
+        title: "Admins",
+        url: "/dashboard/admin/manage",
+        icon: PersonStanding
+    }
+]
+
 export function AdminSidebar() {
     const auth = useAuth();
+    const isOwner = auth.user?.user_role === "owner";
 
-    // const user = useAuth();
     return (
         <Sidebar collapsible="icon">
             <SidebarHeader>
@@ -39,7 +52,7 @@ export function AdminSidebar() {
             </SidebarHeader>
             <SidebarContent>
                 <SidebarGroup>
-                    <SidebarGroupLabel>Application</SidebarGroupLabel>
+                    <SidebarGroupLabel>Admin</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
                             {items.map((item) => (
@@ -55,6 +68,27 @@ export function AdminSidebar() {
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
+                {
+                    isOwner && (
+                        <SidebarGroup>
+                            <SidebarGroupLabel>Owner-exclusive Controls</SidebarGroupLabel>
+                            <SidebarGroupContent>
+                                <SidebarMenu>
+                                    {ownerItems.map((item) => (
+                                        <SidebarMenuItem key={item.title}>
+                                            <SidebarMenuButton asChild>
+                                                <Link href={item.url}>
+                                                    <item.icon />
+                                                    <span>{item.title}</span>
+                                                </Link>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+                                    ))}
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+                    )
+                }
             </SidebarContent>
             <SidebarFooter>
                 {auth.isLoading ? (
@@ -63,7 +97,7 @@ export function AdminSidebar() {
                     <NavUser user={auth.user} />
                 ) : (
                     <div>Not authenticated</div>
-                )}                
+                )}
             </SidebarFooter>
         </Sidebar>
     )

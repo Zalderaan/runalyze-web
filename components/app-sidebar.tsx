@@ -81,7 +81,7 @@ export function AppSidebar() {
                     </SidebarGroupContent>
                 </SidebarGroup>
                 <SidebarGroup>
-                    {user?.user_role === "admin" && (
+                    {user?.user_role === "admin"  && (
                         <>
                             <SidebarGroupLabel>Admin</SidebarGroupLabel>
                             <SidebarGroupContent>

@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
     // * success: return user info
     return NextResponse.json(
-        { userId: users.id, username: users.username, email: users.email, user_role: users.user_role }, 
+        { userId: users.id, username: users.username, email: users.email, user_role: users.user_role, is_active: users.is_active }, 
         { status: 200 }
     )
 }

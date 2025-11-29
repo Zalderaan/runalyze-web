@@ -76,6 +76,7 @@ export function useHistory() {
             }
 
             const data = await response.json();
+            console.log("data.analysis: ", data.analysis)
             return data.analysis;
         } catch (error) {
             console.error("Error getting analysis details: ", error);

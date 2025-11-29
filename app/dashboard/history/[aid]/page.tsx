@@ -11,11 +11,15 @@ import {
     CardTitle,
     CardDescription,
     CardContent,
+    CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TrashIcon } from "lucide-react";
 import { AreaScore } from "@/components/history/area-score";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import Link from "next/link";
+import { DrillCardDialog } from "./DrillCardDialog";
+import { RoleGuard } from "@/components/RoleGuard";
 interface DetailedFeedback {
     head_position: {
         angle: number;
@@ -25,6 +29,7 @@ interface DetailedFeedback {
         analysis: string;
         performance_level: string;
         classification: string;
+        justification: string
     };
     back_position: {
         angle: number;
@@ -34,6 +39,8 @@ interface DetailedFeedback {
         analysis: string;
         performance_level: string;
         classification: string;
+        justification: string
+
     };
     arm_flexion: {
         angle: number;
@@ -43,6 +50,8 @@ interface DetailedFeedback {
         analysis: string;
         performance_level: string;
         classification: string;
+        justification: string
+
     };
     right_knee: {
         angle: number;
@@ -52,6 +61,8 @@ interface DetailedFeedback {
         analysis: string;
         performance_level: string;
         classification: string;
+        justification: string
+
     };
     left_knee: {
         angle: number;
@@ -61,6 +72,8 @@ interface DetailedFeedback {
         analysis: string;
         performance_level: string;
         classification: string;
+        justification: string
+
     };
     foot_strike: {
         angle: number;
@@ -70,6 +83,8 @@ interface DetailedFeedback {
         analysis: string;
         performance_level: string;
         classification: string;
+        justification: string
+
     };
 }
 
@@ -126,9 +141,7 @@ export default function AnalysisDetails() {
     }, [analysisId, getAnalysisDetails]);
 
     // console.log(analysisDetails);
-    const { id, video_url,
-        overall_score, overall_assessment, detailed_feedback,
-    } = analysisDetails || {};
+    const { id, video_url, overall_score, overall_assessment, detailed_feedback, } = analysisDetails || {};
     // head_position, back_position, arm_flexion, right_knee, left_knee, foot_strike 
 
     const router = useRouter();
@@ -141,6 +154,17 @@ export default function AnalysisDetails() {
             console.error('Delete failed: ', result?.message);
         }
     };
+
+    // const handleDrillFeedback = async (isHelpful: boolean) => {
+    //     const drillFeedbackValue = isHelpful ? 'helpful' : 'not_helpful';
+    //     setFeedback(drillFeedbackValue);
+
+    //     try {
+
+    //     } catch(error) {
+    //         console.error("Error submitting feedback: ", error)
+    //     }
+    // }
 
     if (isLoadingDetails == true && analysisDetails == null) {
         return (
@@ -268,196 +292,212 @@ export default function AnalysisDetails() {
     const drills = getAllDrills();
 
     return (
-        <div className="space-y-8 w-full">
-            {/* Overall Score Header */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Analysis #{id}</h1>
-                        <p className="text-gray-600 mt-1">{overall_assessment}</p>
-                    </div>
-                    <div className="text-right">
-                        <p className="text-sm text-gray-500 uppercase tracking-wide">Overall Score</p>
-                        <p className="text-4xl font-bold text-blue-600">{overall_score?.toFixed(0)}%</p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                {/* Video Section - Takes more space on larger screens */}
-                <div className="xl:col-span-2">
-                    <div className="bg-gray-900 rounded-xl overflow-hidden shadow-lg">
-                        <video
-                            src={video_url}
-                            controls
-                            className="w-full h-[400px] lg:h-[500px] object-contain bg-black"
-                            poster={analysisDetails?.thumbnail_url}
-                        >
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
-                </div>
-
-                {/* Analysis Metrics Grid - Optimized for vertical space */}
-                <div className="xl:col-span-1">
-                    <h2 className="text-xl font-semibold mb-4 text-gray-900">Form Analysis</h2>
-                    <div className="grid grid-cols-1 gap-3">
-                        <AreaScore
-                            area="Head Position"
-                            score={detailed_feedback?.head_position?.score ?? 0}
-                            analysis={detailed_feedback?.head_position?.analysis ?? ""}
-                            perf_level={detailed_feedback?.head_position?.performance_level ?? "Unknown"}
-                            classification={detailed_feedback?.head_position?.classification ?? ""}
-                        />
-
-                        <AreaScore
-                            area="Back Position"
-                            score={detailed_feedback?.back_position?.score ?? 0}
-                            analysis={detailed_feedback?.back_position?.analysis ?? ""}
-                            perf_level={detailed_feedback?.back_position?.performance_level ?? "Unknown"}
-                            classification={detailed_feedback?.back_position?.classification ?? ""}
-                        />
-
-                        <AreaScore
-                            area="Arm Flexion"
-                            score={detailed_feedback?.arm_flexion?.score ?? 0}
-                            analysis={detailed_feedback?.arm_flexion?.analysis ?? ""}
-                            perf_level={detailed_feedback?.arm_flexion?.performance_level ?? "Unknown"}
-                            classification={detailed_feedback?.arm_flexion?.classification ?? ""}
-                        />
-
-                        <AreaScore
-                            area="Right Knee"
-                            score={detailed_feedback?.right_knee?.score ?? 0}
-                            analysis={detailed_feedback?.right_knee?.analysis ?? ""}
-                            perf_level={detailed_feedback?.right_knee?.performance_level ?? "Unknown"}
-                            classification={detailed_feedback?.right_knee?.classification ?? ""}
-                        />
-
-                        <AreaScore
-                            area="Left Knee"
-                            score={detailed_feedback?.left_knee?.score ?? 0}
-                            analysis={detailed_feedback?.left_knee?.analysis ?? ""}
-                            perf_level={detailed_feedback?.left_knee?.performance_level ?? "Unknown"}
-                            classification={detailed_feedback?.left_knee?.classification ?? ""}
-                        />
-
-                        <AreaScore
-                            area="Foot Strike"
-                            score={detailed_feedback?.foot_strike?.score ?? 0}
-                            analysis={detailed_feedback?.foot_strike?.analysis ?? ""}
-                            perf_level={detailed_feedback?.foot_strike?.performance_level ?? "Unknown"}
-                            classification={detailed_feedback?.foot_strike?.classification ?? ""}
-                        />
-
-                        {/* Delete Button positioned at bottom */}
-                        <div className="mt-6 pt-4 border-t border-gray-200">
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button
-                                        variant="destructive"
-                                        className="w-full flex items-center justify-center gap-2"
-                                        disabled={isLoadingDelete}
-                                    >
-                                        <TrashIcon className="h-4 w-4" />
-                                        Delete Analysis
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle>Are you sure?</DialogTitle>
-                                        <DialogDescription>This action will remove this analysis from your account.</DialogDescription>
-                                    </DialogHeader>
-                                    <DialogFooter>
-                                        <Button asChild variant={'outline'}>
-                                            <DialogClose>
-                                                Go back
-                                            </DialogClose>
-                                        </Button>
-                                        <Button
-                                            variant={'destructive'}
-                                            onClick={handleDelete}
-                                            disabled={isLoadingDelete}
-                                        >
-                                            {isLoadingDelete ? "Deleting..." : "Yes, delete this analysis"}
-                                        </Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
+        <RoleGuard allowedRoles={["user"]}>
+            <div className="space-y-8 w-full">
+                {/* Overall Score Header */}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900">Analysis #{id}</h1>
+                            <p className="text-gray-600 mt-1">{overall_assessment}</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-sm text-gray-500 uppercase tracking-wide">Overall Score</p>
+                            <p className="text-4xl font-bold text-blue-600">{overall_score?.toFixed(0)}%</p>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Recommended Drills Section */}
-            {drills.length > 0 && (
-                <div className="w-full">
-                    <h2 className="text-2xl font-bold mb-6">Recommended Drills</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {drills.map((drill, index) => (
-                            <Card key={index} className="h-full shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200 rounded-xl">
-                                <CardHeader>
-                                    <div className="flex flex-row items-center justify-between">
-                                        <CardTitle className="text-lg font-semibold text-gray-900">{drill.drill_name || "Untitled Drill"}</CardTitle>
-                                        <Badge variant="default" className="capitalize">{drill.area}</Badge>
-                                    </div>
-                                    <CardDescription className="flex flex-row space-x-2 mt-2">
-                                        <Badge
-                                            className={
-                                                drill.performance_recommendation?.priority_level === "high"
-                                                    ? "bg-red-500 text-white"
-                                                    : drill.performance_recommendation?.priority_level === "medium"
-                                                        ? "bg-yellow-400 text-black"
-                                                        : "bg-gray-200 text-gray-700"
-                                            }
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    {/* Video Section - Takes more space on larger screens */}
+                    <div className="xl:col-span-2">
+                        <div className="bg-gray-900 rounded-xl overflow-hidden shadow-lg">
+                            <video
+                                src={video_url}
+                                controls
+                                className="w-full h-[400px] lg:h-[500px] object-contain bg-black"
+                                poster={analysisDetails?.thumbnail_url}
+                            >
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    </div>
+
+                    {/* Analysis Metrics Grid - Optimized for vertical space */}
+                    <div className="xl:col-span-1">
+                        <h2 className="text-xl font-semibold mb-4 text-gray-900">Form Analysis</h2>
+                        <div className="grid grid-cols-1 gap-3">
+                            <AreaScore
+                                area="Head Position"
+                                score={detailed_feedback?.head_position?.score ?? 0}
+                                analysis={detailed_feedback?.head_position?.analysis ?? ""}
+                                perf_level={detailed_feedback?.head_position?.performance_level ?? "Unknown"}
+                                classification={detailed_feedback?.head_position?.classification ?? ""}
+                            />
+
+                            <AreaScore
+                                area="Back Position"
+                                score={detailed_feedback?.back_position?.score ?? 0}
+                                analysis={detailed_feedback?.back_position?.analysis ?? ""}
+                                perf_level={detailed_feedback?.back_position?.performance_level ?? "Unknown"}
+                                classification={detailed_feedback?.back_position?.classification ?? ""}
+                            />
+
+                            <AreaScore
+                                area="Arm Flexion"
+                                score={detailed_feedback?.arm_flexion?.score ?? 0}
+                                analysis={detailed_feedback?.arm_flexion?.analysis ?? ""}
+                                perf_level={detailed_feedback?.arm_flexion?.performance_level ?? "Unknown"}
+                                classification={detailed_feedback?.arm_flexion?.classification ?? ""}
+                            />
+
+                            <AreaScore
+                                area="Right Knee"
+                                score={detailed_feedback?.right_knee?.score ?? 0}
+                                analysis={detailed_feedback?.right_knee?.analysis ?? ""}
+                                perf_level={detailed_feedback?.right_knee?.performance_level ?? "Unknown"}
+                                classification={detailed_feedback?.right_knee?.classification ?? ""}
+                            />
+
+                            <AreaScore
+                                area="Left Knee"
+                                score={detailed_feedback?.left_knee?.score ?? 0}
+                                analysis={detailed_feedback?.left_knee?.analysis ?? ""}
+                                perf_level={detailed_feedback?.left_knee?.performance_level ?? "Unknown"}
+                                classification={detailed_feedback?.left_knee?.classification ?? ""}
+                            />
+
+                            <AreaScore
+                                area="Foot Strike"
+                                score={detailed_feedback?.foot_strike?.score ?? 0}
+                                analysis={detailed_feedback?.foot_strike?.analysis ?? ""}
+                                perf_level={detailed_feedback?.foot_strike?.performance_level ?? "Unknown"}
+                                classification={detailed_feedback?.foot_strike?.classification ?? ""}
+                            />
+
+                            {/* Delete Button positioned at bottom */}
+                            <div className="mt-6 pt-4 border-t border-gray-200">
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button
+                                            variant="destructive"
+                                            className="w-full flex items-center justify-center gap-2"
+                                            disabled={isLoadingDelete}
                                         >
-                                            Priority: {drill.performance_recommendation?.priority_level?.charAt(0).toUpperCase() + drill.performance_recommendation?.priority_level?.slice(1) || 'Medium'}
-                                        </Badge>
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center min-h-[180px]">
-                                        {drill.video_url
-                                            ? <video src={drill.video_url} controls className="w-full max-h-60 object-contain bg-black rounded" />
-                                            : <div className="text-gray-400 italic py-8">No video provided</div>
-                                        }
-                                    </div>
-                                    <div className="bg-gray-50 rounded-lg p-3">
-                                        <h4 className="font-medium text-sm text-gray-700 mb-2">Instructions:</h4>
-                                        {Array.isArray(drill.instructions?.steps) ? (
-                                            <ul className="list-disc list-inside space-y-1">
-                                                {drill.instructions.steps.map((step: string, stepIndex: number) => (
-                                                    <li key={stepIndex} className="text-sm text-gray-600">{step}</li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <p className="text-sm text-gray-600">{drill.instructions || "No instructions provided."}</p>
-                                        )}
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div className="flex items-center space-x-2">
-                                            <span className="font-medium text-gray-700">⏱ Duration:</span>
-                                            <span className="text-gray-600 text-sm">{`${drill.sets} x ${drill.reps} ${drill.rep_type}` || "-"}</span>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <span className="font-medium text-gray-700">🔁 Frequency:</span>
-                                            <span className="text-gray-600">{`${drill.frequency}x/week` || "-"}</span>
-                                        </div>
-                                    </div>
-                                    {drill.area_focus_note && (
-                                        <div className="bg-blue-50 p-3 rounded-lg">
-                                            <p className="text-sm text-blue-800">
-                                                <span className="font-medium">Focus: </span>
-                                                {drill.area_focus_note}
-                                            </p>
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        ))}
+                                            <TrashIcon className="h-4 w-4" />
+                                            Delete Analysis
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Are you sure?</DialogTitle>
+                                            <DialogDescription>This action will remove this analysis from your account.</DialogDescription>
+                                        </DialogHeader>
+                                        <DialogFooter>
+                                            <Button asChild variant={'outline'}>
+                                                <DialogClose>
+                                                    Go back
+                                                </DialogClose>
+                                            </Button>
+                                            <Button
+                                                variant={'destructive'}
+                                                onClick={handleDelete}
+                                                disabled={isLoadingDelete}
+                                            >
+                                                {isLoadingDelete ? "Deleting..." : "Yes, delete this analysis"}
+                                            </Button>
+                                        </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            )}
-        </div>
+
+                {/* Recommended Drills Section */}
+                {drills.length > 0 && (
+                    <div className="w-full">
+                        <h2 className="text-2xl font-bold mb-6">Recommended Drills</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {drills.map((drill, index) => (
+                                <Card key={index} className="h-full shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200 rounded-xl">
+                                    <CardHeader className="pb-3">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <CardTitle className="text-lg font-semibold text-gray-900 leading-tight flex-1">
+                                                {drill.drill_name || "Untitled Drill"}
+                                            </CardTitle>
+                                            <DrillCardDialog drillId={drill.id} drillName={drill.drill_name} reason={drill.justification} />
+                                        </div>
+
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <Badge
+                                                variant="outline"
+                                                className={
+                                                    drill.performance_recommendation?.priority_level === "high"
+                                                        ? "bg-red-50 text-red-700 border-red-300"
+                                                        : drill.performance_recommendation?.priority_level === "medium"
+                                                            ? "bg-yellow-50 text-yellow-700 border-yellow-300"
+                                                            : "bg-gray-50 text-gray-700 border-gray-300"
+                                                }
+                                            >
+                                                <span className="mr-1">
+                                                    {drill.performance_recommendation?.priority_level === "high" ? "🔴" :
+                                                        drill.performance_recommendation?.priority_level === "medium" ? "🟡" : "⚪"}
+                                                </span>
+                                                {drill.performance_recommendation?.priority_level?.charAt(0).toUpperCase() +
+                                                    drill.performance_recommendation?.priority_level?.slice(1) || 'Medium'} Priority
+                                            </Badge>
+                                            <Badge variant="secondary" className="capitalize shrink-0 text-xs">
+                                                {drill.area}
+                                            </Badge>
+
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center min-h-[180px]">
+                                            {drill.video_url
+                                                ? <video src={drill.video_url} controls className="w-full max-h-60 object-contain bg-black rounded" />
+                                                : <div className="text-gray-400 italic py-8">No video provided</div>
+                                            }
+                                        </div>
+
+                                        <div className="bg-gray-50 rounded-lg p-3">
+                                            <h4 className="font-medium text-sm text-gray-700 mb-2">Instructions:</h4>
+                                            {Array.isArray(drill.instructions?.steps) ? (
+                                                <ul className="list-disc list-inside space-y-1">
+                                                    {drill.instructions.steps.map((step: string, stepIndex: number) => (
+                                                        <li key={stepIndex} className="text-sm text-gray-600">{step}</li>
+                                                    ))}
+                                                </ul>
+                                            ) : (
+                                                <p className="text-sm text-gray-600">{drill.instructions || "No instructions provided."}</p>
+                                            )}
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4 text-sm">
+                                            <div className="flex items-center space-x-2">
+                                                <span className="font-medium text-gray-700">⏱ Duration:</span>
+                                                <span className="text-gray-600 text-sm">{`${drill.sets} x ${drill.reps} ${drill.rep_type}` || "-"}</span>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <span className="font-medium text-gray-700">🔁 Frequency:</span>
+                                                <span className="text-gray-600">{`${drill.frequency}x/week` || "-"}</span>
+                                            </div>
+                                        </div>
+                                        {drill.area_focus_note && (
+                                            <div className="bg-blue-50 p-3 rounded-lg">
+                                                <p className="text-sm text-blue-800">
+                                                    <span className="font-medium">Focus: </span>
+                                                    {drill.area_focus_note}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </RoleGuard>
     );
 }

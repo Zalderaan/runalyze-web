@@ -84,14 +84,14 @@ export function UserTable() {
                                     </TableCell>
                                     <TableCell className="text-right">
                                         {
-                                            one_user.user_role === "admin" ? (
+                                            one_user.user_role === "admin" && (
                                                 <RemoveAdminConfirmationDialog
                                                     userId={one_user.id}
                                                     isAdmin={one_user.user_role === "admin"}
                                                     refreshUsers={refreshUsers}
                                                     currentUserId={user?.id ?? ""}
                                                 />
-                                            ) : <AddAdminConfrimationDialog userId={one_user.id} isAdmin={one_user.user_role === "admin"} refreshUsers={refreshUsers} />
+                                            )
                                         }
                                     </TableCell>
                                 </TableRow>
@@ -123,7 +123,7 @@ export function UserTable() {
                                     {one_user.user_role || 'user'}
                                 </span>
                             </div>
-                            {one_user.user_role === "admin" ? (
+                            {one_user.user_role === "admin" && (
                                 <RemoveAdminConfirmationDialog
                                     userId={one_user.id}
                                     isAdmin={one_user.user_role === "admin"}
@@ -131,12 +131,7 @@ export function UserTable() {
                                     currentUserId={user?.id ?? ""}
                                     buttonClassName={"w-full"}
                                 />
-                            ) : <AddAdminConfrimationDialog 
-                            userId={one_user.id} 
-                            isAdmin={one_user.user_role === "admin"} 
-                            refreshUsers={refreshUsers}
-                            buttonClassName={"w-full"}
-                            />}
+                            )}
                         </div>
                     ))}
                 </div>

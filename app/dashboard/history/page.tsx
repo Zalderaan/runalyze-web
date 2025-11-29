@@ -7,11 +7,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { 
-    History, 
-    Search, 
-    Calendar, 
-    TrendingUp, 
+import {
+    History,
+    Search,
+    Calendar,
+    TrendingUp,
     Clock,
     PlayCircle,
     FileX,
@@ -24,6 +24,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { getScoreColor } from "@/components/home/RunAnalysis";
+import { RoleGuard } from "@/components/RoleGuard";
 
 // Enhanced HistoryItem component for the new design
 interface HistoryItemProps {
@@ -83,7 +84,7 @@ function HistoryCard({ analysis }: HistoryItemProps) {
                     </Badge>
                 </div>
             </div>
-            
+
             <CardContent className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
                     <div className="space-y-1">
@@ -122,7 +123,7 @@ function HistoryCard({ analysis }: HistoryItemProps) {
                             <div className={getScoreColor(analysis.foot_strike)}>{analysis.foot_strike.toFixed(2)}%</div>
                         </div>
                     </div>
-                    
+
                     {/* Secondary Metrics Row */}
                     <div className="grid grid-cols-3 gap-2 text-xs">
                         <div className="text-center p-2 bg-blue-50 rounded">
@@ -162,7 +163,7 @@ export default function HistoryPage() {
 
         // Filter by search term (if needed, could search by date or ID)
         if (searchTerm) {
-            filtered = history.filter(item => 
+            filtered = history.filter(item =>
                 item.id.toString().includes(searchTerm) ||
                 new Date(item.created_at).toLocaleDateString().includes(searchTerm)
             );
@@ -207,10 +208,10 @@ export default function HistoryPage() {
     // Calculate statistics for display (but don't use stats variable)
     useMemo(() => {
         if (history.length === 0) return null;
-        
+
         const totalAnalyses = history.length;
         const avgScore = Math.round(history.reduce((sum, item) => sum + item.overall_score, 0) / totalAnalyses);
-        const lastAnalysis = history.reduce((latest, current) => 
+        const lastAnalysis = history.reduce((latest, current) =>
             new Date(current.created_at) > new Date(latest.created_at) ? current : latest
         );
         const bestScore = Math.max(...history.map(item => item.overall_score));
@@ -277,21 +278,22 @@ export default function HistoryPage() {
     }
 
     return (
-        <div className="container mx-auto max-w-6xl px-4 py-8 space-y-8">
-            {/* Header Section */}
-            <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                        <History className="h-6 w-6 text-blue-600" />
+        <RoleGuard allowedRoles={["user"]}>
+            <div className="container mx-auto max-w-6xl px-4 py-8 space-y-8">
+                {/* Header Section */}
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                            <History className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <div>
+                            <h1 className="text-3xl font-bold tracking-tight">Analysis History</h1>
+                            <p className="text-muted-foreground">Track your running form progress over time</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Analysis History</h1>
-                        <p className="text-muted-foreground">Track your running form progress over time</p>
-                    </div>
-                </div>
 
-                {/* Stats Overview */}
-                {/* {stats && (
+                    {/* Stats Overview */}
+                    {/* {stats && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <Card>
                             <CardContent className="p-4 text-center">
@@ -321,139 +323,140 @@ export default function HistoryPage() {
                         </Card>
                     </div>
                 )} */}
-            </div>
+                </div>
 
-            {/* Controls */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <div className="relative flex-1 sm:w-80">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
-                            placeholder="Search by ID or date..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10"
-                        />
+                {/* Controls */}
+                <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <div className="relative flex-1 sm:w-80">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <Input
+                                placeholder="Search by ID or date..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-10"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant={sortBy === "date" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSortBy("date")}
+                        >
+                            <Calendar className="h-4 w-4 mr-2" />
+                            By Date
+                        </Button>
+                        <Button
+                            variant={sortBy === "score" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSortBy("score")}
+                        >
+                            <TrendingUp className="h-4 w-4 mr-2" />
+                            By Score
+                        </Button>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Button
-                        variant={sortBy === "date" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setSortBy("date")}
-                    >
-                        <Calendar className="h-4 w-4 mr-2" />
-                        By Date
-                    </Button>
-                    <Button
-                        variant={sortBy === "score" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setSortBy("score")}
-                    >
-                        <TrendingUp className="h-4 w-4 mr-2" />
-                        By Score
-                    </Button>
+
+                {/* Results */}
+                <div className="space-y-8">
+                    {processedHistory.total === 0 ? (
+                        <Card className="border-dashed">
+                            <CardContent className="pt-6">
+                                <div className="text-center py-8">
+                                    <Search className="h-8 w-8 text-gray-400 mx-auto mb-4" />
+                                    <h3 className="font-semibold text-gray-900 mb-2">No Results Found</h3>
+                                    <p className="text-muted-foreground">
+                                        Try adjusting your search terms or clear the search to see all analyses.
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <>
+                            {processedHistory.groups.today.length > 0 && (
+                                <div className="space-y-4">
+                                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                                        <Clock className="h-5 w-5" />
+                                        Today ({processedHistory.groups.today.length})
+                                    </h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {processedHistory.groups.today.map(analysis => (
+                                            <HistoryCard key={analysis.id} analysis={analysis} />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {processedHistory.groups.yesterday.length > 0 && (
+                                <div className="space-y-4">
+                                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                                        <Calendar className="h-5 w-5" />
+                                        Yesterday ({processedHistory.groups.yesterday.length})
+                                    </h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {processedHistory.groups.yesterday.map(analysis => (
+                                            <HistoryCard key={analysis.id} analysis={analysis} />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {processedHistory.groups.thisWeek.length > 0 && (
+                                <div className="space-y-4">
+                                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                                        <Calendar className="h-5 w-5" />
+                                        This Week ({processedHistory.groups.thisWeek.length})
+                                    </h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {processedHistory.groups.thisWeek.map(analysis => (
+                                            <HistoryCard key={analysis.id} analysis={analysis} />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {processedHistory.groups.thisMonth.length > 0 && (
+                                <div className="space-y-4">
+                                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                                        <Calendar className="h-5 w-5" />
+                                        This Month ({processedHistory.groups.thisMonth.length})
+                                    </h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {processedHistory.groups.thisMonth.map(analysis => (
+                                            <HistoryCard key={analysis.id} analysis={analysis} />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {processedHistory.groups.older.length > 0 && (
+                                <div className="space-y-4">
+                                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                                        <History className="h-5 w-5" />
+                                        Older Analyses ({processedHistory.groups.older.length})
+                                    </h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {processedHistory.groups.older.map(analysis => (
+                                            <HistoryCard key={analysis.id} analysis={analysis} />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+
+                {/* Quick Action */}
+                <div className="text-center pt-8 border-t">
+                    <Link href="/dashboard/analyze">
+                        <Button size="lg">
+                            <Target className="h-4 w-4 mr-2" />
+                            Analyze New Video
+                        </Button>
+                    </Link>
                 </div>
             </div>
-
-            {/* Results */}
-            <div className="space-y-8">
-                {processedHistory.total === 0 ? (
-                    <Card className="border-dashed">
-                        <CardContent className="pt-6">
-                            <div className="text-center py-8">
-                                <Search className="h-8 w-8 text-gray-400 mx-auto mb-4" />
-                                <h3 className="font-semibold text-gray-900 mb-2">No Results Found</h3>
-                                <p className="text-muted-foreground">
-                                    Try adjusting your search terms or clear the search to see all analyses.
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ) : (
-                    <>
-                        {processedHistory.groups.today.length > 0 && (
-                            <div className="space-y-4">
-                                <h2 className="text-xl font-semibold flex items-center gap-2">
-                                    <Clock className="h-5 w-5" />
-                                    Today ({processedHistory.groups.today.length})
-                                </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {processedHistory.groups.today.map(analysis => (
-                                        <HistoryCard key={analysis.id} analysis={analysis} />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {processedHistory.groups.yesterday.length > 0 && (
-                            <div className="space-y-4">
-                                <h2 className="text-xl font-semibold flex items-center gap-2">
-                                    <Calendar className="h-5 w-5" />
-                                    Yesterday ({processedHistory.groups.yesterday.length})
-                                </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {processedHistory.groups.yesterday.map(analysis => (
-                                        <HistoryCard key={analysis.id} analysis={analysis} />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {processedHistory.groups.thisWeek.length > 0 && (
-                            <div className="space-y-4">
-                                <h2 className="text-xl font-semibold flex items-center gap-2">
-                                    <Calendar className="h-5 w-5" />
-                                    This Week ({processedHistory.groups.thisWeek.length})
-                                </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {processedHistory.groups.thisWeek.map(analysis => (
-                                        <HistoryCard key={analysis.id} analysis={analysis} />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {processedHistory.groups.thisMonth.length > 0 && (
-                            <div className="space-y-4">
-                                <h2 className="text-xl font-semibold flex items-center gap-2">
-                                    <Calendar className="h-5 w-5" />
-                                    This Month ({processedHistory.groups.thisMonth.length})
-                                </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {processedHistory.groups.thisMonth.map(analysis => (
-                                        <HistoryCard key={analysis.id} analysis={analysis} />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {processedHistory.groups.older.length > 0 && (
-                            <div className="space-y-4">
-                                <h2 className="text-xl font-semibold flex items-center gap-2">
-                                    <History className="h-5 w-5" />
-                                    Older Analyses ({processedHistory.groups.older.length})
-                                </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {processedHistory.groups.older.map(analysis => (
-                                        <HistoryCard key={analysis.id} analysis={analysis} />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </>
-                )}
-            </div>
-
-            {/* Quick Action */}
-            <div className="text-center pt-8 border-t">
-                <Link href="/dashboard/analyze">
-                    <Button size="lg">
-                        <Target className="h-4 w-4 mr-2" />
-                        Analyze New Video
-                    </Button>
-                </Link>
-            </div>
-        </div>
+        </RoleGuard>
     );
 }
