@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-interface Application {
+export interface Application {
     id: string;
     email: string;
     username: string;
@@ -12,11 +12,11 @@ interface Application {
 
 export function useApplications() {
     const [applications, setApplications] = useState<Application[]>([]);
-    const [usersLoading, setUsersLoading] = useState(true);
-    const [usersError, setUsersError] = useState<string | null>(null);
+    const [applicationsLoading, setApplicationsLoading] = useState(true);
+    const [applicationsError, setApplicationsError] = useState<string | null>(null);
 
-    const fetchUsers = useCallback(() => {
-        setUsersLoading(true);
+    const fetchApplications = useCallback(() => {
+        setApplicationsLoading(true);
         fetch("/api/admin-application")
             .then((res) => res.json())
             .then((data) => {
@@ -34,15 +34,15 @@ export function useApplications() {
                     };
                 });
                 setApplications(transformed);
-                setUsersError(null);
+                setApplicationsError(null);
             })
-            .catch((err) => setUsersError(err.message))
-            .finally(() => setUsersLoading(false));
+            .catch((err) => setApplicationsError(err.message))
+            .finally(() => setApplicationsLoading(false));
     }, []);
 
     useEffect(() => {
-        fetchUsers();
-    }, [fetchUsers]);
+        fetchApplications();
+    }, [fetchApplications]);
 
-    return { applications, usersLoading, usersError, refreshUsers: fetchUsers };
+    return { applications, applicationsLoading, applicationsError, refreshApplications: fetchApplications };
 }

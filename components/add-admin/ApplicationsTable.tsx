@@ -31,11 +31,11 @@ const formatStatus = (status: string | null) => {
 
 export function ApplicationsTable() {
     const { user } = useAuth();
-    const { applications, usersLoading, usersError, refreshUsers } = useApplications();
+    const { applications, applicationsLoading, applicationsError, refreshApplications } = useApplications();
 
     console.log("This is applications: ", applications);
 
-    if (usersLoading) {
+    if (applicationsLoading) {
         return (
             <div className="flex items-center justify-center p-12">
                 <div className="flex flex-col items-center gap-3">
@@ -46,7 +46,7 @@ export function ApplicationsTable() {
         )
     }
 
-    if (usersError) {
+    if (applicationsError) {
         return (
             <Alert variant="destructive" className="m-4">
                 <AlertCircle className="h-4 w-4" />
@@ -118,7 +118,7 @@ export function ApplicationsTable() {
                                             )}
                                             <AddAdminConfrimationDialog
                                                 userId={applicant.id}
-                                                refreshUsers={refreshUsers}
+                                                refreshUsers={refreshApplications}
                                                 status={applicant.status!}
                                             />
                                         </div>
@@ -164,7 +164,7 @@ export function ApplicationsTable() {
                                 <AddAdminConfrimationDialog
                                     userId={applicant.id}
                                     status={applicant.status!}
-                                    refreshUsers={refreshUsers}
+                                    refreshUsers={refreshApplications}
                                     buttonClassName="w-full"
                                 />
                             </div>

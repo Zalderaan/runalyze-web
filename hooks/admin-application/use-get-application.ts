@@ -1,7 +1,7 @@
 import { useAuth } from "@/context/user_context";
 import { useState, useEffect } from "react";
 
-interface Application {
+export interface Application {
     applicationId: number;
     status: string;
     submittedAt: string;

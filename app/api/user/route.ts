@@ -6,7 +6,8 @@ export async function GET() {
     // find all users
     const { data: users, error } = await supabase
         .from('users')
-        .select('id, email, username, user_role')
+        .select('id, email, username')
+        .eq('user_role', 'user')
         .order('created_at', { ascending: false });
 
     if (error) {
