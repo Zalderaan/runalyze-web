@@ -24,7 +24,6 @@ export function EnableAdminConfirmationDialog({
     buttonClassName?: string | null
 }) {
     const { updateAdminStatus, isStatusUpdating, statusUpdateError } = useToggleStatus();
-
     // async function handleToggleAdminStatus() {
     //     await updateAdminStatus(userId,);
     //     refreshUsers();
@@ -38,8 +37,8 @@ export function EnableAdminConfirmationDialog({
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant={'default'} className={cn("...", buttonClassName)}>
-                    Enable admin
+                <Button variant={'default'} className={cn("...", buttonClassName, "bg-blue-500")}>
+                    Enable
                 </Button>
             </DialogTrigger>
             <DialogContent>

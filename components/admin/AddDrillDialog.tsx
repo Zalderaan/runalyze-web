@@ -52,7 +52,7 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
     const stepDefaults: Record<number, any> = {
         1: { drill_name: "", area: undefined, performance_level: undefined },
         2: { sets: undefined, reps: undefined, frequency: undefined },
-        3: { instructions: "" }, // Add step 3 default values when you define the schema
+        3: { instructions: { steps: [] } }, // Add step 3 default values when you define the schema
         4: { video: undefined }, // Add step 4 default values when you define the schema
     }
 
@@ -137,7 +137,7 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
             </DialogTrigger>
             <DialogContent className="max-h-[80vh] overflow-y-auto">
                 <FormProvider {...form}>
-                    <form onSubmit={form.handleSubmit(onStepSubmit)}>
+                    <form onSubmit={form.handleSubmit(onStepSubmit)} className="space-y-4">
                         <DialogHeader>
                             <DialogTitle>Add Drill</DialogTitle>
                             <DialogDescription>Add a new drill to be suggested for users (Step {step} of 4)</DialogDescription>

@@ -9,7 +9,7 @@ import {
     CardDescription,
     CardContent,
 } from "@/components/ui/card";
-import { ArrowLeft, Repeat, Target } from 'lucide-react'
+import { ArrowLeft, Repeat, Target, ThumbsDown, ThumbsUp } from 'lucide-react'
 import { useGetDrill } from "@/hooks/drills/use-get-drill";
 import { DeleteDrillConfirmDialog } from "@/components/admin/DeleteDrillConfirmDialog";
 import { EditDrillDialog } from "@/components/admin/EditDrillDialog";
@@ -87,6 +87,31 @@ export default function DrillDetails() {
                                 <Target className="h-4 w-4 mr-2" />
                                 {drill.performance_level}
                             </span>
+                        </div>
+
+                        {/* Feedback Stats */}
+                        <div className="grid grid-cols-3 gap-4">
+                            <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200">
+                                <ThumbsUp className="h-5 w-5 text-green-600" />
+                                <div>
+                                    <p className="text-xs text-gray-500">Helpful</p>
+                                    <p className="text-lg font-semibold text-green-700">{drill.helpful_count}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center space-x-2 p-3 bg-red-50 rounded-lg border border-red-200">
+                                <ThumbsDown className="h-5 w-5 text-red-600" />
+                                <div>
+                                    <p className="text-xs text-gray-500">Not Helpful</p>
+                                    <p className="text-lg font-semibold text-red-700">{drill.not_helpful_count}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center space-x-2 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                                <Target className="h-5 w-5 text-yellow-600" />
+                                <div>
+                                    <p className="text-xs text-gray-500">Total Rating Score</p>
+                                    <p className="text-lg font-semibold text-yellow-700">{drill.helpful_count - drill.not_helpful_count}</p>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Video */}

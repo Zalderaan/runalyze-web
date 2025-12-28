@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToggleStatus } from "@/hooks/users/use-toggle-status";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function DisableAdminConfirmationDialog({
     userId,
@@ -24,7 +25,6 @@ export function DisableAdminConfirmationDialog({
     buttonClassName?: string | null
 }) {
     const { updateAdminStatus, isStatusUpdating, statusUpdateError } = useToggleStatus();
-
     // async function handleToggleAdminStatus() {
     //     await updateAdminStatus(userId,);
     //     refreshUsers();
@@ -39,7 +39,7 @@ export function DisableAdminConfirmationDialog({
         <Dialog>
             <DialogTrigger asChild>
                 <Button variant={'destructive'} className={cn("...", buttonClassName)}>
-                    Disable admin
+                    Disable
                 </Button>
             </DialogTrigger>
             <DialogContent>

@@ -11,18 +11,12 @@ import { RoleGuard } from "@/components/RoleGuard";
 export default function AdminDrills() {
     const [searchTerm, setSearchTerm] = useState("");
     const [refreshKey, setRefreshKey] = useState(0);
-    const { user } = useAuth();
-
-    const isAuthorized = user?.user_role === "admin" || user?.user_role === "owner"
-
-    // // If user is not admin, show NotFoundPage
-    // if (!user || !isAuthorized) {
-    //     // console.log('this is user: ', user);
-    //     return <NotFoundPage />;
-    // }
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     function handleDrillAdded() {
         setRefreshKey((k) => k + 1);
+        setCurrentPage(1); // Reset to first page when adding new drill
     }
 
     return (
@@ -37,7 +31,13 @@ export default function AdminDrills() {
                     </div>
                 </div>
 
-                <DrillsList refreshKey={refreshKey} searchTerm={searchTerm} />
+                <DrillsList
+                    refreshKey={refreshKey}
+                    searchTerm={searchTerm}
+                    currentPage={currentPage}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                />
             </main>
         </RoleGuard>
     )

@@ -525,12 +525,12 @@ export default function AnalyzePage() {
                             />
                             <Label htmlFor="vid-upload" className="cursor-pointer">
                                 <div className={`
-                                border-2 border-dashed rounded-lg p-8 text-center transition-colors
-                                ${error && !videoFile ? 'border-red-300 bg-red-50' :
+                                    border-2 border-dashed rounded-lg p-8 text-center transition-colors w-full
+                                    ${error && !videoFile ? 'border-red-300 bg-red-50' :
                                         videoFile ? 'border-green-300 bg-green-50' :
                                             'border-gray-300 hover:border-gray-400 hover:bg-gray-50'}
-                                ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}
-                            `}>
+                                    ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}
+                                `}>
                                     {error && !videoFile ? (
                                         <div className="space-y-3">
                                             <AlertCircle className="h-12 w-12 text-red-600 mx-auto" />

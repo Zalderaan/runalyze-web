@@ -81,8 +81,8 @@ export function AdminApplyForm({
 
             toast.success(
                 <div className="flex flex-col">
-                    <strong>Application Submitted!</strong>
-                    <span className="text-xs text-gray-500">Your application is pending review.</span>
+                    <strong>Account create!</strong>
+                    <span className="text-xs text-gray-500">You may now upload required documents to queue your applicaiton for review.</span>
                 </div>,
                 {
                     duration: 5000

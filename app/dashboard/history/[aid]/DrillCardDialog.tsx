@@ -54,7 +54,7 @@ export function DrillCardDialog({
         }
     };
 
-    console.log("reason: ", reason);
+    // console.log("reason: ", reason);
 
     return (
         <Dialog>

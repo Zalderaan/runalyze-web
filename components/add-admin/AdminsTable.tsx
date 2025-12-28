@@ -4,16 +4,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAdmins } from "@/hooks/users/use-admins"
 import { Loader2, AlertCircle, Users } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { RemoveAdminConfirmationDialog } from "./RemoveAdminConfirmationDialog"
-import { AddAdminConfrimationDialog } from "./AddAdminDialog"
 import { useAuth } from "@/context/user_context"
 import { Button } from "../ui/button"
 import { DisableAdminConfirmationDialog } from "@/components/add-admin/DisableAdminConfirmationDialog"
 import { EnableAdminConfirmationDialog } from "@/components/add-admin/EnableAdminConfirmationDialog"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 export function AdminTable() {
     const { user } = useAuth();
     const { admins, usersLoading, usersError, refreshUsers } = useAdmins();
+    const isMobile = useIsMobile();
 
     if (usersLoading) {
         return (
@@ -78,8 +78,8 @@ export function AdminTable() {
                                         <span
                                             className={
                                                 one_user.is_active
-                                                ? "inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700"
-                                                : "inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-700"
+                                                    ? "inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700"
+                                                    : "inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-700"
                                             }
                                         >
                                             {one_user.is_active === true ? "Active" : "Disabled"}
@@ -131,13 +131,19 @@ export function AdminTable() {
                             </div>
                             {
                                 one_user.is_active ? (
-                                    <Button>
-                                        Disable
-                                    </Button>
+                                    <DisableAdminConfirmationDialog
+                                        userId={one_user.id}  // Fixed: use the admin's ID
+                                        refreshUsers={refreshUsers}  // Fixed: pass function directly
+                                        currentUserId={user?.id ?? ""}  // Fixed: current logged-in user
+                                        buttonClassName={isMobile ? "w-full" : "w-fit"}
+                                    />
                                 ) : (
-                                    <Button>
-                                        Enable
-                                    </Button>
+                                    <EnableAdminConfirmationDialog
+                                        userId={one_user.id}  // Fixed: use the admin's ID
+                                        refreshUsers={refreshUsers}  // Fixed: pass function directly
+                                        currentUserId={user?.id ?? ""}  // Fixed: current logged-in user
+                                        buttonClassName={`bg-blue-500 ${isMobile ? "w-full" : "w-fit"}`}
+                                    />
                                 )
                             }
                             {/* {one_user.user_role === "admin" ? (

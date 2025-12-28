@@ -5,7 +5,7 @@ export const step1Schema = z.object({
     area: z.enum(["head_position", "back_position", "arm_flexion", "right_knee", "left_knee", "foot_strike"], {
         errorMap: () => ({ message: "Please select a valid area" }),
     }),
-    performance_level: z.enum(["poor", "needs improvement"], {
+    performance_level: z.enum(["poor", "needs improvement", "good", "excellent"], {
         errorMap: () => ({ message: "Please select a valid performance level" }),
     }),
 });

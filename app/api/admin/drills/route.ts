@@ -81,12 +81,32 @@ export async function POST(req: NextRequest) {
     }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
-        const { data, error } = await supabase
+        const { searchParams } = new URL(req.url);
+        const page = parseInt(searchParams.get('page') || '1');
+        const limit = parseInt(searchParams.get('limit') || '10');
+        const search = searchParams.get('search') || '';
+        
+        // Calculate offset for pagination
+        const offset = (page - 1) * limit;
+
+        // Build query with search filter
+        let query = supabase
             .from('drills')
-            .select(`id, drill_name, area, performance_level, video_url`)
-            .order('created_at', {ascending: false})
+            .select('id, drill_name, area, performance_level, video_url, sets, reps, rep_type, frequency, helpful_count, not_helpful_count, created_at', { count: 'exact' });
+
+        // Add search filter if provided
+        if (search) {
+            query = query.ilike('drill_name', `%${search}%`);
+        }
+
+        // Add pagination and ordering
+        query = query
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1);
+
+        const { data, error, count } = await query;
 
         if (error) {
             console.error("Error getting drills: ", error);
@@ -96,9 +116,16 @@ export async function GET() {
             );
         }
 
-        const drills = data
         return NextResponse.json(
-            { drills },
+            { 
+                drills: data,
+                pagination: {
+                    total: count || 0,
+                    page,
+                    limit,
+                    totalPages: Math.ceil((count || 0) / limit)
+                }
+            },
             { status: 200 }
         )
     } catch (error) {
