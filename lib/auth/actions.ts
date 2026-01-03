@@ -10,14 +10,15 @@ export async function signIn({ email, password }: LoginUser) {
     });
 
     if (!res.ok) throw new Error('Invalid credentials');
-    const { userId, username, user_role } = await res.json();
-    await createSession(userId);
+    const { userId, username, user_role, is_active } = await res.json();
+    await createSession(userId, user_role) ;
     // console.log("user details: ", userId, email, username, user_role);
     return { 
         id: userId, 
         email: email, 
         username: username,
-        user_role: user_role
+        user_role: user_role,
+        is_active: is_active
     };
 }
 
@@ -29,8 +30,8 @@ export async function signUp({ username, email, password }: RegisterUser) {
     });
 
     if (!res.ok) throw new Error('Sign up failed');
-    const { userId } = await res.json();
-    await createSession(userId);
+    const { userId, user_role } = await res.json();
+    await createSession(userId, user_role);
     return { id: userId };
 }
 

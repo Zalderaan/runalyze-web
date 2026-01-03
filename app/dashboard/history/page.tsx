@@ -7,11 +7,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { 
-    History, 
-    Search, 
-    Calendar, 
-    TrendingUp, 
+import {
+    History,
+    Search,
+    Calendar,
+    TrendingUp,
     Clock,
     PlayCircle,
     FileX,
@@ -19,34 +19,29 @@ import {
     AlertCircle,
     Target,
     Activity,
-    ArrowUpRight
+    ArrowUpRight,
+    GitCompare,
+    X,
+    Check
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { getScoreColor } from "@/components/home/RunAnalysis";
+import { RoleGuard } from "@/components/RoleGuard";
+import { cn } from "@/lib/utils";
+import { HistoryItem } from "@/hooks/use-history";
 
-// Enhanced HistoryItem component for the new design
-interface HistoryItemProps {
-    analysis: {
-        id: number;
-        created_at: string;
-        head_position: number;
-        back_position: number;
-        arm_flexion: number;
-        right_knee: number;
-        left_knee: number;
-        foot_strike: number;
-        overall_score: number;
-        video_id: number;
-        user_id: number;
-        videos?: {
-            thumbnail_url: string;
-        };
-        thumbnail_url?: string;
-    };
+// ...existing HistoryItemProps interface...
+
+interface HistoryCardProps {
+    analysis: HistoryItem
+    compareMode?: boolean;
+    isSelected?: boolean;
+    selectionOrder?: number;
+    onSelect?: (id: number) => void;
 }
 
-function HistoryCard({ analysis }: HistoryItemProps) {
+function HistoryCard({ analysis, compareMode, isSelected, selectionOrder, onSelect }: HistoryCardProps) {
     const createdAt = new Date(analysis.created_at);
     const formattedDate = createdAt.toLocaleDateString('en-US', {
         weekday: 'short',
@@ -59,10 +54,31 @@ function HistoryCard({ analysis }: HistoryItemProps) {
         minute: '2-digit',
     });
 
-    const thumbnailUrl = analysis.thumbnail_url || analysis.videos?.thumbnail_url;
+    const thumbnailUrl = analysis.videos?.[0].thumbnail_url ?? ""
+
+    // Debug: Check what's coming through
+    console.log(`Analysis ${analysis.id}:`, {
+        videos: analysis.videos,
+        thumbnailUrl: thumbnailUrl,
+        hasUrl: !!thumbnailUrl
+    });
+
+    const handleClick = () => {
+        if (compareMode && onSelect) {
+            onSelect(analysis.id);
+        }
+    };
 
     return (
-        <Card className="group hover:shadow-lg transition-all duration-200 hover:border-blue-200">
+        <Card
+            className={cn(
+                "group hover:shadow-lg transition-all duration-200",
+                compareMode && "cursor-pointer",
+                isSelected && "ring-2 ring-blue-500 bg-blue-50",
+                !isSelected && compareMode && "hover:border-blue-200"
+            )}
+            onClick={handleClick}
+        >
             <div className="aspect-video relative overflow-hidden rounded-t-lg">
                 {thumbnailUrl ? (
                     <Image
@@ -82,9 +98,22 @@ function HistoryCard({ analysis }: HistoryItemProps) {
                         Analysis #{analysis.id}
                     </Badge>
                 </div>
+
+                {/* Selection indicator for compare mode */}
+                {compareMode && isSelected && (
+                    <div className="absolute top-2 left-2 h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                        {selectionOrder}
+                    </div>
+                )}
+                {compareMode && !isSelected && (
+                    <div className="absolute top-2 left-2 h-8 w-8 bg-white/80 rounded-full flex items-center justify-center border-2 border-dashed border-gray-400">
+                        <Check className="h-4 w-4 text-gray-400" />
+                    </div>
+                )}
             </div>
-            
+
             <CardContent className="p-4 space-y-3">
+                {/* ...existing card content... */}
                 <div className="flex items-center justify-between">
                     <div className="space-y-1">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -107,7 +136,6 @@ function HistoryCard({ analysis }: HistoryItemProps) {
                 <Separator />
 
                 <div className="space-y-3">
-                    {/* Primary Metrics Row */}
                     <div className="grid grid-cols-3 gap-2 text-xs">
                         <div className="text-center p-2 bg-gray-50 rounded">
                             <div className="font-medium">Head</div>
@@ -122,8 +150,7 @@ function HistoryCard({ analysis }: HistoryItemProps) {
                             <div className={getScoreColor(analysis.foot_strike)}>{analysis.foot_strike.toFixed(2)}%</div>
                         </div>
                     </div>
-                    
-                    {/* Secondary Metrics Row */}
+
                     <div className="grid grid-cols-3 gap-2 text-xs">
                         <div className="text-center p-2 bg-blue-50 rounded">
                             <div className="font-medium">Arm Flexion</div>
@@ -140,12 +167,14 @@ function HistoryCard({ analysis }: HistoryItemProps) {
                     </div>
                 </div>
 
-                <Link href={`/dashboard/history/${analysis.id}`}>
-                    <Button variant="outline" className="w-full group-hover:bg-blue-50 group-hover:border-blue-300">
-                        View Details
-                        <ArrowUpRight className="h-4 w-4 ml-2" />
-                    </Button>
-                </Link>
+                {!compareMode && (
+                    <Link href={`/dashboard/history/${analysis.id}`}>
+                        <Button variant="outline" className="w-full group-hover:bg-blue-50 group-hover:border-blue-300">
+                            View Details
+                            <ArrowUpRight className="h-4 w-4 ml-2" />
+                        </Button>
+                    </Link>
+                )}
             </CardContent>
         </Card>
     );
@@ -156,19 +185,39 @@ export default function HistoryPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [sortBy, setSortBy] = useState<"date" | "score">("date");
 
-    // Group and filter history
+    // Compare mode state
+    const [compareMode, setCompareMode] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+    const handleSelectForCompare = (id: number) => {
+        setSelectedIds(prev => {
+            if (prev.includes(id)) {
+                return prev.filter(i => i !== id);
+            }
+            if (prev.length >= 2) {
+                // Replace the first selection
+                return [prev[1], id];
+            }
+            return [...prev, id];
+        });
+    };
+
+    const exitCompareMode = () => {
+        setCompareMode(false);
+        setSelectedIds([]);
+    };
+
+    // ...existing processed useMemo...
     const processedHistory = useMemo(() => {
         let filtered = history;
 
-        // Filter by search term (if needed, could search by date or ID)
         if (searchTerm) {
-            filtered = history.filter(item => 
+            filtered = history.filter(item =>
                 item.id.toString().includes(searchTerm) ||
                 new Date(item.created_at).toLocaleDateString().includes(searchTerm)
             );
         }
 
-        // Sort
         filtered.sort((a, b) => {
             if (sortBy === "date") {
                 return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -177,7 +226,6 @@ export default function HistoryPage() {
             }
         });
 
-        // Group by time periods
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
@@ -204,19 +252,7 @@ export default function HistoryPage() {
         return { groups, total: filtered.length };
     }, [history, searchTerm, sortBy]);
 
-    // Calculate statistics for display (but don't use stats variable)
-    useMemo(() => {
-        if (history.length === 0) return null;
-        
-        const totalAnalyses = history.length;
-        const avgScore = Math.round(history.reduce((sum, item) => sum + item.overall_score, 0) / totalAnalyses);
-        const lastAnalysis = history.reduce((latest, current) => 
-            new Date(current.created_at) > new Date(latest.created_at) ? current : latest
-        );
-        const bestScore = Math.max(...history.map(item => item.overall_score));
-
-        return { totalAnalyses, avgScore, lastAnalysis, bestScore };
-    }, [history]);
+    // ...existing loading/error/empty states...
 
     if (isLoading) {
         return (
@@ -276,184 +312,162 @@ export default function HistoryPage() {
         );
     }
 
-    return (
-        <div className="container mx-auto max-w-6xl px-4 py-8 space-y-8">
-            {/* Header Section */}
+    // Helper to render a group of cards
+    const renderGroup = (items: typeof history, title: string, Icon: typeof Clock) => {
+        if (items.length === 0) return null;
+        return (
             <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                        <History className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Analysis History</h1>
-                        <p className="text-muted-foreground">Track your running form progress over time</p>
-                    </div>
-                </div>
-
-                {/* Stats Overview */}
-                {/* {stats && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <Card>
-                            <CardContent className="p-4 text-center">
-                                <div className="text-2xl font-bold text-blue-600">{stats.totalAnalyses}</div>
-                                <div className="text-sm text-muted-foreground">Total Analyses</div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="p-4 text-center">
-                                <div className={`text-2xl font-bold ${getScoreColor(stats.avgScore)}`}>{stats.avgScore}%</div>
-                                <div className="text-sm text-muted-foreground">Average Score</div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="p-4 text-center">
-                                <div className={`text-2xl font-bold ${getScoreColor(stats.bestScore)}`}>{stats.bestScore}%</div>
-                                <div className="text-sm text-muted-foreground">Best Score</div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="p-4 text-center">
-                                <div className="text-2xl font-bold text-purple-600">
-                                    {Math.ceil((new Date().getTime() - new Date(stats.lastAnalysis.created_at).getTime()) / (1000 * 60 * 60 * 24))}d
-                                </div>
-                                <div className="text-sm text-muted-foreground">Days Since Last</div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                )} */}
-            </div>
-
-            {/* Controls */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <div className="relative flex-1 sm:w-80">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
-                            placeholder="Search by ID or date..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10"
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                    <Icon className="h-5 w-5" />
+                    {title} ({items.length})
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {items.map(analysis => (
+                        <HistoryCard
+                            key={analysis.id}
+                            analysis={analysis}
+                            compareMode={compareMode}
+                            isSelected={selectedIds.includes(analysis.id)}
+                            selectionOrder={selectedIds.indexOf(analysis.id) + 1}
+                            onSelect={handleSelectForCompare}
                         />
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
+    return (
+        <RoleGuard allowedRoles={["user"]}>
+            <div className="container mx-auto max-w-6xl px-4 py-8 space-y-8">
+                {/* Compare Mode Floating Bar */}
+                {compareMode && (
+                    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-white border shadow-lg rounded-full px-6 py-3 flex items-center gap-4">
+                        <div className="text-sm">
+                            <span className="font-medium">{selectedIds.length}/2</span> selected
+                        </div>
+                        <Separator orientation="vertical" className="h-6" />
+                        <Button
+                            variant="default"
+                            disabled={selectedIds.length !== 2}
+                            asChild
+                        >
+                            <Link href={`/dashboard/compare?first=${selectedIds[0]}&second=${selectedIds[1]}`}>
+                                <GitCompare className="h-4 w-4 mr-2" />
+                                Compare
+                            </Link>
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={exitCompareMode}>
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </div>
+                )}
+
+                {/* Header Section */}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-blue-100 rounded-lg">
+                                <History className="h-6 w-6 text-blue-600" />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold tracking-tight">Analysis History</h1>
+                                <p className="text-muted-foreground">Track your running form progress over time</p>
+                            </div>
+                        </div>
+
+                        {/* Compare Mode Toggle */}
+                        {history.length >= 2 && (
+                            <Button
+                                variant={compareMode ? "secondary" : "outline"}
+                                onClick={() => compareMode ? exitCompareMode() : setCompareMode(true)}
+                            >
+                                <GitCompare className="h-4 w-4 mr-2" />
+                                {compareMode ? "Cancel Compare" : "Compare Runs"}
+                            </Button>
+                        )}
+                    </div>
+
+                    {compareMode && (
+                        <Card className="bg-blue-50 border-blue-200">
+                            <CardContent className="py-3 px-4">
+                                <p className="text-sm text-blue-800">
+                                    <strong>Compare Mode:</strong> Select two analyses to compare side by side. Click on cards to select them.
+                                </p>
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
+
+                {/* Controls */}
+                <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                    {/* ...existing controls... */}
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <div className="relative flex-1 sm:w-80">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <Input
+                                placeholder="Search by ID or date..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-10"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant={sortBy === "date" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSortBy("date")}
+                        >
+                            <Calendar className="h-4 w-4 mr-2" />
+                            By Date
+                        </Button>
+                        <Button
+                            variant={sortBy === "score" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSortBy("score")}
+                        >
+                            <TrendingUp className="h-4 w-4 mr-2" />
+                            By Score
+                        </Button>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Button
-                        variant={sortBy === "date" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setSortBy("date")}
-                    >
-                        <Calendar className="h-4 w-4 mr-2" />
-                        By Date
-                    </Button>
-                    <Button
-                        variant={sortBy === "score" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setSortBy("score")}
-                    >
-                        <TrendingUp className="h-4 w-4 mr-2" />
-                        By Score
-                    </Button>
+
+                {/* Results */}
+                <div className="space-y-8">
+                    {processedHistory.total === 0 ? (
+                        <Card className="border-dashed">
+                            <CardContent className="pt-6">
+                                <div className="text-center py-8">
+                                    <Search className="h-8 w-8 text-gray-400 mx-auto mb-4" />
+                                    <h3 className="font-semibold text-gray-900 mb-2">No Results Found</h3>
+                                    <p className="text-muted-foreground">
+                                        Try adjusting your search terms or clear the search to see all analyses.
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <>
+                            {renderGroup(processedHistory.groups.today, "Today", Clock)}
+                            {renderGroup(processedHistory.groups.yesterday, "Yesterday", Calendar)}
+                            {renderGroup(processedHistory.groups.thisWeek, "This Week", Calendar)}
+                            {renderGroup(processedHistory.groups.thisMonth, "This Month", Calendar)}
+                            {renderGroup(processedHistory.groups.older, "Older Analyses", History)}
+                        </>
+                    )}
+                </div>
+
+                {/* Quick Action */}
+                <div className="text-center pt-8 border-t">
+                    <Link href="/dashboard/analyze">
+                        <Button size="lg">
+                            <Target className="h-4 w-4 mr-2" />
+                            Analyze New Video
+                        </Button>
+                    </Link>
                 </div>
             </div>
-
-            {/* Results */}
-            <div className="space-y-8">
-                {processedHistory.total === 0 ? (
-                    <Card className="border-dashed">
-                        <CardContent className="pt-6">
-                            <div className="text-center py-8">
-                                <Search className="h-8 w-8 text-gray-400 mx-auto mb-4" />
-                                <h3 className="font-semibold text-gray-900 mb-2">No Results Found</h3>
-                                <p className="text-muted-foreground">
-                                    Try adjusting your search terms or clear the search to see all analyses.
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ) : (
-                    <>
-                        {processedHistory.groups.today.length > 0 && (
-                            <div className="space-y-4">
-                                <h2 className="text-xl font-semibold flex items-center gap-2">
-                                    <Clock className="h-5 w-5" />
-                                    Today ({processedHistory.groups.today.length})
-                                </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {processedHistory.groups.today.map(analysis => (
-                                        <HistoryCard key={analysis.id} analysis={analysis} />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {processedHistory.groups.yesterday.length > 0 && (
-                            <div className="space-y-4">
-                                <h2 className="text-xl font-semibold flex items-center gap-2">
-                                    <Calendar className="h-5 w-5" />
-                                    Yesterday ({processedHistory.groups.yesterday.length})
-                                </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {processedHistory.groups.yesterday.map(analysis => (
-                                        <HistoryCard key={analysis.id} analysis={analysis} />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {processedHistory.groups.thisWeek.length > 0 && (
-                            <div className="space-y-4">
-                                <h2 className="text-xl font-semibold flex items-center gap-2">
-                                    <Calendar className="h-5 w-5" />
-                                    This Week ({processedHistory.groups.thisWeek.length})
-                                </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {processedHistory.groups.thisWeek.map(analysis => (
-                                        <HistoryCard key={analysis.id} analysis={analysis} />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {processedHistory.groups.thisMonth.length > 0 && (
-                            <div className="space-y-4">
-                                <h2 className="text-xl font-semibold flex items-center gap-2">
-                                    <Calendar className="h-5 w-5" />
-                                    This Month ({processedHistory.groups.thisMonth.length})
-                                </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {processedHistory.groups.thisMonth.map(analysis => (
-                                        <HistoryCard key={analysis.id} analysis={analysis} />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {processedHistory.groups.older.length > 0 && (
-                            <div className="space-y-4">
-                                <h2 className="text-xl font-semibold flex items-center gap-2">
-                                    <History className="h-5 w-5" />
-                                    Older Analyses ({processedHistory.groups.older.length})
-                                </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {processedHistory.groups.older.map(analysis => (
-                                        <HistoryCard key={analysis.id} analysis={analysis} />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </>
-                )}
-            </div>
-
-            {/* Quick Action */}
-            <div className="text-center pt-8 border-t">
-                <Link href="/dashboard/analyze">
-                    <Button size="lg">
-                        <Target className="h-4 w-4 mr-2" />
-                        Analyze New Video
-                    </Button>
-                </Link>
-            </div>
-        </div>
+        </RoleGuard>
     );
 }

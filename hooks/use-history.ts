@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/user_context';
-import router from 'next/router';
 
-interface HistoryItem {
+export interface HistoryItem {
     id: number;
     created_at: string;
     head_position: number;
@@ -15,11 +14,12 @@ interface HistoryItem {
     video_id: number;
     user_id: number;
     videos: {
+        video_url: string;
         thumbnail_url: string;
-    }
+    }[];
 }
 
-let hasFetched = false;
+// let hasFetched = false;
 
 export function useHistory() {
     const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -76,6 +76,7 @@ export function useHistory() {
             }
 
             const data = await response.json();
+            console.log("data.analysis: ", data.analysis)
             return data.analysis;
         } catch (error) {
             console.error("Error getting analysis details: ", error);
@@ -91,7 +92,7 @@ export function useHistory() {
             fetchHistory();
         } else {
             setHistory([]);
-            hasFetched = false; // optional reset if user logs out
+            // hasFetched = false; // optional reset if user logs out
         }
     }, [user]);
 

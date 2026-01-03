@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/context/user_context';
-import { Home, History, SquareActivity, Dumbbell, LucidePersonStanding, } from "lucide-react"
+import { Home, History, SquareActivity, Dumbbell, LucidePersonStanding, GitCompareArrows, } from "lucide-react"
 import {
     Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup,
     SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
@@ -27,6 +27,11 @@ const items = [
         url: "/dashboard/analyze",
         icon: SquareActivity,
     },
+    {
+        title: "Compare",
+        url: "/dashboard/compare",
+        icon: GitCompareArrows
+    }
 ]
 
 const admin_items = [
@@ -81,7 +86,7 @@ export function AppSidebar() {
                     </SidebarGroupContent>
                 </SidebarGroup>
                 <SidebarGroup>
-                    {user?.user_role === "admin" && (
+                    {user?.user_role === "admin"  && (
                         <>
                             <SidebarGroupLabel>Admin</SidebarGroupLabel>
                             <SidebarGroupContent>

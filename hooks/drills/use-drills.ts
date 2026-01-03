@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-// Define the Drill interface
 export interface Drill {
     id: string | number;
     drill_name: string;
@@ -15,33 +14,47 @@ export interface Drill {
     rep_type: string;
     instructions: {
         steps: Array<string>
-    }
+    };
+    helpful_count: number;
+    not_helpful_count: number;
     created_at: Date;
     updated_at: Date;
 }
 
-export function useDrills(refreshKey?: number) {
+export interface PaginationInfo {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
+export function useDrills(page = 1, limit = 10, searchTerm = "", refreshKey?: number) {
     const [drills, setDrills] = useState<Drill[]>([]);
+    const [pagination, setPagination] = useState<PaginationInfo | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const [addLoading, setAddLoading] = useState(false);
     const [addError, setAddError] = useState<string | null>(null);
 
-    // const [drillLoading, setDrillLoading] = useState(false);
-    // const [drillError, setDrillError] = useState<string | null>(null);
-
     useEffect(() => {
         fetchDrills();
-    }, [refreshKey]);
+    }, [refreshKey, page, limit, searchTerm]);
 
     async function fetchDrills() {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch("/api/admin/drills");
-            const { drills } = await res.json();
+            const params = new URLSearchParams({
+                page: page.toString(),
+                limit: limit.toString(),
+                search: searchTerm
+            });
+            
+            const res = await fetch(`/api/admin/drills?${params}`);
+            const { drills, pagination } = await res.json();
             setDrills(drills);
+            setPagination(pagination);
         } catch (err) {
             setError("Failed to fetch drills");
         } finally {
@@ -49,27 +62,7 @@ export function useDrills(refreshKey?: number) {
         }
     }
 
-    // async function getDrill(id: string | number) {
-    //     setDrillLoading(true);
-    //     setDrillError(null);
-    //     try {
-    //         const res = await fetch(`/api/admin/drills/${id}`)
-
-    //         if (!res.ok) {
-    //             const errorData = await res.json();
-    //             throw new Error(errorData.message || "Failed to fetch drill details");
-    //         }
-    //         const { drill } = await res.json();
-    //         return drill;
-    //     } catch (error) {
-    //         setDrillError(error instanceof Error ? error.message : String(error));
-    //         return null;
-    //     } finally {
-    //         setDrillLoading(false)
-    //     }
-    // }
-
-    async function addDrill(formPayload: any) {
+    async function addDrill(formPayload: FormData) {
         setAddLoading(true);
         setAddError(null);
         try {
@@ -78,7 +71,7 @@ export function useDrills(refreshKey?: number) {
                 body: formPayload,
             });
             if (res.ok) {
-                fetchDrills(); // Refresh list after adding
+                fetchDrills();
             } else {
                 setAddError("Failed to add drill");
             }
@@ -86,12 +79,7 @@ export function useDrills(refreshKey?: number) {
             setAddError("Failed to add drill");
         } finally {
             // await fetch('http://localhost:8000/drills/clear-cache/', {
-            //     method: "POST",
-            //     headers: {
-            //         "Content-Type": "application/json",
-            //     }
-            // });
-            await fetch('https://runalyze-python.onrender.com/drills/clear-cache/', {
+            await fetch(`https://runalyze-python.onrender.com/drills/clear-cache/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -103,13 +91,11 @@ export function useDrills(refreshKey?: number) {
 
     return {
         drills,
+        pagination,
         loading,
         error,
         addDrill,
         addLoading,
         addError,
-        // getDrill,
-        // drillLoading,
-        // drillError
     };
 }

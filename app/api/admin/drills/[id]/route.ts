@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabase } from '@/lib/supabase'
+import { cookies } from 'next/headers'
 
 interface DrillUpdateFields {
     drill_name?: string;
@@ -15,8 +16,9 @@ interface DrillUpdateFields {
     video_url?: string;
 }
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 
+// export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+    export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const paramsObj = await params;
     const id = paramsObj.id;
 
@@ -58,6 +60,59 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 }
 
+export async function PATCH(
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const cookieStore = await cookies();
+        const cookie = cookieStore.get("session")?.value;
+        if (!cookie) {
+            return NextResponse.json(
+                { message: "Not authenticated" },
+                { status: 401 }
+            );
+        }
+
+        const { id } = await params;
+        const body = await request.json();
+        const { action } = body; // 'helpful' or 'not_helpful'
+
+        const columnToUpdate = action === 'helpful' ? 'helpful_count' : 'not_helpful_count';
+
+        // Fetch both counts
+        const { data: drill } = await supabase
+            .from('drills')
+            .select('helpful_count, not_helpful_count')
+            .eq('id', id)
+            .single();
+
+        // Increment the appropriate column
+        const { data, error } = await supabase
+            .from('drills')
+            .update({ [columnToUpdate]: (drill?.[columnToUpdate] || 0) + 1 })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) {
+            return NextResponse.json(
+                { message: "Error updating helpful count", error: error.message },
+                { status: 500 }
+            );
+        }
+
+        return NextResponse.json({ data }, { status: 200 });
+    } catch (error) {
+        console.error("Error updating helpful count:", error);
+        return NextResponse.json(
+            { message: "Server error" },
+            { status: 500 }
+        );
+    }
+}
+
+// export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const formData = await req.formData();
@@ -165,6 +220,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    // export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const { id } = await params;
 
     try {

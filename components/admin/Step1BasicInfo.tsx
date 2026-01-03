@@ -1,5 +1,5 @@
 import { useFormContext } from "react-hook-form"
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -13,10 +13,11 @@ export function Step1BasicInfo() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Drill Name</FormLabel>
+                        <FormDescription className="text-xs">Name of the drill or exercise.</FormDescription>
                         <FormControl>
                             <Input placeholder="ex. A-Skips" {...field} />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-xs" />
                     </FormItem>
                 )}
             />
@@ -27,9 +28,10 @@ export function Step1BasicInfo() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Area</FormLabel>
+                        <FormDescription className="text-xs">Body area or aspect being targeted.</FormDescription>
                         <FormControl>
                             <Select onValueChange={field.onChange} value={field.value}>
-                                <SelectTrigger>
+                                <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Select Area" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -42,7 +44,7 @@ export function Step1BasicInfo() {
                                 </SelectContent>
                             </Select>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-xs" />
                     </FormItem>
                 )}
             />
@@ -53,22 +55,24 @@ export function Step1BasicInfo() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Performance Level</FormLabel>
+                        <FormDescription className="text-xs">Current performance level of the athlete.</FormDescription>
                         <FormControl>
                             <Select onValueChange={field.onChange} value={field.value}>
-                                <SelectTrigger>
+                                <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Select athlete's performance level" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="poor">Poor</SelectItem>
                                     <SelectItem value="needs improvement">Needs Improvement</SelectItem>
+                                    <SelectItem value="good">Good</SelectItem>
+                                    <SelectItem value="excellent">Excellent</SelectItem>
                                 </SelectContent>
                             </Select>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-xs" />
                     </FormItem>
                 )}
             />
-
         </>
     )
 }

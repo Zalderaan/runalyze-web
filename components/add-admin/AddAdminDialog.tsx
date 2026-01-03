@@ -1,3 +1,4 @@
+'use client'
 import { useUpdateRole } from "@/hooks/users/use-updateRole";
 import {
     Dialog,
@@ -12,9 +13,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export function AddAdminConfrimationDialog({ isAdmin = false, userId, refreshUsers, buttonClassName = null }: { isAdmin: boolean, userId: number | string, refreshUsers: () => void, buttonClassName?: string | null, }) {
+export function AddAdminConfrimationDialog({ status, userId, refreshUsers, buttonClassName = null }: { status: string, userId: number | string, refreshUsers: () => void, buttonClassName?: string | null, }) {
     const { updateUserRole } = useUpdateRole();
-    
+
+
+
     async function handleMakeAdmin() {
         await updateUserRole(userId, "admin");
         refreshUsers();
@@ -24,7 +27,7 @@ export function AddAdminConfrimationDialog({ isAdmin = false, userId, refreshUse
         <>
             <Dialog>
                 <DialogTrigger asChild>
-                    <Button variant={'outline'} disabled={isAdmin} className={cn("...", buttonClassName)}>Make admin</Button>
+                    <Button variant={'outline'} disabled={status != "for_review"} className={cn("...", buttonClassName)}>Make admin</Button>
                 </DialogTrigger>
                 <DialogContent>
                     <DialogHeader>

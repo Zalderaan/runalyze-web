@@ -16,6 +16,7 @@ import { EditDrillDialog } from "@/components/admin/EditDrillDialog";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { RoleGuard } from "@/components/RoleGuard";
 
 export default function DrillDetails() {
     const [refreshKey, setRefreshKey] = useState(0);
@@ -49,104 +50,106 @@ export default function DrillDetails() {
     };
 
     return (
-        <div className="container mx-auto p-6 max-w-4xl space-y-2">
-            {/* Go back button at the top left */}
-            <div className="mb-4">
-                <Button asChild variant="outline">
-                    <Link href='/dashboard/drills/'>
-                        <ArrowLeft className="mr-2" />
-                        Go back
-                    </Link>
-                </Button>
-            </div>
-            <Card>
-                <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
-                    <div className="space-y-1">
-                        <CardTitle className="text-2xl font-bold">
-                            {drill.drill_name}
-                        </CardTitle>
-                        <CardDescription>
-                            {formatArea(drill.area)}
-                        </CardDescription>
-                    </div>
-                    <div className="flex flex-row items-center space-x-2">
-                        {/* <Button variant="outline" size="icon">
+        <RoleGuard allowedRoles={["owner", "admin"]}>
+            <div className="container mx-auto p-6 max-w-4xl space-y-2">
+                {/* Go back button at the top left */}
+                <div className="mb-4">
+                    <Button asChild variant="outline">
+                        <Link href='/dashboard/drills/'>
+                            <ArrowLeft className="mr-2" />
+                            Go back
+                        </Link>
+                    </Button>
+                </div>
+                <Card>
+                    <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
+                        <div className="space-y-1">
+                            <CardTitle className="text-2xl font-bold">
+                                {drill.drill_name}
+                            </CardTitle>
+                            <CardDescription>
+                                {formatArea(drill.area)}
+                            </CardDescription>
+                        </div>
+                        <div className="flex flex-row items-center space-x-2">
+                            {/* <Button variant="outline" size="icon">
                             <Edit className="h-4 w-4" />
                         </Button> */}
-                        <EditDrillDialog drill={drill} onSuccess={() => setRefreshKey((k) => k + 1)} />
-                        <DeleteDrillConfirmDialog drill_id={drill_id} />
-                    </div>
-                </CardHeader>
+                            <EditDrillDialog drill={drill} onSuccess={() => setRefreshKey((k) => k + 1)} />
+                            <DeleteDrillConfirmDialog drill_id={drill_id} />
+                        </div>
+                    </CardHeader>
 
-                <CardContent className="space-y-6">
-                    {/* Performance Level Badge */}
-                    <div>
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPerformanceColor(drill.performance_level)}`}>
-                            <Target className="h-4 w-4 mr-2" />
-                            {drill.performance_level}
-                        </span>
-                    </div>
-
-                    {/* Video */}
-                    {drill.video_url && (
+                    <CardContent className="space-y-6">
+                        {/* Performance Level Badge */}
                         <div>
-                            <h3 className="text-lg font-semibold mb-2">Video Demo</h3>
-                            <video
-                                controls
-                                className="w-full rounded-lg border"
-                                src={drill.video_url}
-                            >
-                                Your browser does not support the video tag.
-                            </video>
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPerformanceColor(drill.performance_level)}`}>
+                                <Target className="h-4 w-4 mr-2" />
+                                {drill.performance_level}
+                            </span>
                         </div>
-                    )}
 
-                    {/* Sets, Reps, Duration */}
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
-                            <Repeat className="h-5 w-5 text-gray-600" />
+                        {/* Video */}
+                        {drill.video_url && (
                             <div>
-                                <p className="text-xs text-gray-500">Sets</p>
-                                <p className="text-lg font-semibold">{drill.sets}</p>
+                                <h3 className="text-lg font-semibold mb-2">Video Demo</h3>
+                                <video
+                                    controls
+                                    className="w-full rounded-lg border"
+                                    src={drill.video_url}
+                                >
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        )}
+
+                        {/* Sets, Reps, Duration */}
+                        <div className="grid grid-cols-3 gap-4">
+                            <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
+                                <Repeat className="h-5 w-5 text-gray-600" />
+                                <div>
+                                    <p className="text-xs text-gray-500">Sets</p>
+                                    <p className="text-lg font-semibold">{drill.sets}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
+                                <Repeat className="h-5 w-5 text-gray-600" />
+                                <div>
+                                    <p className="text-xs text-gray-500">Reps</p>
+                                    <p className="text-lg font-semibold">{drill.reps} {drill.rep_type}</p>
+                                </div>
                             </div>
                         </div>
-                        <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
-                            <Repeat className="h-5 w-5 text-gray-600" />
-                            <div>
-                                <p className="text-xs text-gray-500">Reps</p>
-                                <p className="text-lg font-semibold">{drill.reps} {drill.rep_type}</p>
-                            </div>
-                        </div>
-                    </div>
 
-                    {/* Instructions */}
-                    <div>
-                        <h3 className="text-lg font-semibold mb-2">Instructions</h3>
-                        <ol className="flex flex-col space-y-2 text-gray-700 leading-relaxed">
-                            {drill.instructions.steps.map(
-                                (step, idx) => (
-                                    <li className="pl-2 py-2 bg-white rounded shadow-sm border border-gray-100 flex items-start" key={idx}>
-                                        <span className="font-medium text-blue-600 mr-2">{idx + 1}.</span>
-                                        <span className="text-gray-700">{step}</span>
-                                    </li>
+                        {/* Instructions */}
+                        <div>
+                            <h3 className="text-lg font-semibold mb-2">Instructions</h3>
+                            <ol className="flex flex-col space-y-2 text-gray-700 leading-relaxed">
+                                {drill.instructions.steps.map(
+                                    (step, idx) => (
+                                        <li className="pl-2 py-2 bg-white rounded shadow-sm border border-gray-100 flex items-start" key={idx}>
+                                            <span className="font-medium text-blue-600 mr-2">{idx + 1}.</span>
+                                            <span className="text-gray-700">{step}</span>
+                                        </li>
+                                    )
                                 )
-                            )
-                            }
-                        </ol>
-                    </div>
+                                }
+                            </ol>
+                        </div>
 
-                    {/* Frequency */}
-                    <div className="flex items-center space-x-2 text-sm text-gray-600">
-                        <span className="font-medium">Frequency:</span>
-                        <span>{drill.frequency}x per week</span>
-                    </div>
-                </CardContent>
+                        {/* Frequency */}
+                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                            <span className="font-medium">Frequency:</span>
+                            <span>{drill.frequency}x per week</span>
+                        </div>
+                    </CardContent>
 
-                <CardFooter className="text-xs text-gray-500 border-t pt-4">
-                    Created: {new Date(drill.created_at).toLocaleDateString()} |
-                    Last updated: {new Date(drill.updated_at).toLocaleDateString()}
-                </CardFooter>
-            </Card>
-        </div>
+                    <CardFooter className="text-xs text-gray-500 border-t pt-4">
+                        Created: {new Date(drill.created_at).toLocaleDateString()} |
+                        Last updated: {new Date(drill.updated_at).toLocaleDateString()}
+                    </CardFooter>
+                </Card>
+            </div>
+        </RoleGuard>
     )
 }

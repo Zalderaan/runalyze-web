@@ -5,10 +5,11 @@ import { signIn, signOut } from '@/lib/auth/actions'; // Import signIn and signO
 import { decrypt } from '@/lib/auth/session';
 
 export interface User {
-    id: string; 
+    id: string;
     email: string;
     username: string;
-    user_role: "admin" | "user";
+    user_role: "admin" | "user" | "owner" | "admin_applicant";
+    is_active: boolean;
 }
 
 interface AuthContextType {
@@ -56,10 +57,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
             // Call your signIn server action
             const userData = await signIn({ email, password });
+            // console.log(userData.user_role);
             if (userData) {
                 setUser(userData);
                 // console.log('this is user in context: ', userData);
-                router.push("/dashboard/home");
+                if (userData.user_role === "admin" || userData.user_role === "owner") {
+                    router.push("/dashboard/admin");
+                } else if (userData.user_role === "admin_applicant"){
+                    router.push("/dashboard/admin-application");
+                } else {
+                    router.push("/dashboard/home");
+                }
             } else {
                 throw new Error("Login failed");
             }
@@ -122,7 +130,7 @@ async function getCurrentUser() {
     if (session?.userId) {
         try {
             const response = await fetch(`/api/user/${session.userId}`);
-            if (!response.ok){
+            if (!response.ok) {
                 console.error("Error fetching user details: ", response.statusText);
                 return null;
             }
@@ -140,10 +148,10 @@ async function getCurrentUser() {
 
 // async function getCurrentUser() {
 //     console.log("get curr user called");
-    
+
 //     const cookie = Cookies.get('session'); // get session cookie
 //     console.log("Cookie: ", cookie);
-    
+
 //     if (!cookie) return null;
 
 //     try {

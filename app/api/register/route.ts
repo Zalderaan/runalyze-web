@@ -35,13 +35,13 @@ export async function POST(req: NextRequest) {
         // insert user 
         const { data: newUser, error: insertError } = await supabase
             .from('users')
-            .insert([{ email, username, password: hashedPassword }])
+            .insert([{ email, username, password: hashedPassword, user_role: 'user' }])
             .select()
             .single()
 
         if (insertError) {
             return NextResponse.json(
-                { 
+                {
                     message: "Database insert error",
                     code: insertError.code,
                     details: insertError.message,
@@ -52,7 +52,11 @@ export async function POST(req: NextRequest) {
         }
 
         return NextResponse.json(
-            { message: "Sign up successful", userId: newUser.id },
+            { 
+                message: "Sign up successful", 
+                userId: newUser.id, 
+                user_role: newUser.user_role 
+            },
             { status: 200 }
         )
     } catch (error) {

@@ -25,7 +25,7 @@ export function useDeleteDrill(id: string | number | undefined) {
                 return;
             }
 
-            // delete backend cache
+            // // delete backend cache
             await fetch(`https://runalyze-python.onrender.com/drills/clear-cache/`, {
                 method: "POST",
                 headers: {
