@@ -26,18 +26,18 @@ export function useDeleteDrill(id: string | number | undefined) {
             }
 
             // // delete backend cache
-            // await fetch(`https://runalyze-python.onrender.com/drills/clear-cache/`, {
-            //     method: "POST",
-            //     headers: {
-            //         "Content-Type": "application/json",
-            //     }
-            // });
-            await fetch('http://localhost:8000/drills/clear-cache/', {
+            await fetch(`https://runalyze-python.onrender.com/drills/clear-cache/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 }
             });
+            // await fetch('http://localhost:8000/drills/clear-cache/', {
+            //     method: "POST",
+            //     headers: {
+            //         "Content-Type": "application/json",
+            //     }
+            // });
             setIsDrillDeleted(true) // successful delete
 
         } catch (error) {

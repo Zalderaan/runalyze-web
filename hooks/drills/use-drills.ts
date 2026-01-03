@@ -78,7 +78,8 @@ export function useDrills(page = 1, limit = 10, searchTerm = "", refreshKey?: nu
         } catch (err) {
             setAddError("Failed to add drill");
         } finally {
-            await fetch('http://localhost:8000/drills/clear-cache/', {
+            // await fetch('http://localhost:8000/drills/clear-cache/', {
+            await fetch(`https://runalyze-python.onrender.com/drills/clear-cache/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/user_context';
-import router from 'next/router';
 
 export interface HistoryItem {
     id: number;
@@ -20,7 +19,7 @@ export interface HistoryItem {
     }[];
 }
 
-let hasFetched = false;
+// let hasFetched = false;
 
 export function useHistory() {
     const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -93,7 +92,7 @@ export function useHistory() {
             fetchHistory();
         } else {
             setHistory([]);
-            hasFetched = false; // optional reset if user logs out
+            // hasFetched = false; // optional reset if user logs out
         }
     }, [user]);
 
