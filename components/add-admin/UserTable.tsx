@@ -5,7 +5,7 @@ import { useUsers } from "@/hooks/users/use-users"
 import { Loader2, AlertCircle, Users } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { RemoveAdminConfirmationDialog } from "./RemoveAdminConfirmationDialog"
-import { AddAdminConfrimationDialog } from "./AddAdminDialog"
+// import { AddAdminConfrimationDialog } from "./AddAdminDialog"
 import { useAuth } from "@/context/user_context"
 
 export function UserTable() {

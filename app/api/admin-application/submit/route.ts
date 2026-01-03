@@ -13,6 +13,14 @@ export async function POST(req: NextRequest) {
             .select()
             .eq("email", email);
 
+        if (selectError) {
+            console.error("Error checking existing users:", selectError);
+            return NextResponse.json(
+                { error: "Failed to verify existing users." },
+                { status: 500 }
+            );
+        }
+
         if (existingUsers && existingUsers.length > 0) {
             return NextResponse.json(
                 { error: "This email is already taken." },

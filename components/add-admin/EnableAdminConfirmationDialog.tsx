@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 export function EnableAdminConfirmationDialog({
     userId,
     refreshUsers,
-    currentUserId,
+    // currentUserId,
     buttonClassName = null,
 }: {
     userId: number | string,
@@ -48,6 +48,9 @@ export function EnableAdminConfirmationDialog({
                 <DialogDescription>
                     This will enable admin privileges from this user. Continue?
                 </DialogDescription>
+                {statusUpdateError && (
+                    <p className="text-red-600 text-sm mt-2">{statusUpdateError}</p>
+                )}
                 <DialogFooter>
                     <DialogClose asChild>
                         <Button variant={'outline'}>Cancel</Button>

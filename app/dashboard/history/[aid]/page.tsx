@@ -9,15 +9,12 @@ import {
     Card,
     CardHeader,
     CardTitle,
-    CardDescription,
     CardContent,
-    CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TrashIcon } from "lucide-react";
 import { AreaScore } from "@/components/history/area-score";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import Link from "next/link";
 import { DrillCardDialog } from "./DrillCardDialog";
 import { RoleGuard } from "@/components/RoleGuard";
 interface DetailedFeedback {

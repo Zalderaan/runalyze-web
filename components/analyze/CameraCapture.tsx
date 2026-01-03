@@ -54,6 +54,14 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
         }
     }, [stream]);
 
+    const stopRecording = useCallback(() => {
+        if (mediaRecorderRef.current?.state === 'recording') {
+            mediaRecorderRef.current.stop();
+            setIsRecording(false);
+            setRecordingTime(0);
+        }
+    }, []);
+
     const startRecording = useCallback(() => {
         if (!stream) return;
 
@@ -91,15 +99,15 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
             }
             clearInterval(timer);
         }, 30000);
-    }, [stream]);
+    }, [stream, stopRecording]);
 
-    const stopRecording = useCallback(() => {
-        if (mediaRecorderRef.current?.state === 'recording') {
-            mediaRecorderRef.current.stop();
-            setIsRecording(false);
-            setRecordingTime(0);
-        }
-    }, []);
+    // const stopRecording = useCallback(() => {
+    //     if (mediaRecorderRef.current?.state === 'recording') {
+    //         mediaRecorderRef.current.stop();
+    //         setIsRecording(false);
+    //         setRecordingTime(0);
+    //     }
+    // }, []);
 
     const handleRetake = useCallback(() => {
         setRecordedVideo(null);

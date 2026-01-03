@@ -16,8 +16,9 @@ interface DrillUpdateFields {
     video_url?: string;
 }
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 
+// export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+    export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const paramsObj = await params;
     const id = paramsObj.id;
 
@@ -61,7 +62,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function PATCH(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const cookieStore = await cookies();
@@ -111,6 +112,7 @@ export async function PATCH(
     }
 }
 
+// export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const formData = await req.formData();
@@ -218,6 +220,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    // export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const { id } = await params;
 
     try {

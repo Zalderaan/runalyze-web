@@ -4,23 +4,19 @@ import { DrillsList } from "@/components/admin/DrillsList"
 import { AddDrillDialog } from "@/components/admin/AddDrillDialog"
 import { useState } from "react"
 import { SearchInput } from "@/components/admin/SearchInput";
-import { useAuth } from "@/context/user_context";
-import NotFoundPage from "@/app/404/page";
+// import { useAuth } from "@/context/user_context";
+// import NotFoundPage from "@/app/404/page";
 import { RoleGuard } from "@/components/RoleGuard";
 
 export default function AdminDrills() {
     const [searchTerm, setSearchTerm] = useState("");
     const [refreshKey, setRefreshKey] = useState(0);
-    const { user } = useAuth();
-
-    // // If user is not admin, show NotFoundPage
-    // if (!user || user.user_role !== "admin") {
-    //     // console.log('this is user: ', user);
-    //     return <NotFoundPage />;
-    // }
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     function handleDrillAdded() {
         setRefreshKey((k) => k + 1);
+        setCurrentPage(1);
     }
 
     return (
@@ -35,7 +31,13 @@ export default function AdminDrills() {
                     </div>
                 </div>
 
-                <DrillsList refreshKey={refreshKey} searchTerm={searchTerm} />
+                <DrillsList
+                    refreshKey={refreshKey}
+                    searchTerm={searchTerm}
+                    currentPage={currentPage}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                />
             </main>
         </RoleGuard>
     )

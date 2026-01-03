@@ -80,7 +80,7 @@ export default function AnalyzePage() {
     const [videoFile, setVideoFile] = useState<File | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState<ProgressUpdate | null>(null);
-    const [jobId, setJobId] = useState<string | null>(null);
+    // const [jobId, setJobId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [results, setResults] = useState<{
         download_url: string;
@@ -190,7 +190,7 @@ export default function AnalyzePage() {
         setResults(null);
         setIsProcessing(true);
         setProgress(null);
-        setJobId(null);
+        // setJobId(null);
 
         try {
             const formData = new FormData();
@@ -212,7 +212,7 @@ export default function AnalyzePage() {
 
             const { job_id, status } = await response.json();
             console.log("✅ Received job_id:", job_id, "Status:", status); // ✅ Debug
-            setJobId(job_id);
+            // setJobId(job_id);
 
             // ✅ Wait for backend to initialize progress tracker
             console.log("Waiting 1 second for backend to initialize..."); // ✅ Debug

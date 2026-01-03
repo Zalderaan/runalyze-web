@@ -54,11 +54,13 @@ export async function POST(req: NextRequest) {
         }
 
         // Get or create admin application
-        let { data: application, error: appError } = await supabase
+        const { data: existingApplication, error: appError } = await supabase
             .from("admin_applications")
             .select("application_id")
             .eq("user_id", session.userId)
             .single();
+
+        let application = existingApplication;
 
         if (appError && appError.code === 'PGRST116') {
             // Create new application

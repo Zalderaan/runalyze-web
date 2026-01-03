@@ -11,12 +11,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToggleStatus } from "@/hooks/users/use-toggle-status";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 export function DisableAdminConfirmationDialog({
     userId,
     refreshUsers,
-    currentUserId,
+    // currentUserId,
     buttonClassName = null,
 }: {
     userId: number | string,
@@ -49,6 +48,9 @@ export function DisableAdminConfirmationDialog({
                 <DialogDescription>
                     This will disable admin privileges from this user until you re-enable it. Continue?
                 </DialogDescription>
+                {statusUpdateError && (
+                    <p className="text-red-600 text-sm mt-2">{statusUpdateError}</p>
+                )}
                 <DialogFooter>
                     <DialogClose asChild>
                         <Button variant={'outline'}>Cancel</Button>

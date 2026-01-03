@@ -1,4 +1,4 @@
-import { useGetTopDrills } from "@/hooks/drills/use-get-top-drills";
+// import { useGetTopDrills } from "@/hooks/drills/use-get-top-drills";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ThumbsUp, ThumbsDown, Trophy, Loader2, AlertCircle } from "lucide-react";

@@ -88,8 +88,10 @@ export function AdminApplyForm({
                     duration: 5000
                 }
             );
-        } catch (error: any) {
-            toast.error(error.message || "Failed to submit application. Please try again.");
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Failed to submit application. Please try again.";
+            toast.error(message);
+            // toast.error(error.message || "Failed to submit application. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
@@ -197,7 +199,7 @@ export function AdminApplyForm({
                 </CardContent>
                 <CardFooter className='flex flex-col gap-2 items-center px-4 sm:px-6'>
                     <p className='text-xs sm:text-sm text-gray-500 text-center'>
-                        Your application will be reviewed by our team. You'll receive an email response within 3-5 business days.
+                        Your application will be reviewed by our team. You&apos;ll receive an email response within 3-5 business days.
                     </p>
                 </CardFooter>
             </Card>

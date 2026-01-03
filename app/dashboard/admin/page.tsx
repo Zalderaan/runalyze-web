@@ -4,7 +4,7 @@ import { RoleGuard } from "@/components/RoleGuard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/user_context";
 import { useGetTopDrills } from "@/hooks/drills/use-get-top-drills";
-import { Dumbbell, Users, FileText, TrendingUp, ThumbsUp } from "lucide-react";
+import { Dumbbell, Users, FileText, ThumbsUp } from "lucide-react";
 import { TopDrillsList } from "@/components/drills/TopDrillsList";
 import Link from "next/link";
 import { useGetDrillCount } from "@/hooks/drills/use-get-drill-count";
@@ -12,6 +12,7 @@ import { useApplicationsCount } from "@/hooks/admin-application/use-get-applicat
 import { useUsers } from "@/hooks/users/use-users";
 import { RecentApplications } from "@/components/admin/RecentApplications";
 import { useApplications } from "@/hooks/users/use-applications";
+import { Button } from "@/components/ui/button";
 
 export default function AdminPage() {
     const { user } = useAuth();
@@ -26,7 +27,7 @@ export default function AdminPage() {
         .sort((a, b) => new Date(b.submittedAt!).getTime() - new Date(a.submittedAt!).getTime())
         .slice(0, 5);
 
-    console.log("recentApplications: ", recentApplications)
+    // console.log("recentApplications: ", recentApplications)
 
     const { topDrills, isLoading: isTopDrillsLoading, error: topDrillsError, refetch: topDrillsRefetch } = useGetTopDrills();
     const topDrill = topDrills?.[0];
@@ -39,33 +40,50 @@ export default function AdminPage() {
 
     const { counts, isLoading: isApplicationsCountLoading, error: applicationsCountError, refetch: applicationsCountRefetch } = useApplicationsCount();
 
+    const handleRefreshStats = () => {
+        refetch();
+        refreshUsers();
+        refreshApplications();
+        topDrillsRefetch();
+        applicationsCountRefetch();
+    }
     return (
         <RoleGuard allowedRoles={["admin", "owner"]}>
             <main className="flex flex-col space-y-6">
-                <div>
-                    <h1 className="font-semibold text-3xl">Admin Dashboard</h1>
-                    <p className="text-gray-600 mt-1">Overview of your platform</p>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="font-semibold text-3xl">Admin Dashboard</h1>
+                        <p className="text-gray-600 mt-1">Overview of your platform</p>
+                    </div>
+                    <Button
+                        type="button"
+                        onClick={handleRefreshStats}
+                        className="text-sm text-blue-600 hover:underline"
+                    >
+                        Refresh data
+                    </Button>
                 </div>
 
+                {/* Quick Stats */}
                 {/* Quick Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatsCard
                         title="Total Drills"
-                        value={count.toString()}
+                        value={isLoading ? "..." : count.toString()}
                         icon={<Dumbbell className="h-5 w-5" />}
-                        description="Active drills"
+                        description={error ? "Error loading drills" : "Active drills"}
                     />
                     <StatsCard
                         title="Total Users"
                         value={usersLoading ? "..." : users.length.toString()}
                         icon={<Users className="h-5 w-5" />}
-                        description="Registered users"
+                        description={usersError ? "Error loading users" : "Registered users"}
                     />
                     <StatsCard
                         title="Pending Applications"
-                        value={counts.pending.toString()}
+                        value={isApplicationsCountLoading ? "..." : counts.pending.toString()}
                         icon={<FileText className="h-5 w-5" />}
-                        description="Awaiting review"
+                        description={applicationsCountError ? "Error loading applications" : "Awaiting review"}
                     />
                     <StatsCard
                         title="Top Drill Score"
@@ -99,7 +117,13 @@ export default function AdminPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle>Recent Applications</CardTitle>
-                            <CardDescription>Latest admin applications</CardDescription>
+                            <CardDescription>
+                                {applicationsLoading
+                                    ? "Loading latest admin applications..."
+                                    : applicationsError
+                                        ? "Error loading applications"
+                                        : "Latest admin applications"}
+                            </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <RecentApplications applications={recentApplications} />

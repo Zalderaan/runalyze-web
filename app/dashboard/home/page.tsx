@@ -146,9 +146,7 @@ export default function HomePage() {
                             ) : latestAnalysis != null ? (
                                 <RunAnalysis analysis={{
                                     ...latestAnalysis,
-                                    thumbnail_url: Array.isArray(latestAnalysis.videos)
-                                        ? latestAnalysis.videos[0]?.thumbnail_url ?? ""
-                                        : latestAnalysis.videos?.thumbnail_url ?? "",
+                                    thumbnail_url: latestAnalysis.videos[0].thumbnail_url ?? "" 
                                 }} />
                             ) : (
                                 <NoAnalysis />

@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 
 export function AddAdminConfrimationDialog({ status, userId, refreshUsers, buttonClassName = null }: { status: string, userId: number | string, refreshUsers: () => void, buttonClassName?: string | null, }) {
     const { updateUserRole } = useUpdateRole();

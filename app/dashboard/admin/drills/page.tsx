@@ -4,8 +4,6 @@ import { DrillsList } from "@/components/admin/DrillsList"
 import { AddDrillDialog } from "@/components/admin/AddDrillDialog"
 import { useState } from "react"
 import { SearchInput } from "@/components/admin/SearchInput";
-import { useAuth } from "@/context/user_context";
-import NotFoundPage from "@/app/404/page";
 import { RoleGuard } from "@/components/RoleGuard";
 
 export default function AdminDrills() {

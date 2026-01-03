@@ -6,7 +6,7 @@ import { Loader2, AlertCircle, Users } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 // import { RemoveAdminConfirmationDialog } from "./RemoveAdminConfirmationDialog"
 import { AddAdminConfrimationDialog } from "./AddAdminDialog"
-import { useAuth } from "@/context/user_context"
+// import { useAuth } from "@/context/user_context"
 import { ViewDocumentsDialog } from "./ViewDocumentsDialog"
 
 const getStatusBadgeClass = (status: string | null) => {
@@ -30,7 +30,7 @@ const formatStatus = (status: string | null) => {
 };
 
 export function ApplicationsTable() {
-    const { user } = useAuth();
+    // const { user } = useAuth();
     const { applications, applicationsLoading, applicationsError, refreshApplications } = useApplications();
 
     console.log("This is applications: ", applications);
