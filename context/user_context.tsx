@@ -1,7 +1,7 @@
 'use client';
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from "next/navigation";
-import { signIn, signOut } from '@/lib/auth/actions'; // Import signIn and signOut
+import { signIn, signOut, signUp } from '@/lib/auth/actions'; // Import signIn and signOut
 import { decrypt } from '@/lib/auth/session';
 
 export interface User {
@@ -15,8 +15,10 @@ export interface User {
 interface AuthContextType {
     user: User | null;
     login: (email: string, password: string) => Promise<void>;
+    signUp: (username: string, email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
     isLoading: boolean;
+    isSigningUp: boolean;
     isLoggingOut: boolean;
 }
 
@@ -26,6 +28,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [isSigningUp, setIsSigningUp] = useState(false);
     const router = useRouter();
 
     // Load user from session on initial load
@@ -51,6 +54,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         loadUser();
     }, []);
 
+    // sign up function
+    const signUpHandler = async (username: string, email: string, password: string) => {
+        setIsSigningUp(true);
+        try {
+            await signUp({ username, email, password });
+            const fullUser = await getCurrentUser();
+            if (fullUser) {
+                setUser(fullUser);
+                router.push("/dashboard/home");
+            } else {
+                throw new Error("Failed to loaduser after signup");
+            }
+        } catch (error: any) {
+            console.error("Sign up error: ", error);
+            throw new Error("Sign up failed");
+        } finally {
+            setIsSigningUp(false);
+        }
+    }
+
     // login function
     const login = async (email: string, password: string) => {
         setIsLoading(true);
@@ -63,7 +86,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 // console.log('this is user in context: ', userData);
                 if (userData.user_role === "admin" || userData.user_role === "owner") {
                     router.push("/dashboard/admin");
-                } else if (userData.user_role === "admin_applicant"){
+                } else if (userData.user_role === "admin_applicant") {
                     router.push("/dashboard/admin-application");
                 } else {
                     router.push("/dashboard/home");
@@ -98,8 +121,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const value: AuthContextType = {
         user,
         login,
+        signUp: signUpHandler,
         logout,
         isLoading,
+        isSigningUp,
         isLoggingOut
     };
 

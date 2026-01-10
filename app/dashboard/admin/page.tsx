@@ -55,13 +55,13 @@ export default function AdminPage() {
                         <h1 className="font-semibold text-3xl">Admin Dashboard</h1>
                         <p className="text-gray-600 mt-1">Overview of your platform</p>
                     </div>
-                    <Button
+                    {/* <Button
                         type="button"
                         onClick={handleRefreshStats}
                         className="text-sm text-blue-600 hover:underline"
                     >
                         Refresh data
-                    </Button>
+                    </Button> */}
                 </div>
 
                 {/* Quick Stats */}

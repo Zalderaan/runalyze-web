@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 export function useDeleteDrill(id: string | number | undefined) {
     const [isDrillDeleting, setIsDrillDeleting] = useState(false)
     const [isDrillDeleteError, setIsDrillDeleteError] = useState(false)
@@ -26,18 +28,12 @@ export function useDeleteDrill(id: string | number | undefined) {
             }
 
             // // delete backend cache
-            await fetch(`https://runalyze-python.onrender.com/drills/clear-cache/`, {
+            await fetch(`${API_URL}/drills/clear-cache/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 }
             });
-            // await fetch('http://localhost:8000/drills/clear-cache/', {
-            //     method: "POST",
-            //     headers: {
-            //         "Content-Type": "application/json",
-            //     }
-            // });
             setIsDrillDeleted(true) // successful delete
 
         } catch (error) {

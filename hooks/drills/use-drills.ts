@@ -28,6 +28,8 @@ export interface PaginationInfo {
     totalPages: number;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL
+
 export function useDrills(page = 1, limit = 10, searchTerm = "", refreshKey?: number) {
     const [drills, setDrills] = useState<Drill[]>([]);
     const [pagination, setPagination] = useState<PaginationInfo | null>(null);
@@ -79,7 +81,7 @@ export function useDrills(page = 1, limit = 10, searchTerm = "", refreshKey?: nu
             setAddError("Failed to add drill");
         } finally {
             // await fetch('http://localhost:8000/drills/clear-cache/', {
-            await fetch(`https://runalyze-python.onrender.com/drills/clear-cache/`, {
+            await fetch(`${API_URL}/drills/clear-cache/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

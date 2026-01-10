@@ -139,9 +139,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                 <CardFooter className='flex flex-col gap-4 items-center px-4 sm:px-6'>
                     <p className='text-sm sm:text-base'>Don&apos;t have an account?{' '}
                         <span className='text-blue-500 underline cursor-pointer hover:text-blue-950'>
-                            <Link href='/auth/register'>
-                                Sign Up
-                            </Link>
+                            <Link href='/auth/register'>Sign Up</Link>
                         </span>
                     </p>
                 </CardFooter>

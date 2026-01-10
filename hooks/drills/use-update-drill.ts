@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL
+
 export function useUpdateDrill() {
     const [updateLoading, setUpdateLoading] = useState(false)
     const [isUpdateError, setIsUpdateError] = useState(false);
@@ -33,7 +35,7 @@ export function useUpdateDrill() {
             //     method: "POST",
             //     headers: { "Content-Type": "application/json" },
             // });
-            await fetch('https://runalyze-python.onrender.com/drills/clear-cache/', {
+            await fetch(`${API_URL}/drills/clear-cache/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
             });

@@ -16,9 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { signUp } from '@/lib/auth/actions';
 import { useAuth } from "@/context/user_context";
-// import { useUserContext } from "@/context/userContext";
 
 // form validation schema
 const formSchema = z.object({
@@ -43,7 +41,7 @@ export function RegisterForm({
 }: React.ComponentPropsWithoutRef<"div">) {
 
     // const { signIn, signUp, signOut } = useUserContext();
-    const { login } = useAuth();
+    const { signUp, isSigningUp } = useAuth();
 
     // define form
     const form = useForm<z.infer<typeof formSchema>>({
@@ -60,8 +58,7 @@ export function RegisterForm({
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
         // console.log(data);
         try {
-            await signUp(data);
-            await login(data.email, data.password);
+            await signUp(data.username, data.email, data.password);
             toast.success(
                 <div className="flex flex-col">
                     <strong>Registration successful!</strong>
@@ -166,8 +163,13 @@ export function RegisterForm({
                             </div>
 
                             <div className='flex flex-col gap-2 sm:gap-3 w-full pt-2'>
-                                <Button className='w-full h-10 sm:h-11 text-sm sm:text-base' type="submit">Sign up</Button>
-                                {/* <Button variant={'outline'} className='w-full h-10 sm:h-11 text-sm sm:text-base'>Sign up with Google</Button> */}
+                                <Button
+                                    className='w-full h-10 sm:h-11 text-sm sm:text-base'
+                                    type="submit"
+                                    disabled={isSigningUp}
+                                >
+                                    {isSigningUp ? "Signing up..." : "Sign Up"}
+                                </Button>
                             </div>
                         </form>
                     </Form>
