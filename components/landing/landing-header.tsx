@@ -1,6 +1,6 @@
 'use client'
 import { useAuth } from "@/context/user_context"
-import { Activity } from "lucide-react"
+import Image from 'next/image'
 import { Button } from "../ui/button"
 import Link from "next/link"
 
@@ -15,7 +15,8 @@ export function LandingHeader() {
             <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <Activity className="h-8 w-8 text-blue-600" />
+                        {/* <Activity className="h-8 w-8 text-blue-600" /> */}
+                        <Image src="/runalyze-new-logo.png" alt="Runalyze logo" height={50} width={50}/> 
                         <h1 className="text-2xl font-bold text-gray-900">Runalyze</h1>
                     </div>
                     <div className="flex items-center gap-4">

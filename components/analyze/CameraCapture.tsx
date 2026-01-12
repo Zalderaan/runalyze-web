@@ -3,7 +3,8 @@
 import { useRef, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Camera, Video, StopCircle, RotateCcw, X } from 'lucide-react';
+import { Camera, Video, StopCircle, RotateCcw, X, SwitchCamera } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CameraCaptureProps {
     onCapture: (file: File) => void;
@@ -14,6 +15,7 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const chunksRef = useRef<Blob[]>([]);
+    const isMobile = useIsMobile();
 
     const [isRecording, setIsRecording] = useState(false);
     const [isPreviewing, setIsPreviewing] = useState(false);
@@ -21,6 +23,7 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
     const [stream, setStream] = useState<MediaStream | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [recordingTime, setRecordingTime] = useState(0);
+    const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
 
     const startCamera = useCallback(async () => {
         try {
@@ -42,7 +45,7 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
             console.error('Error accessing camera:', err);
             setError('Could not access camera. Please check permissions.');
         }
-    }, []);
+    }, [facingMode]);
 
     const stopCamera = useCallback(() => {
         if (stream) {
@@ -100,6 +103,25 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
             clearInterval(timer);
         }, 30000);
     }, [stream, stopRecording]);
+
+    const toggleCamera = useCallback(() => {
+        stopCamera();
+        setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
+    }, [stopCamera]);
+
+    // Update useEffect to restart camera when facingMode changes
+    useState(() => {
+        startCamera();
+        return () => stopCamera();
+    });
+
+    // Add effect to restart camera when facingMode changes
+    useCallback(() => {
+        if (stream) {
+            stopCamera();
+            startCamera();
+        }
+    }, [facingMode]);
 
     // const stopRecording = useCallback(() => {
     //     if (mediaRecorderRef.current?.state === 'recording') {
@@ -167,6 +189,17 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
                         src={isPreviewing && recordedVideo ? URL.createObjectURL(recordedVideo) : undefined}
                         className="w-full h-full object-contain"
                     />
+
+                    {isMobile && !isRecording && !isPreviewing && (
+                        <Button
+                            onClick={toggleCamera}
+                            variant="secondary"
+                            size="icon"
+                            className="absolute top-4 left-4"
+                        >
+                            <SwitchCamera className="h-4 w-4" />
+                        </Button>
+                    )}
 
                     {/* Recording Indicator */}
                     {isRecording && (

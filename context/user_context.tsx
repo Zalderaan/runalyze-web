@@ -10,6 +10,13 @@ export interface User {
     username: string;
     user_role: "admin" | "user" | "owner" | "admin_applicant";
     is_active: boolean;
+    created_at: string;
+    height_cm?: number;
+    weight_kg?: number;
+    bmi?: number;
+    time_3k?: number;
+    time_5k?: number;
+    time_10k?: number;
 }
 
 interface AuthContextType {

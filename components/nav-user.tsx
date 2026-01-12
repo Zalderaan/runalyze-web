@@ -2,8 +2,8 @@
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { LogOutIcon, EllipsisVertical } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { LogOutIcon, EllipsisVertical, UserIcon } from "lucide-react";
 // import { signOut } from '@/lib/auth/actions'
 import { useAuth } from "@/context/user_context";
 
@@ -56,14 +56,14 @@ export function NavUser({
                         align='end'
                         sideOffset={4}
                     >
-                        {/* <DropdownMenuItem 
+                        <DropdownMenuItem 
                             className="flex flex-row items-center justify-start"
                             onClick={() => router.push('/dashboard/user')}
                         >
                             <UserIcon />
                             <span>Go to profile</span>
-                        </DropdownMenuItem> */}
-                        {/* <DropdownMenuSeparator /> */}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                             className="flex flex-row items-center justify-start"
                             onClick={handleSignOut}

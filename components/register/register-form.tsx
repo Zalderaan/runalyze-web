@@ -182,6 +182,14 @@ export function RegisterForm({
                             </Link>
                         </span>
                     </p>
+
+                    <p className='text-sm sm:text-base'>Interested in coaching?{' '}
+                        <span className='text-blue-500 underline cursor-pointer hover:text-blue-950'>
+                            <Link href='/auth/admin-application'>
+                                Apply as a Coach
+                            </Link>
+                        </span>
+                    </p>
                 </CardFooter>
             </Card>
         </div>

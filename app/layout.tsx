@@ -29,6 +29,14 @@ export const metadata: Metadata = {
     template: APP_TITLE_TEMPLATE,
   },
   description: APP_DESCRIPTION,
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: '/new_favicon/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/new_favicon/favicon-32x32.png', sizes: '32x32', type: 'image/png' }
+    ],
+    apple: '/apple-touch-icon.png'
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

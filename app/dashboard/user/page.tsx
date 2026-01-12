@@ -4,40 +4,67 @@ import { useAuth } from "@/context/user_context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { 
-    User, 
-    Mail, 
-    Calendar, 
-    Settings, 
-    Activity, 
-    Trophy, 
-    Target,
-    Clock,
+import {
+    User,
+    Mail,
+    Calendar,
     Edit3,
-    Shield,
-    Bell,
-    Download
+    Save,
+    X
 } from "lucide-react";
 import { useState } from "react";
 
 export default function UserPage() {
     const { user, logout } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
+    const [formData, setFormData] = useState({
+        height_cm: user?.height_cm || '',
+        weight_kg: user?.weight_kg || '',
+        time_3k: user?.time_3k || '',
+        time_5k: user?.time_5k || '',
+        time_10k: user?.time_10k || '',
+    });
 
-    // Mock data for demonstration - replace with real data from your API
-    const userStats = {
-        totalRuns: 127,
-        totalDistance: 892.4,
-        averagePace: "6:42",
-        lastRun: "3 days ago",
-        joinDate: "March 2024",
-        streak: 12
+    const calculateBMI = (height: number, weight: number) => {
+        if (height && weight) {
+            const heightInMeters = height / 100;
+            return (weight / (heightInMeters * heightInMeters)).toFixed(1);
+        }
+        return '';
+    };
+
+    const calculateAvgPace = () => {
+        // Mock calculation - replace with real logic based on user's runs
+        return '5:30'; // Example pace per km
     };
 
     const getInitials = (name: string) => {
         return name.split(' ').map(n => n[0]).join('').toUpperCase() || name.slice(0, 2).toUpperCase();
+    };
+
+    const handleInputChange = (field: string, value: string) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleSave = () => {
+        // TODO: Implement save logic to update user data via API
+        console.log('Saving:', formData);
+        setIsEditing(false);
+    };
+
+    const handleCancel = () => {
+        setFormData({
+            height_cm: user?.height_cm || '',
+            weight_kg: user?.weight_kg || '',
+            time_3k: user?.time_3k || '',
+            time_5k: user?.time_5k || '',
+            time_10k: user?.time_10k || '',
+        });
+        setIsEditing(false);
     };
 
     const handleLogout = async () => {
@@ -60,190 +87,161 @@ export default function UserPage() {
     }
 
     return (
-        <div className="container mx-auto p-6 max-w-4xl space-y-6">
+        <div className="container mx-auto p-6 max-w-2xl space-y-6">
             {/* Header Section */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Profile Settings</h1>
-                    <p className="text-muted-foreground">Manage your account and running preferences</p>
+                    <p className="text-muted-foreground">Update your personal running details</p>
                 </div>
                 <Button onClick={handleLogout} variant="outline" className="w-fit">
                     Sign Out
                 </Button>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-3">
-                {/* Profile Card */}
-                <Card className="md:col-span-1">
-                    <CardHeader className="text-center pb-4">
-                        <div className="flex justify-center mb-4">
-                            <Avatar className="h-24 w-24">
-                                {/* <AvatarImage src={user.avatar} alt={user.username} /> */}
-                                <AvatarFallback className="text-lg font-semibold">
-                                    {getInitials(user.username)}
-                                </AvatarFallback>
-                            </Avatar>
-                        </div>
-                        <CardTitle className="text-xl">{user.username}</CardTitle>
-                        <CardDescription className="flex items-center justify-center gap-2">
-                            <Mail className="h-4 w-4" />
-                            {user.email}
-                        </CardDescription>
-                        <Badge variant="secondary" className="w-fit mx-auto mt-2">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            Joined {userStats.joinDate}
-                        </Badge>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                        <Button 
-                            variant="outline" 
-                            className="w-full"
-                            onClick={() => setIsEditing(!isEditing)}
-                        >
-                            <Edit3 className="h-4 w-4 mr-2" />
-                            Edit Profile
-                        </Button>
-                    </CardContent>
-                </Card>
-
-                {/* Stats Overview */}
-                <Card className="md:col-span-2">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Activity className="h-5 w-5 text-blue-600" />
-                            Running Statistics
-                        </CardTitle>
-                        <CardDescription>Your running journey at a glance</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="text-center p-4 rounded-lg bg-muted/50">
-                                <div className="text-2xl font-bold text-blue-600">{userStats.totalRuns}</div>
-                                <div className="text-sm text-muted-foreground">Total Runs</div>
-                            </div>
-                            <div className="text-center p-4 rounded-lg bg-muted/50">
-                                <div className="text-2xl font-bold text-green-600">{userStats.totalDistance}km</div>
-                                <div className="text-sm text-muted-foreground">Distance</div>
-                            </div>
-                            <div className="text-center p-4 rounded-lg bg-muted/50">
-                                <div className="text-2xl font-bold text-purple-600">{userStats.averagePace}</div>
-                                <div className="text-sm text-muted-foreground">Avg Pace</div>
-                            </div>
-                            <div className="text-center p-4 rounded-lg bg-muted/50">
-                                <div className="text-2xl font-bold text-orange-600">{userStats.streak}</div>
-                                <div className="text-sm text-muted-foreground">Day Streak</div>
-                            </div>
-                        </div>
-                        
-                        <Separator className="my-4" />
-                        
-                        <div className="flex items-center justify-between text-sm text-muted-foreground">
-                            <div className="flex items-center gap-2">
-                                <Clock className="h-4 w-4" />
-                                Last run: {userStats.lastRun}
-                            </div>
-                            <Button variant="ghost" size="sm">
-                                View All Activity →
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Settings Grid */}
-            <div className="grid gap-6 md:grid-cols-2">
-                {/* Account Settings */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Settings className="h-5 w-5" />
-                            Account Settings
-                        </CardTitle>
-                        <CardDescription>Manage your account preferences</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        <Button variant="ghost" className="w-full justify-start">
-                            <User className="h-4 w-4 mr-2" />
-                            Personal Information
-                        </Button>
-                        <Button variant="ghost" className="w-full justify-start">
-                            <Shield className="h-4 w-4 mr-2" />
-                            Privacy & Security
-                        </Button>
-                        <Button variant="ghost" className="w-full justify-start">
-                            <Bell className="h-4 w-4 mr-2" />
-                            Notifications
-                        </Button>
-                        <Button variant="ghost" className="w-full justify-start">
-                            <Download className="h-4 w-4 mr-2" />
-                            Export Data
-                        </Button>
-                    </CardContent>
-                </Card>
-
-                {/* Achievements */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Trophy className="h-5 w-5 text-yellow-600" />
-                            Recent Achievements
-                        </CardTitle>
-                        <CardDescription>Your latest running milestones</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center gap-3 p-3 rounded-lg border">
-                            <div className="h-10 w-10 rounded-full bg-yellow-100 flex items-center justify-center">
-                                <Trophy className="h-5 w-5 text-yellow-600" />
-                            </div>
-                            <div className="flex-1">
-                                <div className="font-medium">Distance Warrior</div>
-                                <div className="text-sm text-muted-foreground">Completed 100km milestone</div>
-                            </div>
-                            <Badge variant="secondary">New</Badge>
-                        </div>
-                        
-                        <div className="flex items-center gap-3 p-3 rounded-lg border">
-                            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                <Target className="h-5 w-5 text-blue-600" />
-                            </div>
-                            <div className="flex-1">
-                                <div className="font-medium">Consistency King</div>
-                                <div className="text-sm text-muted-foreground">12-day running streak</div>
-                            </div>
-                        </div>
-                        
-                        <Button variant="outline" className="w-full">
-                            View All Achievements
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Quick Actions */}
+            {/* Profile Card */}
             <Card>
-                <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
-                    <CardDescription>Frequently used features</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <Button variant="outline" className="h-20 flex-col gap-2">
-                            <Activity className="h-6 w-6" />
-                            New Analysis
-                        </Button>
-                        <Button variant="outline" className="h-20 flex-col gap-2">
-                            <Target className="h-6 w-6" />
-                            Training Plan
-                        </Button>
-                        <Button variant="outline" className="h-20 flex-col gap-2">
-                            <Trophy className="h-6 w-6" />
-                            Goals
-                        </Button>
-                        <Button variant="outline" className="h-20 flex-col gap-2">
-                            <Settings className="h-6 w-6" />
-                            Preferences
-                        </Button>
+                <CardHeader className="text-center pb-4">
+                    <div className="flex justify-center mb-4">
+                        <Avatar className="h-24 w-24">
+                            <AvatarFallback className="text-lg font-semibold">
+                                {getInitials(user.username)}
+                            </AvatarFallback>
+                        </Avatar>
                     </div>
+                    <CardTitle className="text-xl">{user.username}</CardTitle>
+                    <CardDescription className="flex items-center justify-center gap-2">
+                        <Mail className="h-4 w-4" />
+                        {user.email}
+                    </CardDescription>
+                    <Badge variant="secondary" className="w-fit mx-auto mt-2">
+                        <Calendar className="h-3 w-3 mr-1" />
+                        Joined March 2024
+                    </Badge>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {!isEditing ? (
+                        <>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label>Height (cm)</Label>
+                                    <p className="text-lg font-medium">{formData.height_cm || 'Not set'}</p>
+                                </div>
+                                <div>
+                                    <Label>Weight (kg)</Label>
+                                    <p className="text-lg font-medium">{formData.weight_kg || 'Not set'}</p>
+                                </div>
+                                <div>
+                                    <Label>BMI</Label>
+                                    <p className="text-lg font-medium">{calculateBMI(Number(formData.height_cm), Number(formData.weight_kg)) || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <Label>Avg Pace/km</Label>
+                                    <p className="text-lg font-medium">{calculateAvgPace()}</p>
+                                </div>
+                            </div>
+                            <Separator />
+                            <div className="space-y-2">
+                                <Label>Best Times</Label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <Label className="text-sm">3K</Label>
+                                        <p className="text-lg font-medium">{formData.time_3k || 'Not set'}</p>
+                                    </div>
+                                    <div>
+                                        <Label className="text-sm">5K</Label>
+                                        <p className="text-lg font-medium">{formData.time_5k || 'Not set'}</p>
+                                    </div>
+                                    <div>
+                                        <Label className="text-sm">10K</Label>
+                                        <p className="text-lg font-medium">{formData.time_10k || 'Not set'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => setIsEditing(true)}
+                            >
+                                <Edit3 className="h-4 w-4 mr-2" />
+                                Edit Profile
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="height">Height (cm)</Label>
+                                    <Input
+                                        id="height"
+                                        type="number"
+                                        value={formData.height_cm}
+                                        onChange={(e) => handleInputChange('height', e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="weight">Weight (kg)</Label>
+                                    <Input
+                                        id="weight"
+                                        type="number"
+                                        value={formData.weight_kg}
+                                        onChange={(e) => handleInputChange('weight', e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <Label>BMI</Label>
+                                    <p className="text-lg font-medium">{calculateBMI(Number(formData.height_cm), Number(formData.weight_kg)) || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <Label>Avg Pace/km</Label>
+                                    <p className="text-lg font-medium">{calculateAvgPace()}</p>
+                                </div>
+                            </div>
+                            <Separator />
+                            <div className="space-y-2">
+                                <Label>Best Times</Label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <Label htmlFor="time_3k" className="text-sm">3K</Label>
+                                        <Input
+                                            id="time_3k"
+                                            placeholder="e.g., 12:30"
+                                            value={formData.time_3k}
+                                            onChange={(e) => handleInputChange('time_3k', e.target.value)}
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="time_5k" className="text-sm">5K</Label>
+                                        <Input
+                                            id="time_5k"
+                                            placeholder="e.g., 20:45"
+                                            value={formData.time_5k}
+                                            onChange={(e) => handleInputChange('time_5k', e.target.value)}
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="time_10k" className="text-sm">10K</Label>
+                                        <Input
+                                            id="time_10k"
+                                            placeholder="e.g., 42:10"
+                                            value={formData.time_10k}
+                                            onChange={(e) => handleInputChange('time_10k', e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <Button onClick={handleSave} className="flex-1">
+                                    <Save className="h-4 w-4 mr-2" />
+                                    Save Changes
+                                </Button>
+                                <Button onClick={handleCancel} variant="outline" className="flex-1">
+                                    <X className="h-4 w-4 mr-2" />
+                                    Cancel
+                                </Button>
+                            </div>
+                        </>
+                    )}
                 </CardContent>
             </Card>
         </div>

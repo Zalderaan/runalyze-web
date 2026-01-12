@@ -1,10 +1,11 @@
 'use client';
 
 import { useAuth } from '@/context/user_context';
-import { Home, History, SquareActivity, Dumbbell, LucidePersonStanding, GitCompareArrows, } from "lucide-react"
+import { Home, History, SquareActivity, Dumbbell, LucidePersonStanding, GitCompareArrows, MessageCircle, } from "lucide-react"
 import {
     Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup,
     SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
+    useSidebar
 } from "@/components/ui/sidebar"
 import { NavUser } from "./nav-user"
 import Link from "next/link"
@@ -31,6 +32,11 @@ const items = [
         title: "Compare",
         url: "/dashboard/compare",
         icon: GitCompareArrows
+    },
+    {
+        title: "Consult",
+        url: "/dashboard/consult",
+        icon: MessageCircle
     }
 ]
 
@@ -49,6 +55,7 @@ const admin_items = [
 
 export function AppSidebar() {
     const { user, isLoading } = useAuth();
+    const { state } = useSidebar();
     // console.log("This is user in sidebar: ", user);
 
     return (
@@ -58,9 +65,15 @@ export function AppSidebar() {
                     <SidebarGroupContent>
                         <SidebarMenu>
                             <SidebarMenuItem>
-                                <SidebarMenuButton size="lg" className='flex flex-row space-x-5'>
-                                    <Image src="/Runalyze-logo.png" alt="runalyze-logo" width={20} height={20}/>
-                                    <span className='font-medium text-xl'>Runalyze</span>
+                                <SidebarMenuButton size="lg" className='flex flex-row space-x-7'>
+                                    <Image
+                                        src="/runalyze-new-logo.png"
+                                        alt="runalyze-logo"
+                                        width={state === "collapsed" ? 20 : 40}
+                                        height={state === "collapsed" ? 20 : 40}
+                                        className={state === "collapsed" ? "mx-auto" : ""}
+                                    />
+                                    <span className={`font-medium text-xl ${state === "collapsed" ? "pl-2" : ""}`}>Runalyze</span>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                         </SidebarMenu>
@@ -86,7 +99,7 @@ export function AppSidebar() {
                     </SidebarGroupContent>
                 </SidebarGroup>
                 <SidebarGroup>
-                    {user?.user_role === "admin"  && (
+                    {user?.user_role === "admin" && (
                         <>
                             <SidebarGroupLabel>Admin</SidebarGroupLabel>
                             <SidebarGroupContent>

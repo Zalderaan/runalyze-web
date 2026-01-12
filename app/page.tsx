@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Activity, BarChart3, Target, ArrowRight } from "lucide-react";
 import { LandingHeader } from "@/components/landing/landing-header";
+import Image from 'next/image'
 
 export default function LandingPage() {
 
@@ -206,7 +207,8 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Activity className="h-6 w-6" />
+                {/* <Activity className="h-6 w-6" /> */}
+                <Image src="/runalyze-new-logo-bnw.png" alt="runalyze logo black & white" height={25} width={25}/>
                 <span className="text-xl font-bold">Runalyze</span>
               </div>
               <p className="text-gray-400">
@@ -234,7 +236,6 @@ export default function LandingPage() {
               </ul>
             </div> */}
           </div>
-
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
             <p>&copy; 2025 Runalyze. All rights reserved.</p>
           </div>

@@ -3,13 +3,13 @@
     "short_name": "Runalyze",
     "icons": [
         {
-            "src": "/Runalyze-logo.png",
+            "src": "/runalyze-mobile-logo.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "maskable"
         },
         {
-            "src": "/Runalyze-logo.png",
+            "src": "/runalyze-new-logo.png",
             "sizes": "512x512",
             "type": "image/png"
         }
