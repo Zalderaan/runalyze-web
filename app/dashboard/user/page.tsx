@@ -17,18 +17,39 @@ import {
     X
 } from "lucide-react";
 import { useState } from "react";
+import { UpdateProfileData, useUpdateProfile } from "@/hooks/users/user-specific/use-update-profile";
 
 export default function UserPage() {
     const { user, logout } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
-    const [formData, setFormData] = useState({
-        height_cm: user?.height_cm || '',
-        weight_kg: user?.weight_kg || '',
-        time_3k: user?.time_3k || '',
-        time_5k: user?.time_5k || '',
-        time_10k: user?.time_10k || '',
+    const [formData, setFormData] = useState<{
+        height_cm: string;
+        weight_kg: string;
+        time_3k: string;
+        time_5k: string;
+        time_10k: string;
+    }>({
+        height_cm: user?.height_cm?.toString() || '',
+        weight_kg: user?.weight_kg?.toString() || '',
+        time_3k: user?.time_3k?.toString() || '',
+        time_5k: user?.time_5k?.toString() || '',
+        time_10k: user?.time_10k?.toString() || '',
     });
 
+    // Wait until user is loaded before calling the hook
+    if (!user) {
+        return (
+            <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                    <h2 className="text-2xl font-semibold mb-2">Loading...</h2>
+                    <p className="text-muted-foreground">Please wait while we load your profile</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Now user.id is guaranteed to exist
+    const { updateProfileAsync, isUpdatingProfile, } = useUpdateProfile(user.id);
     const calculateBMI = (height: number, weight: number) => {
         if (height && weight) {
             const heightInMeters = height / 100;
@@ -50,19 +71,36 @@ export default function UserPage() {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
-    const handleSave = () => {
-        // TODO: Implement save logic to update user data via API
-        console.log('Saving:', formData);
-        setIsEditing(false);
+    const handleSave = async () => {
+        if (!user?.id) return;
+
+        try {
+            // Convert empty strings to null for numeric fields
+            const payload: UpdateProfileData = {
+                height_cm: formData.height_cm ? Number(formData.height_cm) : null,
+                weight_kg: formData.weight_kg ? Number(formData.weight_kg) : null,
+                time_3k: formData.time_3k ? formData.time_3k : null,
+                time_5k: formData.time_5k ? formData.time_5k : null,
+                time_10k: formData.time_10k ? formData.time_10k : null,
+            };
+
+            console.log('Sending payload:', payload); // Debug log
+
+            await updateProfileAsync(payload);
+        } catch (error) {
+            console.error('Error saving profile:', error);
+        } finally {
+            setIsEditing(false);
+        }
     };
 
     const handleCancel = () => {
         setFormData({
-            height_cm: user?.height_cm || '',
-            weight_kg: user?.weight_kg || '',
-            time_3k: user?.time_3k || '',
-            time_5k: user?.time_5k || '',
-            time_10k: user?.time_10k || '',
+            height_cm: user?.height_cm?.toString() || '',
+            weight_kg: user?.weight_kg?.toString() || '',
+            time_3k: user?.time_3k?.toString() || '',
+            time_5k: user?.time_5k?.toString() || '',
+            time_10k: user?.time_10k?.toString() || '',
         });
         setIsEditing(false);
     };
@@ -75,16 +113,16 @@ export default function UserPage() {
         }
     };
 
-    if (!user) {
-        return (
-            <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                    <h2 className="text-2xl font-semibold mb-2">Loading...</h2>
-                    <p className="text-muted-foreground">Please wait while we load your profile</p>
-                </div>
-            </div>
-        );
-    }
+    // if (!user) {
+    //     return (
+    //         <div className="flex items-center justify-center h-full">
+    //             <div className="text-center">
+    //                 <h2 className="text-2xl font-semibold mb-2">Loading...</h2>
+    //                 <p className="text-muted-foreground">Please wait while we load your profile</p>
+    //             </div>
+    //         </div>
+    //     );
+    // }
 
     return (
         <div className="container mx-auto p-6 max-w-2xl space-y-6">
@@ -176,7 +214,7 @@ export default function UserPage() {
                                         id="height"
                                         type="number"
                                         value={formData.height_cm}
-                                        onChange={(e) => handleInputChange('height', e.target.value)}
+                                        onChange={(e) => handleInputChange('height_cm', e.target.value)}
                                     />
                                 </div>
                                 <div>
@@ -185,7 +223,7 @@ export default function UserPage() {
                                         id="weight"
                                         type="number"
                                         value={formData.weight_kg}
-                                        onChange={(e) => handleInputChange('weight', e.target.value)}
+                                        onChange={(e) => handleInputChange('weight_kg', e.target.value)}
                                     />
                                 </div>
                                 <div>
@@ -231,9 +269,13 @@ export default function UserPage() {
                                 </div>
                             </div>
                             <div className="flex gap-2">
-                                <Button onClick={handleSave} className="flex-1">
+                                <Button onClick={handleSave} className="flex-1" disabled={isUpdatingProfile}>
                                     <Save className="h-4 w-4 mr-2" />
-                                    Save Changes
+                                    {
+                                        isUpdatingProfile
+                                            ? "Saving changes... "
+                                            : "Save Changes"
+                                    }
                                 </Button>
                                 <Button onClick={handleCancel} variant="outline" className="flex-1">
                                     <X className="h-4 w-4 mr-2" />

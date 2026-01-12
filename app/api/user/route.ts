@@ -1,5 +1,5 @@
 // filepath: c:\Users\godfr\Desktop\sideproj\run-analysis\runalyze\app\api\user\[id]\route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { supabase } from '@/lib/supabase';
 
 export async function GET() {
@@ -20,3 +20,4 @@ export async function GET() {
 
     return NextResponse.json({ user: users }, { status: 200 }); // Return the user details
 }
+
