@@ -5,9 +5,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 export interface UpdateProfileData {
     height_cm: number | null;
     weight_kg: number | null;
-    time_3k: string | null;
-    time_5k: string | null;
-    time_10k: string | null;
+    time_3k: number | null;
+    time_5k: number | null;
+    time_10k: number | null;
 }
 
 export function useUpdateProfile(userId: string | number) {

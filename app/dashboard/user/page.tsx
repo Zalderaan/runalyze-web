@@ -22,6 +22,37 @@ import { UpdateProfileData, useUpdateProfile } from "@/hooks/users/user-specific
 export default function UserPage() {
     const { user, logout } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
+
+    const secsToTime = (totalSeconds: number): string => {
+        if (totalSeconds < 0 || !Number.isInteger(totalSeconds)) return '00:00:00';
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        if (hours > 0) {
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    };
+
+    const timeToSecs = (timeString: string): number => {
+        const parts = timeString.split(':');
+        if (parts.length === 2) {
+            // MM:SS
+            const minutes = parseInt(parts[0], 10);
+            const seconds = parseInt(parts[1], 10);
+            if (isNaN(minutes) || isNaN(seconds) || minutes < 0 || seconds < 0 || seconds >= 60) return 0;
+            return minutes * 60 + seconds;
+        } else if (parts.length === 3) {
+            // HH:MM:SS
+            const hours = parseInt(parts[0], 10);
+            const minutes = parseInt(parts[1], 10);
+            const seconds = parseInt(parts[2], 10);
+            if (isNaN(hours) || isNaN(minutes) || isNaN(seconds) || hours < 0 || minutes < 0 || minutes >= 60 || seconds < 0 || seconds >= 60) return 0;
+            return hours * 3600 + minutes * 60 + seconds;
+        }
+        return 0; // Invalid format
+    };
+
     const [formData, setFormData] = useState<{
         height_cm: string;
         weight_kg: string;
@@ -31,9 +62,9 @@ export default function UserPage() {
     }>({
         height_cm: user?.height_cm?.toString() || '',
         weight_kg: user?.weight_kg?.toString() || '',
-        time_3k: user?.time_3k?.toString() || '',
-        time_5k: user?.time_5k?.toString() || '',
-        time_10k: user?.time_10k?.toString() || '',
+        time_3k: user?.time_3k ? secsToTime(user.time_3k) : '',  // Convert seconds to time string
+        time_5k: user?.time_5k ? secsToTime(user.time_5k) : '',  // Convert seconds to time string
+        time_10k: user?.time_10k ? secsToTime(user.time_10k) : '',  // Convert seconds to time string
     });
 
     // Wait until user is loaded before calling the hook
@@ -75,13 +106,13 @@ export default function UserPage() {
         if (!user?.id) return;
 
         try {
-            // Convert empty strings to null for numeric fields
+            // Convert empty strings to null for numeric fields; times are already strings
             const payload: UpdateProfileData = {
                 height_cm: formData.height_cm ? Number(formData.height_cm) : null,
                 weight_kg: formData.weight_kg ? Number(formData.weight_kg) : null,
-                time_3k: formData.time_3k ? formData.time_3k : null,
-                time_5k: formData.time_5k ? formData.time_5k : null,
-                time_10k: formData.time_10k ? formData.time_10k : null,
+                time_3k: formData.time_3k ? timeToSecs(formData.time_3k) : null,
+                time_5k: formData.time_5k ? timeToSecs(formData.time_5k) : null,
+                time_10k: formData.time_10k ? timeToSecs(formData.time_10k) : null,
             };
 
             console.log('Sending payload:', payload); // Debug log
@@ -98,9 +129,9 @@ export default function UserPage() {
         setFormData({
             height_cm: user?.height_cm?.toString() || '',
             weight_kg: user?.weight_kg?.toString() || '',
-            time_3k: user?.time_3k?.toString() || '',
-            time_5k: user?.time_5k?.toString() || '',
-            time_10k: user?.time_10k?.toString() || '',
+            time_3k: user?.time_3k ? secsToTime(user.time_3k) : '',
+            time_5k: user?.time_5k ? secsToTime(user.time_5k) : '',
+            time_10k: user?.time_10k ? secsToTime(user.time_10k) : '',
         });
         setIsEditing(false);
     };

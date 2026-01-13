@@ -81,7 +81,7 @@ export function AdminApplyForm({
 
             toast.success(
                 <div className="flex flex-col">
-                    <strong>Account create!</strong>
+                    <strong>Account created!</strong>
                     <span className="text-xs text-gray-500">You may now upload required documents to queue your applicaiton for review.</span>
                 </div>,
                 {
