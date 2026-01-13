@@ -17,6 +17,8 @@ export interface Drill {
     };
     helpful_count: number;
     not_helpful_count: number;
+    justification?: string;
+    reference?: string;
     created_at: Date;
     updated_at: Date;
 }

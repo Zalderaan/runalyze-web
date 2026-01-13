@@ -162,6 +162,11 @@ export default function DrillDetails() {
                             </ol>
                         </div>
 
+                        {/* Justification */}
+                        <div className="border-1 rounded-md border-blue-800 bg-blue-50 p-4 text-sm text-blue-950">
+                            {drill.justification}
+                        </div>
+
                         {/* Frequency */}
                         <div className="flex items-center space-x-2 text-sm text-gray-600">
                             <span className="font-medium">Frequency:</span>

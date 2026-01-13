@@ -43,11 +43,16 @@ export const step4SchemaEdit = z.object({
         .optional()
     })
 
+export const step5schema = z.object({
+    justification: z.string().optional(),
+    reference: z.string().optional()
+})
 
 export const fullFormSchema = step1Schema
     .merge(step2Schema)
     .merge(step3Schema)
-    .merge(step4Schema);
+    .merge(step4Schema)
+    .merge(step5schema);
 
 // export types for each schema
 export type Step1FormData = z.infer<typeof step1Schema>;
@@ -55,4 +60,5 @@ export type Step2FormData = z.infer<typeof step2Schema>;
 export type Step3FormData = z.infer<typeof step3Schema>;
 export type Step4FormData = z.infer<typeof step4Schema>;
 export type Step4EditFormData = z.infer<typeof step4SchemaEdit>;
+export type Step5FormData = z.infer<typeof step5schema>;
 export type FullFormData = z.infer<typeof fullFormSchema>;

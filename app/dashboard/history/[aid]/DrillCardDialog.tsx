@@ -67,7 +67,7 @@ export function DrillCardDialog({
                 <DialogHeader>
                     <DialogTitle className="text-lg">Why this drill?</DialogTitle>
                     <DialogDescription className="text-sm text-gray-600">
-                        {drillId} {drillName}
+                        {drillName}
                     </DialogDescription>
                 </DialogHeader>
                 

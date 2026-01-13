@@ -14,11 +14,13 @@ interface DrillUpdateFields {
         steps: string[];
     } // Replace 'any' with a more specific type if possible
     video_url?: string;
+    justification?: string,
+    reference?: string
 }
 
 
 // export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-    export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const paramsObj = await params;
     const id = paramsObj.id;
 
@@ -124,6 +126,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const rep_type = formData.get("rep_type") as string | null;
     const frequency = formData.get("frequency") as string | null;
     const instructions = formData.get("instructions") as string | null;
+    const justification = formData.get("justification") as string | null;
+    const reference = formData.get("reference") as string | null;
 
     const videoFile = formData.get("video") as File | null;
 
@@ -175,6 +179,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         }
     }
     if (video_url) updateFields.video_url = video_url;
+    if (justification !== null) updateFields.justification = justification;  // Added to updateFields
+    if (reference !== null) updateFields.reference = reference;
 
     try {
         // console.log('This is updateFields object: ', updateFields);

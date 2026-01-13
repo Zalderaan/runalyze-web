@@ -16,6 +16,13 @@ export async function POST(req: NextRequest) {
     const reps = formData.get("reps") ? Number(formData.get("reps")) : null;
     const rep_type = formData.get("rep_type") as string | null;
     const videoFile = formData.get("video") as File | null;
+    const justification = formData.get("justification") as string | null;
+    const reference = formData.get("reference") as string | null;
+
+    // Add debug logs
+    console.log("Extracted justification:", justification);
+    console.log("Extracted reference:", reference);
+    console.log("All formData keys:", Array.from(formData.keys()));
 
     let video_url = null;
     const uuid = crypto.randomUUID();
@@ -39,7 +46,7 @@ export async function POST(req: NextRequest) {
                 { status: 500 }
             )
         }
-        
+
         // get the uploaded video's public URL
         const publicUrl = supabase.storage
             .from("videos")
@@ -52,7 +59,7 @@ export async function POST(req: NextRequest) {
         // insert drill
         const { data: newDrill, error: insertError } = await supabase
             .from('drills')
-            .insert([{ drill_name, area, performance_level, duration, frequency, video_url, instructions, sets, reps, rep_type }])
+            .insert([{ drill_name, area, performance_level, duration, frequency, video_url, instructions, sets, reps, rep_type, justification, reference }])
             .select()
             .single()
 
@@ -87,14 +94,14 @@ export async function GET(req: NextRequest) {
         const page = parseInt(searchParams.get('page') || '1');
         const limit = parseInt(searchParams.get('limit') || '10');
         const search = searchParams.get('search') || '';
-        
+
         // Calculate offset for pagination
         const offset = (page - 1) * limit;
 
         // Build query with search filter
         let query = supabase
             .from('drills')
-            .select('id, drill_name, area, performance_level, video_url, sets, reps, rep_type, frequency, helpful_count, not_helpful_count, created_at', { count: 'exact' });
+            .select('id, drill_name, area, performance_level, video_url, sets, reps, rep_type, frequency, instructions, justification, reference, helpful_count, not_helpful_count, created_at, updated_at', { count: 'exact' });  // Added missing fields
 
         // Add search filter if provided
         if (search) {
@@ -117,7 +124,7 @@ export async function GET(req: NextRequest) {
         }
 
         return NextResponse.json(
-            { 
+            {
                 drills: data,
                 pagination: {
                     total: count || 0,

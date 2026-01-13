@@ -17,7 +17,7 @@ import { Edit } from "lucide-react";
 import { useState } from "react";
 
 // forms imports
-import { type FullFormData, step1Schema, step2Schema, step3Schema, step4SchemaEdit } from "@/schemas/admin/drillFormSchemas";
+import { type FullFormData, step1Schema, step2Schema, step3Schema, step4SchemaEdit, step5schema } from "@/schemas/admin/drillFormSchemas";
 import { z } from "zod";
 
 // regular imports
@@ -29,6 +29,7 @@ import { Step2TrainingParameters } from "./Step2TrainingParameters";
 import { Step3Instructions } from "./Step3Instructions";
 import { Step4VideoEdit } from "./Step4VideoEdit";
 import { useUpdateDrill } from "@/hooks/drills/use-update-drill";
+import { Step5Explanation } from "./Step5Explanation";
 
 export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?: () => void }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -38,12 +39,13 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
 
     const { updateDrill, updateLoading, updateError } = useUpdateDrill();
 
-    const TOTAL_STEPS = 4;
+    const TOTAL_STEPS = 5;
     const stepSchemas = {
         1: step1Schema,
         2: step2Schema,
         3: step3Schema,
-        4: step4SchemaEdit
+        4: step4SchemaEdit,
+        5: step5schema
     }
 
     // get current values
@@ -62,6 +64,7 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
         },
         3: { instructions: drill.instructions }, // Add step 3 default values when you define the schema
         4: { video: undefined }, // Add step 4 default values when you define the schema
+        5: { justification: drill.justification, reference: drill.reference }
     }
 
     const currentSchema = stepSchemas[step as keyof typeof stepSchemas] as z.ZodTypeAny;
@@ -151,7 +154,7 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
                     <form onSubmit={form.handleSubmit(onStepSubmit)}>
                         <DialogHeader>
                             <DialogTitle>Update Drill</DialogTitle>
-                            <DialogDescription>Update an existing drill (Step {step} of 4)</DialogDescription>
+                            <DialogDescription>Update an existing drill (Step {step} of {TOTAL_STEPS})</DialogDescription>
                         </DialogHeader>
 
                         {/* Show local updateDrillError */}
@@ -172,6 +175,7 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
                         {step === 2 && <Step2TrainingParameters />}
                         {step === 3 && <Step3Instructions />}
                         {step === 4 && <Step4VideoEdit video_url={drill.video_url} />}
+                        {step === 5 && <Step5Explanation />}
 
                         {updateError && (
                             <div className="text-red-600 text-sm mt-2 px-4">

@@ -17,10 +17,8 @@ import { Plus } from "lucide-react";
 
 // Forms imports
 import {
-    step1Schema, step2Schema,
+    step1Schema, step2Schema, step3Schema, step4Schema, step5schema, 
     type FullFormData,
-    step3Schema,
-    step4Schema
 } from "@/schemas/admin/drillFormSchemas"
 
 import { z } from "zod";
@@ -32,6 +30,7 @@ import { useState } from "react";
 import { Step3Instructions } from "./Step3Instructions";
 import { Step4Video } from "./Step4Video";
 import { useDrills } from "@/hooks/drills/use-drills";
+import { Step5Explanation } from "./Step5Explanation";
 
 export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
     const { addDrill, addLoading, addError } = useDrills();
@@ -39,13 +38,14 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
     const [formData, setFormData] = useState<Partial<FullFormData>>({});
     const [isOpen, setIsOpen] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
-    const TOTAL_STEPS = 4;
+    const TOTAL_STEPS = 5;
 
     const stepSchemas = {
         1: step1Schema,
         2: step2Schema,
         3: step3Schema,
-        4: step4Schema
+        4: step4Schema,
+        5: step5schema
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,6 +54,7 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
         2: { sets: undefined, reps: undefined, frequency: undefined },
         3: { instructions: { steps: [] } }, // Add step 3 default values when you define the schema
         4: { video: undefined }, // Add step 4 default values when you define the schema
+        5: { justification: "", reference: ""}
     }
 
     const currentSchema = stepSchemas[step as keyof typeof stepSchemas] as z.ZodTypeAny;
@@ -66,11 +67,11 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
     })
 
     async function onStepSubmit(values: z.infer<typeof currentSchema>) {
-        // console.log('values: ', values);
-        // console.log('formData: ', formData);
+        console.log('values: ', values);
+        console.log('formData: ', formData);
         const updatedData = { ...formData, ...values }
         setFormData(updatedData);
-        // console.log('updated: ', updatedData)
+        console.log('updated: ', updatedData)
         // move to the next step
         if (step < TOTAL_STEPS) {
             // form.reset();
@@ -140,13 +141,14 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
                     <form onSubmit={form.handleSubmit(onStepSubmit)} className="space-y-4">
                         <DialogHeader>
                             <DialogTitle>Add Drill</DialogTitle>
-                            <DialogDescription>Add a new drill to be suggested for users (Step {step} of 4)</DialogDescription>
+                            <DialogDescription>Add a new drill to be suggested for users (Step {step} of {TOTAL_STEPS})</DialogDescription>
                         </DialogHeader>
 
                         {step === 1 && <Step1BasicInfo />}
                         {step === 2 && <Step2TrainingParameters />}
                         {step === 3 && <Step3Instructions />}
                         {step === 4 && <Step4Video />}
+                        {step === 5 && <Step5Explanation />}
 
                         {submitError && (
                             <div className="text-red-600 text-sm mt-2 px-4">
