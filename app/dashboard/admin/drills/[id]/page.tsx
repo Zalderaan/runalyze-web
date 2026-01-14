@@ -9,7 +9,7 @@ import {
     CardDescription,
     CardContent,
 } from "@/components/ui/card";
-import { ArrowLeft, Repeat, Target, ThumbsDown, ThumbsUp } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Repeat, Target, ThumbsDown, ThumbsUp } from 'lucide-react'
 import { useGetDrill } from "@/hooks/drills/use-get-drill";
 import { DeleteDrillConfirmDialog } from "@/components/admin/DeleteDrillConfirmDialog";
 import { EditDrillDialog } from "@/components/admin/EditDrillDialog";
@@ -172,6 +172,23 @@ export default function DrillDetails() {
                             <span className="font-medium">Frequency:</span>
                             <span>{drill.frequency}x per week</span>
                         </div>
+
+                        {/* Reference */}
+                        {drill.reference && (
+                            <div>
+                                <h3 className="text-lg font-semibold mb-2">Reference</h3>
+                                <a
+                                    href={drill.reference}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-800 underline transition-colors duration-200"
+                                >
+                                    <span>{drill.reference}</span>
+                                    <ExternalLink className="h-4 w-4" />
+                                </a>
+                            </div>
+                        )}
+
                     </CardContent>
 
                     <CardFooter className="text-xs text-gray-500 border-t pt-4">

@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export function Step1BasicInfo() {
     const { control } = useFormContext()
     return (
-        <>
+        <div className="space-y-3">
             <FormField
                 control={control}
                 name="drill_name"
@@ -73,6 +73,6 @@ export function Step1BasicInfo() {
                     </FormItem>
                 )}
             />
-        </>
+        </div>
     )
 }

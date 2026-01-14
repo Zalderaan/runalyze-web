@@ -151,7 +151,7 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
             </DialogTrigger>
             <DialogContent className="max-h-[80vh] overflow-y-auto">
                 <FormProvider {...form}>
-                    <form onSubmit={form.handleSubmit(onStepSubmit)}>
+                    <form onSubmit={form.handleSubmit(onStepSubmit)} className="space-y-4">
                         <DialogHeader>
                             <DialogTitle>Update Drill</DialogTitle>
                             <DialogDescription>Update an existing drill (Step {step} of {TOTAL_STEPS})</DialogDescription>
