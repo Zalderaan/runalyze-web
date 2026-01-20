@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/context/user_context';
-import { Dumbbell, Home, PersonStanding } from "lucide-react"
+import { Dumbbell, Home, MessageCircle, PersonStanding } from "lucide-react"
 import {
     Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarGroup,
     SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
@@ -23,6 +23,11 @@ const items = [
         url: "/dashboard/admin/drills",
         icon: Dumbbell,
     },
+    {
+        title: "Consultations",
+        url: "/dashboard/admin/consultations",
+        icon: MessageCircle
+    }
 ]
 
 const ownerItems = [

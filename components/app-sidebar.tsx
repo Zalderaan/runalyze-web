@@ -71,7 +71,7 @@ export function AppSidebar() {
                                         alt="runalyze-logo"
                                         width={state === "collapsed" ? 20 : 40}
                                         height={state === "collapsed" ? 20 : 40}
-                                        className={state === "collapsed" ? "mx-auto" : ""}
+                                        className={`transition-all duration-300 ease-in-out ${state === "collapsed" ? "mx-auto" : ""}`}
                                     />
                                     <span className={`font-medium text-xl ${state === "collapsed" ? "pl-2" : ""}`}>Runalyze</span>
                                 </SidebarMenuButton>

@@ -25,13 +25,13 @@ export async function POST(req: NextRequest) {
         // get coach and user details
         const { data: user } = await supabase
             .from('users')
-            .select('name, email')
+            .select('username, email')
             .eq('id', user_id)
             .single();
 
         const { data: coach } = await supabase
             .from('users')
-            .select('name, email')
+            .select('username, email')
             .eq('id', coach_id)
             .single();
 
@@ -49,7 +49,9 @@ export async function POST(req: NextRequest) {
                 user_id,
                 coach_id,
                 message,
-                status: 'pending'
+                status: 'pending',
+                coach_email: coach.email,
+                user_email: user?.email
             })
             .select()
             .single();
@@ -59,12 +61,13 @@ export async function POST(req: NextRequest) {
         // TODO: Send email to coach's email
         // Send email to coach
         await resend.emails.send({
-            from: 'Runalyze <noreply@yourdomain.com>', // Use your verified domain
+            from: 'Runalyze <noreply@mail.runalyze.online>', // Use your verified domain
+            replyTo: user?.email,
             to: coach.email,
             subject: 'New Consultation Request',
             html: `
                 <h2>New Consultation Request</h2>
-                <p><strong>From:</strong> ${user?.name || 'A user'} (${user?.email})</p>
+                <p><strong>From:</strong> ${user?.username || 'A user'} (${user?.email})</p>
                 <p><strong>Message:</strong></p>
                 <p>${message}</p>
                 <br>
@@ -84,5 +87,72 @@ export async function POST(req: NextRequest) {
             { message: "Error sending consultation email: ", error: error.message },
             { status: 500 }
         );
+    }
+}
+
+export async function GET(req: NextRequest) {
+    try {
+        // Get user id
+        const cookieStore = await cookies();
+        const cookie = cookieStore.get("session")?.value;
+        if (!cookie) {
+            return NextResponse.json(
+                { message: "Not authenticated" },
+                { status: 401 }
+            );
+        }
+
+        const session = await decrypt(cookie);
+        if (!session?.userId) {
+            return NextResponse.json(
+                { message: "Invalid session" },
+                { status: 401 }
+            );
+        }
+
+        // Fetch user role
+        const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('user_role')
+            .eq('id', session.userId)
+            .single();
+
+        if (userError || !userData) {
+            return NextResponse.json({ message: "User not found" }, { status: 404 });
+        }
+
+        const isCoach = userData.user_role === 'admin';
+        
+        // Query consultations based on role
+        const query = supabase
+            .from('consultations')
+            .select(`
+                id, user_id, coach_id, message, created_at, updated_at, status, coach_email, user_email
+            `);
+
+        if (isCoach) {
+            query.eq('coach_id', session.userId);
+        } else {
+            query.eq('user_id', session.userId);
+        }
+
+        const { data: consultations, error: consultationsError } = await query
+            .order('created_at', { ascending: false });
+
+        if (consultationsError) {
+            throw consultationsError;
+        }
+
+        return NextResponse.json(
+            { consultations: consultations },
+            { status: 200 }
+        );
+
+    } catch (error) {
+        console.error("Error getting consultations: ", error);
+        return NextResponse.json(
+            { message: "Internal server error" },
+            { status: 500 }
+        )
     }
 }
