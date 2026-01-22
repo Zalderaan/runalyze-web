@@ -8,7 +8,7 @@ import { decrypt } from '@/lib/auth/session';
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
     try {
         const { id } = await params;
-        const { status } = await req.json();  // Expect { status: "completed" | "accepted" | etc. }
+        const { status, is_archived } = await req.json();  // Expect { status: "completed" | "accepted" | etc. }
 
         // Authenticate user
         const cookieStore = await cookies();
@@ -30,7 +30,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         // Get consultation details
         const { data: consultation, error: fetchError } = await supabase
             .from('consultations')
-            .select('user_id, coach_id, status')
+            .select('user_id, coach_id, status, is_archived')
             .eq('id', id)
             .single();
 
@@ -48,39 +48,62 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         //     .eq('id', session.userId)
         //     .single();
 
-        const isCoach = session.role  == "admin" 
+        const isCoach = session.user_role == "admin"
         const isOwner = consultation.user_id === session.userId;
         const isAssignedCoach = consultation.coach_id === session.userId;
 
+        // ? Debug logs
+        // console.log("session", session);
+        // console.log("isCoach", isCoach);
+        // console.log("isOwner", isOwner);
+        // console.log("isAssignedCoach", isAssignedCoach);
+
+        let updateFields: any = { updated_at: new Date().toISOString };
+
         // Authorization logic
-        if (isOwner && !isCoach) {
-            // User can only mark as "completed"
-            if (status !== "completed") {
+        if (status) {
+            if (isOwner && !isCoach) {
+                // User can only mark as "completed"
+                if (status !== "completed") {
+                    return NextResponse.json(
+                        { message: "Users can only mark consultations as completed" },
+                        { status: 403 }
+                    );
+                }
+                updateFields.status = status;
+            } else if (isAssignedCoach && isCoach) {
+                // Coach can update to "accepted", "in-progress", etc.
+                const validCoachStatuses = ["accepted", "in-progress", "completed", "declined", "cancelled"];
+                if (!validCoachStatuses.includes(status)) {
+                    return NextResponse.json(
+                        { message: "Invalid status for coach update" },
+                        { status: 400 }
+                    );
+                }
+                updateFields.status = status;
+            } else {
                 return NextResponse.json(
-                    { message: "Users can only mark consultations as completed" },
+                    { message: "Unauthorized" },
                     { status: 403 }
                 );
             }
-        } else if (isAssignedCoach && isCoach) {
-            // Coach can update to "accepted", "in-progress", etc.
-            const validCoachStatuses = ["accepted", "in-progress", "completed", "declined", "cancelled"];
-            if (!validCoachStatuses.includes(status)) {
+        }
+
+        if (is_archived !== undefined) {
+            // allow only if the user is the owner or is the assigned coach
+            if (!isOwner && !isAssignedCoach) {
                 return NextResponse.json(
-                    { message: "Invalid status for coach update" },
-                    { status: 400 }
-                );
+                    { message: "Unauthorized to archive" },
+                    { status: 403 }
+                )
             }
-        } else {
-            return NextResponse.json(
-                { message: "Unauthorized" },
-                { status: 403 }
-            );
+            updateFields.is_archived = is_archived;
         }
 
         // Update the consultation
         const { data, error: updateError } = await supabase
             .from('consultations')
-            .update({ status, updated_at: new Date().toISOString() })
+            .update(updateFields)
             .eq('id', id)
             .select()
             .single();

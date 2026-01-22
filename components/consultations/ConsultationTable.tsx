@@ -12,7 +12,7 @@ import {
     type SortingState,
     type VisibilityState,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal, Trash2 } from "lucide-react"
+import { Archive, ArrowUpDown, Check, CheckCircle, ChevronDown, MoreHorizontal, Trash2, X, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
@@ -36,8 +36,9 @@ import { Badge } from "@/components/ui/badge"  // Add this import
 import { useAuth } from "@/context/user_context"
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"  // Add this import
+import { ArchiveDialog } from "./ArchiveDialog"
 
-export type ConsultationStatus = 'pending' | 'declined' | 'in-progress' | 'completed' | 'accepted' | 'cancelled';
+export type ConsultationStatus = 'pending' | 'declined' | 'in-progress' | 'completed' | 'cancelled';
 
 export interface Consultation {
     id: string;
@@ -49,15 +50,17 @@ export interface Consultation {
     updated_at: string;
     user_email: string;
     coach_email: string;
+    is_archived: boolean;
 }
 
 interface ConsultationTableProps {
     consultations: Consultation[],
-    onUpdateStatus?: (id: string, status: ConsultationStatus) => void,
+    onUpdateStatus?: (id: string, status: ConsultationStatus, is_archived?: boolean) => void,
+    onArchiveConsultation?: (id: string) => void,
     isLoading?: boolean
 }
 
-export function ConsultationTable({ consultations, onUpdateStatus, isLoading }: ConsultationTableProps) {
+export function ConsultationTable({ consultations, onUpdateStatus, onArchiveConsultation, isLoading }: ConsultationTableProps) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -74,7 +77,7 @@ export function ConsultationTable({ consultations, onUpdateStatus, isLoading }: 
     // };
 
     const validStatuses = isCoach
-        ? ['pending', 'accepted', 'in-progress', 'completed', 'declined', 'cancelled']
+        ? ['pending', 'in-progress', 'completed', 'declined', 'cancelled']
         : ['completed', 'cancelled'];  // Updated: Allow non-coaches to select 'completed' or 'cancelled'
 
     const columns: ColumnDef<Consultation>[] = [
@@ -83,10 +86,10 @@ export function ConsultationTable({ consultations, onUpdateStatus, isLoading }: 
             header: "Status",
             cell: ({ row }) => {
                 const status = row.getValue("status") as ConsultationStatus;
+                const consultation = row.original;
                 const getBadgeVariant = (status: ConsultationStatus) => {
                     switch (status) {
                         case 'pending': return 'secondary';
-                        case 'accepted': return 'default';
                         case 'in-progress': return 'secondary';
                         case 'completed': return 'default';
                         case 'declined': return 'destructive';
@@ -95,41 +98,37 @@ export function ConsultationTable({ consultations, onUpdateStatus, isLoading }: 
                     }
                 };
 
-                // Always render dropdown if onUpdateStatus is provided (role-based options via validStatuses)
-                if (onUpdateStatus) {
+                const getBadgeClassName = (status: ConsultationStatus) => {
+                    switch (status) {
+                        case 'pending': return 'bg-muted border-1 border-gray-200';
+                        case 'in-progress': return 'bg-yellow-200 border-1 border-yellow-400';
+                        case 'completed': return 'bg-green-600 border-1 border-green-300';
+                        case 'declined': return 'bg-red-700 border-1 border-red-500';
+                        case 'cancelled': return 'bg-red-700 border-1 border-red-500';
+                        default: return 'outline';
+                    }
+                }
+
+                if (!isCoach && (status === 'pending' || status === 'in-progress')) {
                     return (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-full justify-start">
-                                    <Badge variant={getBadgeVariant(status)}>{status}</Badge>
-                                    <ChevronDown className="ml-2 h-4 w-4" />
-                                </Button>
+                                <Badge variant={getBadgeVariant(status)} className={`${getBadgeClassName(status)} w-full cursor-pointer`}>
+                                    {status}
+                                </Badge>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" className="w-48">
-                                <DropdownMenuLabel>Change Status</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <RadioGroup
-                                    value={status}
-                                    onValueChange={(newStatus: ConsultationStatus) => {
-                                        onUpdateStatus(row.original.id, newStatus);
-                                    }}
+                            <DropdownMenuContent>
+                                <DropdownMenuItem
+                                    onClick={() => onUpdateStatus && onUpdateStatus(consultation.id, 'cancelled', true)}
                                 >
-                                    {validStatuses.map((validStatus) => (
-                                        <div key={validStatus} className="flex items-center space-x-2 p-2">
-                                            <RadioGroupItem value={validStatus} id={validStatus} />
-                                            <label htmlFor={validStatus} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                                {validStatus}
-                                            </label>
-                                        </div>
-                                    ))}
-                                </RadioGroup>
+                                    Cancel
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     );
-                } else {
-                    // Fallback: Read-only badge if no update callback (shouldn't happen in your setup)
-                    return <Badge variant={getBadgeVariant(status)}>{status}</Badge>;
                 }
+
+                return <Badge variant={getBadgeVariant(status)} className={`${getBadgeClassName(status)} w-full`}>{status}</Badge>;
             },
         },
         // In columns:
@@ -175,45 +174,115 @@ export function ConsultationTable({ consultations, onUpdateStatus, isLoading }: 
                 return <div>{date.toLocaleString()}</div>;  // Shows date and time, e.g., "1/14/2026, 1:33:43 PM"
             },
         },
-        // {    
-        // TODO: onDeleteConsultations
-        //     id: "actions",
-        //     enableHiding: false,
-        //     cell: ({ row }) => {
-        //         const consultation = row.original
-        //         const canDelete = isCoach && (consultation.status === 'cancelled' || consultation.status === 'declined');
-        //         return (
-        //             <DropdownMenu>
-        //                 <DropdownMenuTrigger asChild>
-        //                     <Button variant="ghost" className="h-8 w-8 p-0">
-        //                         <span className="sr-only">Open menu</span>
-        //                         <MoreHorizontal className="h-4 w-4" />
-        //                     </Button>
-        //                 </DropdownMenuTrigger>
-        //                 <DropdownMenuContent align="end">
-        //                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        //                     <DropdownMenuItem onClick={() => navigator.clipboard.writeText(consultation.id)}>
-        //                         Copy consultation ID
-        //                     </DropdownMenuItem>
-        //                     <DropdownMenuSeparator />
-        //                     {canDelete && onDeleteConsultation && (
-        //                         <DropdownMenuItem
-        //                             onClick={() => {
-        //                                 if (window.confirm("Are you sure you want to delete this consultation?")) {
-        //                                     onDeleteConsultation(consultation.id);
-        //                                 }
-        //                             }}
-        //                             className="text-destructive"
-        //                         >
-        //                             <Trash2 className="mr-2 h-4 w-4" />
-        //                             Delete Consultation
-        //                         </DropdownMenuItem>
-        //                     )}
-        //                 </DropdownMenuContent>
-        //             </DropdownMenu>
-        //         )
-        //     },
-        // },
+        {
+            id: "actions",
+            enableHiding: false,
+            header: "Actions",
+            cell: ({ row }) => {
+                const consultation = row.original;
+                const status = consultation.status;
+                const canArchive = isCoach && (status === 'cancelled' || status === 'declined' || status === 'completed');
+
+                // if (!isCoach) {
+                //     if (status === 'pending' || status === 'in-progress') {
+                //         return (
+                //             <Button
+                //                 variant="destructive"
+                //                 size="sm"
+                //                 // onClick={() => onUpdateStatus(consultation.id, 'declined')}
+                //                 title="Cancel"
+                //                 className="bg-red-800 hover:bg-red-600/80 border-red-400 border-1"
+                //             >
+                //                 <X className="h-4 w-4 text-red-300" />
+                //             </Button>
+                //         )
+                //     }
+                // }
+                if (!isCoach) {
+                    if (status === 'completed' || status === 'declined' || status === 'cancelled') {
+                        return (
+                            <ArchiveDialog
+                                coach_email={consultation.coach_email}
+                                consultationDate={consultation.created_at}
+                                onConfirm={() => console.log("Confirm archive clicked!")}
+                            />
+                        )
+                    }
+
+                    if (status === 'pending') {
+                        return (
+                            <Button>
+                                test
+                            </Button>
+                        )
+                    }
+                }
+
+                return (
+                    <div className="flex space-x-2">
+                        {isCoach && status === 'pending' && onUpdateStatus && (
+                            <>
+                                <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => onUpdateStatus(consultation.id, 'in-progress')}
+                                    title="Accept"
+                                    className="bg-green-200 border-green-600 border-1"
+                                >
+                                    <Check className="h-4 w-4 text-green-800" />
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => onUpdateStatus(consultation.id, 'declined', true)}
+                                    title="Decline"
+                                    className="bg-red-800 hover:bg-red-600/80 border-red-400 border-1"
+                                >
+                                    <X className="h-4 w-4 text-red-300" />
+                                </Button>
+                            </>
+                        )}
+                        {isCoach && status === 'in-progress' && onUpdateStatus && (
+                            <>
+                                <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => onUpdateStatus(consultation.id, 'completed', true)}
+                                    title="Mark as Complete"
+                                    className="bg-green-200 border-green-600 border-1"
+                                >
+                                    <CheckCircle className="h-4 w-4 text-green-800" />
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => onUpdateStatus(consultation.id, 'declined', true)}
+                                    title="Cancel"
+                                    className="bg-red-800 hover:bg-red-600/80 border-red-400 border-1"
+                                >
+                                    <XCircle className="h-4 w-4 text-red-300" />
+                                </Button>
+                            </>
+                        )}
+                        {canArchive && onArchiveConsultation && (
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => {
+                                    if (window.confirm("Are you sure you want to archive this consultation?")) {
+                                        onArchiveConsultation(consultation.id);
+                                    }
+                                }}
+                                title="Archive"
+                                className="bg-red-800 hover:bg-red-600/80 border-red-400 border-1"
+                            >
+                                <Archive className="h-4 w-4 text-red-300" />
+                            </Button>
+                        )}
+                    </div>
+                );
+            },
+        }
     ]
 
     const table = useReactTable({

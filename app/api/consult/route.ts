@@ -51,7 +51,8 @@ export async function POST(req: NextRequest) {
                 message,
                 status: 'pending',
                 coach_email: coach.email,
-                user_email: user?.email
+                user_email: user?.email,
+                is_archived: false
             })
             .select()
             .single();

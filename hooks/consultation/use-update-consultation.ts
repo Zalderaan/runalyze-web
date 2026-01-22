@@ -7,12 +7,12 @@ export function useUpdateConsultation() {
 
     const queryClient = useQueryClient();
     const updateStatusMutation = useMutation({
-        mutationFn: async ({ id, status }: { id: string; status: ConsultationStatus }) => {
+        mutationFn: async ({ id, status, is_archived }: { id: string; status: ConsultationStatus, is_archived?: boolean }) => {
             const response = await fetch(`/api/consult/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ status }),
+                body: JSON.stringify({ status, is_archived }),
             });
             if (!response.ok) throw new Error('Failed to update status');
             return response.json();
