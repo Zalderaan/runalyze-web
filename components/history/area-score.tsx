@@ -78,10 +78,10 @@ const getClassificationPic = (area: string, classification: string | undefined) 
         },
 
         foot_strike: {
-            "excessive forefoot strike": "understride.svg",
-            "slight forefoot strike": "slight-understride.svg",
-            "good midfoot landing": "ideal-foot-landing.svg",
-            "slight heel strike": "slight-overstride.svg",
+            "showing excessive forefoot strike": "understride.svg",
+            "showing a slight forefoot strike": "slight-understride.svg",
+            "showing good midfoot landing": "ideal-foot-landing.svg",
+            "showing a slight heel strike": "slight-overstride.svg",
             "landing on your heel": "overstride.svg"
         }
     };
@@ -127,7 +127,7 @@ const isIdealClassification = (area: string, classification: string | undefined)
         'Head Position': 'well-positioned',
         'Arm Flexion': 'well-positioned',
         'Back Position': 'well-positioned with good forward lean',
-        'Foot Strike': 'good midfoot landing',
+        'Foot Strike': 'showing good midfoot landing',
         'Left Knee': 'showing excellent heel kick',
         'Right Knee': 'showing good bend upon foot landing',
     };
@@ -143,18 +143,46 @@ export function AreaScore({ area, score, analysis, perf_level, classification }:
         <>
             <Dialog>
                 <DialogTrigger asChild>
-                    <div className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex-1 text-left">
-                            <h4 className="font-medium text-gray-900">{area}</h4>
-                            <p className="text-xs text-gray-500 line-clamp-2">{analysis}</p>
-                        </div>
-                        <div className="ml-4 text-right">
-                            <span className={`text-2xl font-bold ${getScoreColors(score).text}`}>
-                                {score?.toFixed(0) || 0}%
-                            </span>
-                            <div className={`text-xs px-2 py-1 rounded-full mt-1 ${getScoreColors(score).bg}`}>
-                                {perf_level || 'Unknown'}
+                    <div className="group cursor-pointer bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-blue-200 transition-all duration-200 flex flex-col gap-4">
+                        {/* Top row: score ring + area name */}
+                        <div className="flex items-center gap-4">
+                            {/* Conic-gradient score ring */}
+                            <div
+                                className="shrink-0 flex items-center justify-center rounded-full shadow-sm"
+                                style={{
+                                    width: 60,
+                                    height: 60,
+                                    background: `conic-gradient(
+                                        ${score >= 80 ? '#22c55e' : score >= 60 ? '#f59e0b' : '#ef4444'} ${score * 3.6}deg,
+                                        #e2e8f0 0deg
+                                    )`,
+                                    padding: 4,
+                                    borderRadius: '50%',
+                                }}
+                            >
+                                <div className="flex flex-col items-center justify-center rounded-full bg-white w-full h-full">
+                                    <span className={`text-sm font-extrabold leading-none ${getScoreColors(score).text}`}>
+                                        {score?.toFixed(0) ?? 0}
+                                    </span>
+                                    <span className="text-[8px] text-gray-400 leading-none">pts</span>
+                                </div>
                             </div>
+
+                            {/* Title + analysis */}
+                            <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold text-gray-900 text-sm leading-tight">{area}</h4>
+                                <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">{analysis}</p>
+                            </div>
+                        </div>
+
+                        {/* Bottom row: perf-level badge + click hint */}
+                        <div className="flex items-center justify-between">
+                            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${getScoreColors(score).bg}`}>
+                                {perf_level || 'Unknown'}
+                            </span>
+                            <span className="text-xs text-gray-400 group-hover:text-blue-500 transition-colors">
+                                View details →
+                            </span>
                         </div>
                     </div>
                 </DialogTrigger>

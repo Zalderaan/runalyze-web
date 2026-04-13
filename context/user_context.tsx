@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const fullUser = await getCurrentUser();
             if (fullUser) {
                 setUser(fullUser);
-                router.push("/dashboard/home");
+                router.push("/onboarding");
             } else {
                 throw new Error("Failed to loaduser after signup");
             }

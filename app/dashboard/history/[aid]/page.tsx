@@ -109,6 +109,7 @@ interface AnalysisDetails {
     foot_strike: number;
     overall_score: number;
     overall_assessment: string;
+    bmi_category: "underweight" | "normal" | "overweight" | "obese";
     detailed_feedback: DetailedFeedback;
 }
 
@@ -138,7 +139,7 @@ export default function AnalysisDetails() {
     }, [analysisId, getAnalysisDetails]);
 
     // console.log(analysisDetails);
-    const { id, video_url, overall_score, overall_assessment, detailed_feedback, } = analysisDetails || {};
+    const { id, video_url, overall_score, overall_assessment, detailed_feedback, bmi_category } = analysisDetails || {};
     // head_position, back_position, arm_flexion, right_knee, left_knee, foot_strike 
 
     const router = useRouter();
@@ -292,123 +293,172 @@ export default function AnalysisDetails() {
         <RoleGuard allowedRoles={["user"]}>
             <div className="space-y-8 w-full">
                 {/* Overall Score Header */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Analysis #{id}</h1>
-                            <p className="text-gray-600 mt-1">{overall_assessment}</p>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-sm text-gray-500 uppercase tracking-wide">Overall Score</p>
-                            <p className="text-4xl font-bold text-blue-600">{overall_score?.toFixed(0)}%</p>
+                <div className="relative overflow-hidden rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 p-px shadow-xl">
+                    <div className="relative rounded-2xl bg-gradient-to-br from-white/95 via-blue-50/90 to-indigo-50/90 backdrop-blur-sm px-6 py-5">
+                        {/* Decorative blobs */}
+                        <div className="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full bg-blue-200/30 blur-2xl" />
+                        <div className="pointer-events-none absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-indigo-200/30 blur-2xl" />
+
+                        <div className="relative flex flex-wrap items-center gap-6">
+                            {/* Left — title & assessment */}
+                            <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold uppercase tracking-widest text-blue-500 mb-1">Run Analysis</p>
+                                <h1 className="text-2xl font-bold text-gray-900 truncate">Analysis #{id}</h1>
+                                <p className="text-sm text-gray-500 mt-2 leading-relaxed line-clamp-3">{overall_assessment}</p>
+                            </div>
+
+                            {/* Centre — circular score */}
+                            <div className="flex flex-col items-center gap-1 shrink-0">
+                                {/* Outer ring */}
+                                <div
+                                    className="relative flex items-center justify-center rounded-full shadow-lg"
+                                    style={{
+                                        width: 96,
+                                        height: 96,
+                                        background: `conic-gradient(
+                                            ${(overall_score ?? 0) >= 80 ? '#22c55e' : (overall_score ?? 0) >= 60 ? '#f59e0b' : '#ef4444'} ${(overall_score ?? 0) * 3.6}deg,
+                                            #e2e8f0 0deg
+                                        )`,
+                                        borderRadius: '50%',
+                                        padding: 5,
+                                    }}
+                                >
+                                    <div className="flex flex-col items-center justify-center rounded-full bg-white w-full h-full">
+                                        <span
+                                            className="text-2xl font-extrabold leading-none"
+                                            style={{
+                                                color: (overall_score ?? 0) >= 80 ? '#16a34a' : (overall_score ?? 0) >= 60 ? '#d97706' : '#dc2626',
+                                            }}
+                                        >
+                                            {overall_score?.toFixed(0)}
+                                        </span>
+                                        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">/ 100</span>
+                                    </div>
+                                </div>
+                                <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">Overall Score</span>
+                            </div>
+
+                            {/* Right — BMI badge */}
+                            {bmi_category && (
+                                <div className="flex flex-col items-center gap-1 shrink-0">
+                                    <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">Body Type</span>
+                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border shadow-sm ${bmi_category === "normal" ? "bg-green-50 text-green-700 border-green-300" :
+                                        bmi_category === "underweight" ? "bg-blue-50 text-blue-700 border-blue-300" :
+                                            bmi_category === "overweight" ? "bg-amber-50 text-amber-700 border-amber-300" :
+                                                "bg-red-50 text-red-700 border-red-300"
+                                        }`}>
+                                        <span>
+                                            {bmi_category === "normal" ? "✅" :
+                                                bmi_category === "underweight" ? "💧" :
+                                                    bmi_category === "overweight" ? "⚠️" : "🔴"}
+                                        </span>
+                                        BMI · {bmi_category.charAt(0).toUpperCase() + bmi_category.slice(1)}
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                    {/* Video Section - Takes more space on larger screens */}
-                    <div className="xl:col-span-2">
-                        <div className="bg-gray-900 rounded-xl overflow-hidden shadow-lg">
-                            <video
-                                src={video_url}
-                                controls
-                                className="w-full h-[400px] lg:h-[500px] object-contain bg-black"
-                                poster={analysisDetails?.thumbnail_url}
+                {/* Form Analysis — 3 cols × 2 rows */}
+                <div className="w-full">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4">Form Analysis</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <AreaScore
+                            area="Head Position"
+                            score={detailed_feedback?.head_position?.score ?? 0}
+                            analysis={detailed_feedback?.head_position?.analysis ?? ""}
+                            perf_level={detailed_feedback?.head_position?.performance_level ?? "Unknown"}
+                            classification={detailed_feedback?.head_position?.classification ?? ""}
+                        />
+                        <AreaScore
+                            area="Back Position"
+                            score={detailed_feedback?.back_position?.score ?? 0}
+                            analysis={detailed_feedback?.back_position?.analysis ?? ""}
+                            perf_level={detailed_feedback?.back_position?.performance_level ?? "Unknown"}
+                            classification={detailed_feedback?.back_position?.classification ?? ""}
+                        />
+                        <AreaScore
+                            area="Arm Flexion"
+                            score={detailed_feedback?.arm_flexion?.score ?? 0}
+                            analysis={detailed_feedback?.arm_flexion?.analysis ?? ""}
+                            perf_level={detailed_feedback?.arm_flexion?.performance_level ?? "Unknown"}
+                            classification={detailed_feedback?.arm_flexion?.classification ?? ""}
+                        />
+                        <AreaScore
+                            area="Right Knee"
+                            score={detailed_feedback?.right_knee?.score ?? 0}
+                            analysis={detailed_feedback?.right_knee?.analysis ?? ""}
+                            perf_level={detailed_feedback?.right_knee?.performance_level ?? "Unknown"}
+                            classification={detailed_feedback?.right_knee?.classification ?? ""}
+                        />
+                        <AreaScore
+                            area="Left Knee"
+                            score={detailed_feedback?.left_knee?.score ?? 0}
+                            analysis={detailed_feedback?.left_knee?.analysis ?? ""}
+                            perf_level={detailed_feedback?.left_knee?.performance_level ?? "Unknown"}
+                            classification={detailed_feedback?.left_knee?.classification ?? ""}
+                        />
+                        <AreaScore
+                            area="Foot Strike"
+                            score={detailed_feedback?.foot_strike?.score ?? 0}
+                            analysis={detailed_feedback?.foot_strike?.analysis ?? ""}
+                            perf_level={detailed_feedback?.foot_strike?.performance_level ?? "Unknown"}
+                            classification={detailed_feedback?.foot_strike?.classification ?? ""}
+                        />
+                    </div>
+                </div>
+
+                {/* Video Section — full width */}
+                <div className="w-full">
+                    <div className="bg-gray-900 rounded-xl overflow-hidden shadow-lg">
+                        <video
+                            src={video_url}
+                            controls
+                            className="w-full max-h-[560px] object-contain bg-black"
+                            poster={analysisDetails?.thumbnail_url}
+                        >
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                </div>
+
+
+
+                {/* Delete — danger zone */}
+                <div className="flex justify-end pt-2 border-t border-gray-200">
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button
+                                variant="destructive"
+                                className="flex items-center gap-2"
+                                disabled={isLoadingDelete}
                             >
-                                Your browser does not support the video tag.
-                            </video>
-                        </div>
-                    </div>
-
-                    {/* Analysis Metrics Grid - Optimized for vertical space */}
-                    <div className="xl:col-span-1">
-                        <h2 className="text-xl font-semibold mb-4 text-gray-900">Form Analysis</h2>
-                        <div className="grid grid-cols-1 gap-3">
-                            <AreaScore
-                                area="Head Position"
-                                score={detailed_feedback?.head_position?.score ?? 0}
-                                analysis={detailed_feedback?.head_position?.analysis ?? ""}
-                                perf_level={detailed_feedback?.head_position?.performance_level ?? "Unknown"}
-                                classification={detailed_feedback?.head_position?.classification ?? ""}
-                            />
-
-                            <AreaScore
-                                area="Back Position"
-                                score={detailed_feedback?.back_position?.score ?? 0}
-                                analysis={detailed_feedback?.back_position?.analysis ?? ""}
-                                perf_level={detailed_feedback?.back_position?.performance_level ?? "Unknown"}
-                                classification={detailed_feedback?.back_position?.classification ?? ""}
-                            />
-
-                            <AreaScore
-                                area="Arm Flexion"
-                                score={detailed_feedback?.arm_flexion?.score ?? 0}
-                                analysis={detailed_feedback?.arm_flexion?.analysis ?? ""}
-                                perf_level={detailed_feedback?.arm_flexion?.performance_level ?? "Unknown"}
-                                classification={detailed_feedback?.arm_flexion?.classification ?? ""}
-                            />
-
-                            <AreaScore
-                                area="Right Knee"
-                                score={detailed_feedback?.right_knee?.score ?? 0}
-                                analysis={detailed_feedback?.right_knee?.analysis ?? ""}
-                                perf_level={detailed_feedback?.right_knee?.performance_level ?? "Unknown"}
-                                classification={detailed_feedback?.right_knee?.classification ?? ""}
-                            />
-
-                            <AreaScore
-                                area="Left Knee"
-                                score={detailed_feedback?.left_knee?.score ?? 0}
-                                analysis={detailed_feedback?.left_knee?.analysis ?? ""}
-                                perf_level={detailed_feedback?.left_knee?.performance_level ?? "Unknown"}
-                                classification={detailed_feedback?.left_knee?.classification ?? ""}
-                            />
-
-                            <AreaScore
-                                area="Foot Strike"
-                                score={detailed_feedback?.foot_strike?.score ?? 0}
-                                analysis={detailed_feedback?.foot_strike?.analysis ?? ""}
-                                perf_level={detailed_feedback?.foot_strike?.performance_level ?? "Unknown"}
-                                classification={detailed_feedback?.foot_strike?.classification ?? ""}
-                            />
-
-                            {/* Delete Button positioned at bottom */}
-                            <div className="mt-6 pt-4 border-t border-gray-200">
-                                <Dialog>
-                                    <DialogTrigger asChild>
-                                        <Button
-                                            variant="destructive"
-                                            className="w-full flex items-center justify-center gap-2"
-                                            disabled={isLoadingDelete}
-                                        >
-                                            <TrashIcon className="h-4 w-4" />
-                                            Delete Analysis
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogHeader>
-                                            <DialogTitle>Are you sure?</DialogTitle>
-                                            <DialogDescription>This action will remove this analysis from your account.</DialogDescription>
-                                        </DialogHeader>
-                                        <DialogFooter>
-                                            <Button asChild variant={'outline'}>
-                                                <DialogClose>
-                                                    Go back
-                                                </DialogClose>
-                                            </Button>
-                                            <Button
-                                                variant={'destructive'}
-                                                onClick={handleDelete}
-                                                disabled={isLoadingDelete}
-                                            >
-                                                {isLoadingDelete ? "Deleting..." : "Yes, delete this analysis"}
-                                            </Button>
-                                        </DialogFooter>
-                                    </DialogContent>
-                                </Dialog>
-                            </div>
-                        </div>
-                    </div>
+                                <TrashIcon className="h-4 w-4" />
+                                Delete Analysis
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Are you sure?</DialogTitle>
+                                <DialogDescription>This action will remove this analysis from your account.</DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                                <Button asChild variant={'outline'}>
+                                    <DialogClose>
+                                        Go back
+                                    </DialogClose>
+                                </Button>
+                                <Button
+                                    variant={'destructive'}
+                                    onClick={handleDelete}
+                                    disabled={isLoadingDelete}
+                                >
+                                    {isLoadingDelete ? "Deleting..." : "Yes, delete this analysis"}
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </div>
 
                 {/* Recommended Drills Section */}

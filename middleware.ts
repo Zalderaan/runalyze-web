@@ -17,6 +17,7 @@ const routePermissions: Record<string, string[]> = {
     "/dashboard/admin": ["admin", "owner"],
     "/dashboard/new-admin": ["owner"],
     "/dashboard/admin-application": ["admin_applicant"],
+    "/onboarding": ["user"],
 };
 
 const publicRoutes = ["/auth/login", "/auth/register", "/auth/admin-application"];
@@ -69,7 +70,7 @@ function getDefaultRoute(role: string | undefined): string {
 }
 
 export const config = {
-    matcher: ["/dashboard/:path*", "/auth/:path*"],
+    matcher: ["/dashboard/:path*", "/auth/:path*", "/onboarding"],
 };
 
 // import { cookies } from "next/headers";

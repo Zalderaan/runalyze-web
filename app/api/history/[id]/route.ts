@@ -43,12 +43,15 @@ export async function GET(
                 { status: 404 }
             );
         };
+        const rawDetailedFeedback = data.feedbacks?.[0]?.detailed_feedback ?? {};
+        const { _bmi_category, ...detailed_feedback } = rawDetailedFeedback;
         const flattenedData = {
             ...data,
             video_url: data.videos?.[0]?.video_url,
             thumbnail_url: data.videos?.[0]?.thumbnail_url,
-            detailed_feedback: data.feedbacks?.[0]?.detailed_feedback,
+            detailed_feedback,
             overall_assessment: data.feedbacks?.[0]?.overall_assessment,
+            bmi_category: _bmi_category ?? "normal",
         };
 
         return NextResponse.json({ analysis: flattenedData }, { status: 200 });
@@ -81,7 +84,54 @@ export async function DELETE(
         const session = await decrypt(cookie);
         const userID = session?.userId;
 
-        // Delete analysis record first (should cascade to feedback if set up properly)
+        // First fetch associated videos to delete their storage objects using the Storage API
+        const { data: analysisData } = await supabase
+            .from('analysis_results')
+            .select('videos(id, video_url, thumbnail_url)')
+            .eq('id', analysisID)
+            .eq('user_id', userID)
+            .single();
+
+        if (analysisData && analysisData.videos) {
+            const filesToRemove: string[] = [];
+            const videosList = Array.isArray(analysisData.videos) ? analysisData.videos : [analysisData.videos];
+
+            videosList.forEach((vid: any) => {
+                if (vid.video_url) {
+                    const videoPath = vid.video_url.split('/object/public/videos/')[1]?.split('?')[0];
+                    if (videoPath) filesToRemove.push(videoPath);
+                }
+                if (vid.thumbnail_url) {
+                    const thumbPath = vid.thumbnail_url.split('/object/public/videos/')[1]?.split('?')[0];
+                    if (thumbPath) filesToRemove.push(thumbPath);
+                }
+            });
+
+            if (filesToRemove.length > 0) {
+                // Delete actual files from bucket
+                const { error: storageError } = await supabase.storage
+                    .from('videos')
+                    .remove(filesToRemove);
+                
+                if (storageError) {
+                    console.error("Storage API deletion error:", storageError);
+                } else {
+                    console.log("Successfully removed files from storage:", filesToRemove);
+                }
+
+                // IMPORTANT: We must also manually delete the related video records BEFORE deleting analysis_results.
+                // Otherwise, the cascading delete hits the database storage.objects trigger and causes 42501 error.
+                // Since there is a trigger on `videos` interacting with storage.objects, we need to explicitly delete `videos` individually? 
+                // Wait! If the storage API successfully removes the objects, S3 might already cascade delete the video records if the foreign key is set up with ON DELETE CASCADE. 
+                // Just in case the cascade doesn't happen automatically (if FKs are not set), we delete the videos explicitly.
+                const videoIds = videosList.map((v: any) => v.id).filter(Boolean);
+                if (videoIds.length > 0) {
+                    await supabase.from('videos').delete().in('id', videoIds);
+                }
+            }
+        }
+
+        // Delete analysis record (should cascade to feedback if set up properly)
         const { error: deleteError } = await supabase
             .from('analysis_results')
             .delete()

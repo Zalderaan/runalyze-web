@@ -90,8 +90,24 @@ export default function UserPage() {
     };
 
     const calculateAvgPace = () => {
-        // Mock calculation - replace with real logic based on user's runs
-        return '5:30'; // Example pace per km
+        const t5k = formData.time_5k ? timeToSecs(formData.time_5k) : 0;
+        const t10k = formData.time_10k ? timeToSecs(formData.time_10k) : 0;
+        const t3k = formData.time_3k ? timeToSecs(formData.time_3k) : 0;
+
+        let paceSeconds = 0;
+        if (t5k > 0) {
+            paceSeconds = t5k / 5.0;
+        } else if (t10k > 0) {
+            paceSeconds = t10k / 10.0;
+        } else if (t3k > 0) {
+            paceSeconds = t3k / 3.0;
+        }
+
+        if (paceSeconds === 0) return 'N/A';
+
+        const mins = Math.floor(paceSeconds / 60);
+        const secs = Math.floor(paceSeconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}/km`;
     };
 
     const getInitials = (name: string) => {
