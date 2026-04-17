@@ -13,6 +13,8 @@ export interface HistoryItem {
     overall_score: number;
     video_id: number;
     user_id: number;
+    name?: string;
+    fatigue_level?: number;
     videos: {
         video_url: string;
         thumbnail_url: string;
@@ -111,12 +113,59 @@ export function useHistory() {
 
             const result = await response.json();
             // console.log(result.message);
-            
+
             // Refresh the history list after successful deletion
             await fetchHistory();
             return { success: true, message: result.message }
         } catch (error) {
             console.error("Error deleting analysis: ", error);
+        }
+    }
+
+    const renameAnalysis = async (analysisId: number, newName: string) => {
+        try {
+            const response = await fetch(`/api/history/${analysisId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newName })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to rename analysis');
+            }
+
+            // Refresh history array state optimistically or by re-fetching
+            setHistory(prev => prev.map(item =>
+                item.id === analysisId ? { ...item, name: newName } : item
+            ));
+
+            return { success: true };
+        } catch (error) {
+            console.error("Error renaming analysis: ", error);
+            return { success: false, error };
+        }
+    }
+
+    const updateFatigueLevel = async (analysisId: number, fatigueLevel: number) => {
+        try {
+            const response = await fetch(`/api/history/${analysisId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fatigue_level: fatigueLevel })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update fatigue level');
+            }
+
+            setHistory(prev => prev.map(item =>
+                item.id === analysisId ? { ...item, fatigue_level: fatigueLevel } : item
+            ));
+
+            return { success: true };
+        } catch (error) {
+            console.error("Error updating fatigue level: ", error);
+            return { success: false, error };
         }
     }
 
@@ -131,6 +180,8 @@ export function useHistory() {
         fetchHistory,
         getLatestAnalysis,
         getAnalysisDetails,
-        deleteAnalysis
+        deleteAnalysis,
+        renameAnalysis,
+        updateFatigueLevel
     }
 }

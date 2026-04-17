@@ -25,6 +25,7 @@ import {
 import { useState } from "react";
 import { Results } from "@/components/analyze/results";
 import { useAuth } from "@/context/user_context";
+import { useHistory } from "@/hooks/use-history";
 import Link from "next/link";
 import { SampleDialog } from "@/components/sample/sample-dialog";
 import { Progress } from "@/components/ui/progress";
@@ -88,6 +89,40 @@ export default function AnalyzePage() {
         database_records: DatabaseRecords;
     } | null>(null);
     const { user } = useAuth();
+    const [promptAnalysisId, setPromptAnalysisId] = useState<number | null>(null);
+    const [analysisName, setAnalysisName] = useState("");
+    const [isSavingName, setIsSavingName] = useState(false);
+    
+    const { renameAnalysis, updateFatigueLevel } = useHistory();
+    const [fatigueLevel, setFatigueLevel] = useState<number | null>(null);
+    const [isSavingFatigue, setIsSavingFatigue] = useState(false);
+
+    const handleNameSubmit = async () => {
+        if (!promptAnalysisId) return;
+        setIsSavingName(true);
+        // It's already defaulted to "Analysis on <timestamp>" if they don't edit
+        try {
+            await renameAnalysis(promptAnalysisId, analysisName.trim());
+        } catch (err) {
+            console.error("Failed to set early analysis name", err);
+        } finally {
+            setIsSavingName(false);
+        }
+    };
+
+    const handleFatigueSubmit = async (level: number) => {
+        setFatigueLevel(level);
+        if (promptAnalysisId) {
+            setIsSavingFatigue(true);
+            try {
+                await updateFatigueLevel(promptAnalysisId, level);
+            } catch (err) {
+                console.error("Failed to save fatigue level", err);
+            } finally {
+                setIsSavingFatigue(false);
+            }
+        }
+    };
 
     // TODO: validate file size and length
     async function validateVideoDuration(file: File): Promise<{ valid: boolean; duration: number; error?: string }> {
@@ -310,6 +345,17 @@ export default function AnalyzePage() {
                 setResults(result);
                 setIsProcessing(false); // ✅ Stop loading on success
                 setError(null); // ✅ Clear any previous errors
+
+                // Prepare name state
+                const currentTimestamp = new Date().toLocaleString(undefined, {
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+                const defaultName = `Analysis on ${currentTimestamp}`
+                setAnalysisName(defaultName);
+                setPromptAnalysisId(result.database_records.analysis_id);
+                setFatigueLevel(null);
+                // Setup default name automatically in the background
+                renameAnalysis(result.database_records.analysis_id, defaultName).catch(console.error);
 
                 // Clean up backend storage
                 fetch(`${API_URL}/result/${jobId}`, { method: 'DELETE' })
@@ -830,7 +876,17 @@ export default function AnalyzePage() {
                                 Your running form analysis is ready
                             </CardDescription>
                         </CardHeader>
-                        <Results download_url={results.download_url} analysis_summary={results.analysis_summary} />
+                        <Results 
+                            download_url={results.download_url} 
+                            analysis_summary={results.analysis_summary} 
+                            analysisName={analysisName}
+                            setAnalysisName={setAnalysisName}
+                            onSaveName={handleNameSubmit}
+                            isSavingName={isSavingName}
+                            fatigueLevel={fatigueLevel}
+                            onSaveFatigue={handleFatigueSubmit}
+                            isSavingFatigue={isSavingFatigue}
+                        />
                         <CardContent>
                             <Button asChild><Link href={`/dashboard/history/${results.database_records.analysis_id}`}>See details</Link></Button>
                         </CardContent>

@@ -5,6 +5,7 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -22,7 +23,8 @@ import {
     ArrowUpRight,
     GitCompare,
     X,
-    Check
+    Check,
+    Download
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -30,18 +32,20 @@ import { getScoreColor } from "@/components/home/RunAnalysis";
 import { RoleGuard } from "@/components/RoleGuard";
 import { cn } from "@/lib/utils";
 import { HistoryItem } from "@/hooks/use-history";
+import { getAchievementsForRun } from "@/lib/badges.config";
 
 // ...existing HistoryItemProps interface...
 
 interface HistoryCardProps {
     analysis: HistoryItem
+    allHistory: HistoryItem[]
     compareMode?: boolean;
     isSelected?: boolean;
     selectionOrder?: number;
     onSelect?: (id: number) => void;
 }
 
-function HistoryCard({ analysis, compareMode, isSelected, selectionOrder, onSelect }: HistoryCardProps) {
+function HistoryCard({ analysis, allHistory, compareMode, isSelected, selectionOrder, onSelect }: HistoryCardProps) {
     const createdAt = new Date(analysis.created_at);
     const formattedDate = createdAt.toLocaleDateString('en-US', {
         weekday: 'short',
@@ -69,6 +73,8 @@ function HistoryCard({ analysis, compareMode, isSelected, selectionOrder, onSele
         }
     };
 
+    const runBadges = getAchievementsForRun(analysis.id, allHistory);
+
     return (
         <Card
             className={cn(
@@ -93,9 +99,9 @@ function HistoryCard({ analysis, compareMode, isSelected, selectionOrder, onSele
                     </div>
                 )}
                 <div className="absolute top-2 right-2">
-                    <Badge variant="secondary" className="bg-black/50 text-white border-0">
-                        <Activity className="h-3 w-3 mr-1" />
-                        Analysis #{analysis.id}
+                    <Badge variant="secondary" className="bg-black/50 text-white border-0 hover:bg-black/70 flex items-center gap-1 group/badge">
+                        <Activity className="h-3 w-3" />
+                        <span className="truncate max-w-[120px]">{analysis.name || `Analysis #${analysis.id}`}</span>
                     </Badge>
                 </div>
 
@@ -114,6 +120,9 @@ function HistoryCard({ analysis, compareMode, isSelected, selectionOrder, onSele
 
             <CardContent className="p-4 space-y-3">
                 {/* ...existing card content... */}
+                <div>
+                    {analysis.name}
+                </div>
                 <div className="flex items-center justify-between">
                     <div className="space-y-1">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -167,6 +176,35 @@ function HistoryCard({ analysis, compareMode, isSelected, selectionOrder, onSele
                     </div>
                 </div>
 
+                {runBadges.length > 0 && (
+                    <>
+                        <Separator />
+                        <TooltipProvider delayDuration={200}>
+                            <div className="flex flex-wrap gap-2 pt-1 pb-2">
+                                {runBadges.map((badgeDef) => {
+                                    const Icon = badgeDef.icon;
+                                    return (
+                                        <Tooltip key={badgeDef.id}>
+                                            <TooltipTrigger className="cursor-default">
+                                                <div 
+                                                    className="flex items-center gap-1.5 px-2 py-1 rounded bg-blue-50 border border-blue-100 hover:bg-blue-100 transition-colors"
+                                                >
+                                                    <Icon className={`h-3.5 w-3.5 ${badgeDef.color}`} />
+                                                    <span className="text-[10px] font-semibold text-blue-900 leading-none">{badgeDef.name}</span>
+                                                </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent className="max-w-[220px] bg-gray-900 text-white border-0 shadow-lg p-2.5">
+                                                <p className="font-semibold text-sm mb-1 leading-none">{badgeDef.name}</p>
+                                                <p className="text-xs opacity-80 leading-snug text-balance">{badgeDef.description}</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    )
+                                })}
+                            </div>
+                        </TooltipProvider>
+                    </>
+                )}
+
                 {!compareMode && (
                     <Link href={`/dashboard/history/${analysis.id}`}>
                         <Button variant="outline" className="w-full group-hover:bg-blue-50 group-hover:border-blue-300">
@@ -205,6 +243,95 @@ export default function HistoryPage() {
     const exitCompareMode = () => {
         setCompareMode(false);
         setSelectedIds([]);
+    };
+
+    const exportHistoryToCSV = () => {
+        if (!history || history.length === 0) return;
+
+        const headers = [
+            "Date", "Time", "Overall Score (%)",
+            "Head Position (%)", "Back Position (%)", "Arm Flexion (%)",
+            "Right Knee (%)", "Left Knee (%)", "Foot Strike (%)"
+        ];
+
+        // 1. Generate individual data rows
+        const rows = history.map(item => {
+            const dateObj = new Date(item.created_at);
+            const date = dateObj.toLocaleDateString();
+            const time = dateObj.toLocaleTimeString();
+
+            return [
+                date, time,
+                item.overall_score.toFixed(2),
+                item.head_position.toFixed(2),
+                item.back_position.toFixed(2),
+                item.arm_flexion.toFixed(2),
+                item.right_knee.toFixed(2),
+                item.left_knee.toFixed(2),
+                item.foot_strike.toFixed(2)
+            ];
+        });
+
+        // 2. Generate Data Generalization / Summary Insights
+        const totalRuns = history.length;
+        const avgOverall = (history.reduce((sum, item) => sum + item.overall_score, 0) / totalRuns).toFixed(2);
+
+        const metrics: { name: string, key: keyof HistoryItem }[] = [
+            { name: "Head Position", key: "head_position" },
+            { name: "Back Position", key: "back_position" },
+            { name: "Arm Flexion", key: "arm_flexion" },
+            { name: "Right Knee", key: "right_knee" },
+            { name: "Left Knee", key: "left_knee" },
+            { name: "Foot Strike", key: "foot_strike" }
+        ];
+
+        let weakestMetricName = "";
+        let lowestAvg = Infinity;
+        let strongestMetricName = "";
+        let highestAvg = -Infinity;
+
+        metrics.forEach(m => {
+            // we know these keys point to numbers in HistoryItem
+            const avg = history.reduce((sum, item) => sum + (item[m.key] as number), 0) / totalRuns;
+            if (avg < lowestAvg) { lowestAvg = avg; weakestMetricName = m.name; }
+            if (avg > highestAvg) { highestAvg = avg; strongestMetricName = m.name; }
+        });
+
+        // Chronological sort to check progress trend (oldest to newest)
+        const sortedHistory = [...history].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        const firstRun = sortedHistory[0];
+        const lastRun = sortedHistory[sortedHistory.length - 1];
+        const improvement = lastRun.overall_score - firstRun.overall_score;
+        let trendStr = improvement > 2 ? "Improving" : improvement < -2 ? "Declining" : "Stable";
+
+        const insightRows = [
+            [], // Blank spacer row
+            ["--- SUMMARY & GENERALIZATIONS ---", "", "", "", "", "", "", "", ""],
+            ["Total Runs Analyzed", totalRuns.toString(), "", "", "", "", "", "", ""],
+            ["Average Overall Score", avgOverall + "%", "", "", "", "", "", "", ""],
+            ["Strongest Biomechanic", strongestMetricName, "", "", "", "", "", "", ""],
+            ["Key Area for Improvement", weakestMetricName, "", "", "", "", "", "", ""],
+            ["Historical Trend", `${trendStr} (${improvement > 0 ? '+' : ''}${improvement.toFixed(1)}%)`, "", "", "", "", "", "", ""]
+        ];
+
+        // 3. Combine into final CSV
+        const csvContent = [
+            headers.join(","),
+            ...rows.map(row => row.join(",")),
+            ...insightRows.map(row => row.join(","))
+        ].join("\n");
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `running_history_report_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     };
 
     // ...existing processed useMemo...
@@ -326,6 +453,7 @@ export default function HistoryPage() {
                         <HistoryCard
                             key={analysis.id}
                             analysis={analysis}
+                            allHistory={history}
                             compareMode={compareMode}
                             isSelected={selectedIds.includes(analysis.id)}
                             selectionOrder={selectedIds.indexOf(analysis.id) + 1}
@@ -376,16 +504,27 @@ export default function HistoryPage() {
                             </div>
                         </div>
 
-                        {/* Compare Mode Toggle */}
-                        {history.length >= 2 && (
-                            <Button
-                                variant={compareMode ? "secondary" : "outline"}
-                                onClick={() => compareMode ? exitCompareMode() : setCompareMode(true)}
-                            >
-                                <GitCompare className="h-4 w-4 mr-2" />
-                                {compareMode ? "Cancel Compare" : "Compare Runs"}
-                            </Button>
-                        )}
+                        {/* Compare Mode & Export Toggle */}
+                        <div className="flex items-center gap-2">
+                            {history.length > 0 && (
+                                <Button
+                                    variant="outline"
+                                    onClick={exportHistoryToCSV}
+                                >
+                                    <Download className="h-4 w-4 mr-2" />
+                                    Export All
+                                </Button>
+                            )}
+                            {history.length >= 2 && (
+                                <Button
+                                    variant={compareMode ? "secondary" : "outline"}
+                                    onClick={() => compareMode ? exitCompareMode() : setCompareMode(true)}
+                                >
+                                    <GitCompare className="h-4 w-4 mr-2" />
+                                    {compareMode ? "Cancel Compare" : "Compare Runs"}
+                                </Button>
+                            )}
+                        </div>
                     </div>
 
                     {compareMode && (

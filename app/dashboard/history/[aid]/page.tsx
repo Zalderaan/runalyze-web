@@ -5,6 +5,8 @@ import { useHistory } from "@/hooks/use-history";
 import { useParams, useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { getAchievementsForRun } from "@/lib/badges.config";
 import {
     Card,
     CardHeader,
@@ -12,7 +14,8 @@ import {
     CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrashIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { TrashIcon, Pencil, Loader2 } from "lucide-react";
 import { AreaScore } from "@/components/history/area-score";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DrillCardDialog } from "./DrillCardDialog";
@@ -109,18 +112,35 @@ interface AnalysisDetails {
     foot_strike: number;
     overall_score: number;
     overall_assessment: string;
+    name?: string;
+    fatigue_level?: number | null;
     bmi_category: "underweight" | "normal" | "overweight" | "obese";
     detailed_feedback: DetailedFeedback;
 }
 
 export default function AnalysisDetails() {
     const [analysisDetails, setAnalysisDetails] = useState<AnalysisDetails | null>(null);
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [editedName, setEditedName] = useState("");
+    const [isSavingName, setIsSavingName] = useState(false);
+
     const {
+        history, fetchHistory,
         getAnalysisDetails, isLoadingDetails,
-        deleteAnalysis, isLoadingDelete
+        deleteAnalysis, isLoadingDelete, 
+        renameAnalysis,
+        updateFatigueLevel
     } = useHistory();
     const params = useParams();
     const analysisId = params.aid as string;
+
+    const fetchedHistoryRef = useRef(false);
+    useEffect(() => {
+        if (!fetchedHistoryRef.current && history.length === 0) {
+            fetchHistory();
+            fetchedHistoryRef.current = true;
+        }
+    }, [fetchHistory, history.length]);
 
     const fetchedRef = useRef(false);
     useEffect(() => {
@@ -132,6 +152,9 @@ export default function AnalysisDetails() {
                 const details = await getAnalysisDetails(analysisId);
                 // console.log(details);
                 setAnalysisDetails(details);
+                if (details) {
+                    setEditedName(details.name || `Analysis #${details.id}`);
+                }
             }
         }
 
@@ -139,8 +162,30 @@ export default function AnalysisDetails() {
     }, [analysisId, getAnalysisDetails]);
 
     // console.log(analysisDetails);
-    const { id, video_url, overall_score, overall_assessment, detailed_feedback, bmi_category } = analysisDetails || {};
+    const { id, video_url, overall_score, overall_assessment, detailed_feedback, bmi_category, name, fatigue_level } = analysisDetails || {};
     // head_position, back_position, arm_flexion, right_knee, left_knee, foot_strike 
+
+    const [currentFatigue, setCurrentFatigue] = useState<number | null>(null);
+    useEffect(() => {
+        if (analysisDetails) {
+            setCurrentFatigue(analysisDetails.fatigue_level ?? null);
+        }
+    }, [analysisDetails]);
+
+    const [isSavingFatigue, setIsSavingFatigue] = useState(false);
+
+    const handleFatigueChange = async (level: number) => {
+        setCurrentFatigue(level);
+        setIsSavingFatigue(true);
+        try {
+            await updateFatigueLevel(Number(analysisId), level);
+            setAnalysisDetails(prev => prev ? { ...prev, fatigue_level: level } : prev);
+        } catch (error) {
+            console.error("Failed to update fatigue level");
+        } finally {
+            setIsSavingFatigue(false);
+        }
+    }
 
     const router = useRouter();
 
@@ -151,6 +196,27 @@ export default function AnalysisDetails() {
         } else {
             console.error('Delete failed: ', result?.message);
         }
+    };
+
+    const handleSaveName = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
+        const fallbackName = name || `Analysis #${id}`;
+        if (editedName.trim() === "" || editedName === fallbackName) {
+            setIsEditingName(false);
+            setEditedName(fallbackName);
+            return;
+        }
+
+        setIsSavingName(true);
+        const result = await renameAnalysis(Number(analysisId), editedName.trim());
+        if (result.success) {
+            setAnalysisDetails(prev => prev ? { ...prev, name: editedName.trim() } : prev);
+            setIsEditingName(false);
+        } else {
+            setEditedName(fallbackName);
+            setIsEditingName(false);
+        }
+        setIsSavingName(false);
     };
 
     // const handleDrillFeedback = async (isHelpful: boolean) => {
@@ -288,6 +354,9 @@ export default function AnalysisDetails() {
     // };
 
     const drills = getAllDrills();
+    const runBadges = analysisId && history.length > 0 
+        ? getAchievementsForRun(Number(analysisId), history) 
+        : [];
 
     return (
         <RoleGuard allowedRoles={["user"]}>
@@ -303,8 +372,60 @@ export default function AnalysisDetails() {
                             {/* Left — title & assessment */}
                             <div className="flex-1 min-w-0">
                                 <p className="text-xs font-semibold uppercase tracking-widest text-blue-500 mb-1">Run Analysis</p>
-                                <h1 className="text-2xl font-bold text-gray-900 truncate">Analysis #{id}</h1>
-                                <p className="text-sm text-gray-500 mt-2 leading-relaxed line-clamp-3">{overall_assessment}</p>
+                                
+                                {isEditingName ? (
+                                    <form onSubmit={handleSaveName} className="flex items-center gap-2 mb-2">
+                                        <Input
+                                            value={editedName}
+                                            onChange={e => setEditedName(e.target.value)}
+                                            className="h-10 text-xl font-bold bg-white/80 text-gray-900 border-blue-300 w-full max-w-sm"
+                                            autoFocus
+                                            disabled={isSavingName}
+                                        />
+                                        <Button type="submit" variant="secondary" disabled={isSavingName} className="gap-2 shrink-0 h-10">
+                                            {isSavingName && <Loader2 className="h-4 w-4 animate-spin text-gray-500" />}
+                                            Save
+                                        </Button>
+                                    </form>
+                                ) : (
+                                    <div 
+                                        className="flex items-center gap-2 group cursor-pointer w-fit"
+                                        onClick={() => setIsEditingName(true)}
+                                    >
+                                        <h1 className="text-2xl font-bold text-gray-900 truncate">
+                                            {name || `Analysis #${id}`}
+                                        </h1>
+                                        <Pencil className="h-4 w-4 text-gray-400 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                    </div>
+                                )}
+                                
+                                <p className="text-sm text-gray-500 mt-2 mb-4 leading-relaxed line-clamp-3">{overall_assessment}</p>
+
+                                {runBadges.length > 0 && (
+                                    <TooltipProvider delayDuration={200}>
+                                        <div className="flex flex-wrap gap-2 pt-1 pb-2">
+                                            {runBadges.map((badgeDef) => {
+                                                const Icon = badgeDef.icon;
+                                                return (
+                                                    <Tooltip key={badgeDef.id}>
+                                                        <TooltipTrigger className="cursor-default">
+                                                            <div 
+                                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-50/80 border border-blue-100 hover:bg-blue-100 transition-colors backdrop-blur-md shadow-sm"
+                                                            >
+                                                                <Icon className={`h-4 w-4 ${badgeDef.color}`} />
+                                                                <span className="text-xs font-bold text-blue-900 leading-none tracking-tight">{badgeDef.name}</span>
+                                                            </div>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent className="max-w-[220px] bg-gray-900 text-white border-0 shadow-lg p-2.5">
+                                                            <p className="font-semibold text-sm mb-1 leading-none">{badgeDef.name}</p>
+                                                            <p className="text-xs opacity-80 leading-snug text-balance">{badgeDef.description}</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                )
+                                            })}
+                                        </div>
+                                    </TooltipProvider>
+                                )}
                             </div>
 
                             {/* Centre — circular score */}
@@ -359,6 +480,94 @@ export default function AnalysisDetails() {
                         </div>
                     </div>
                 </div>
+
+                {/* Fatigue Context Component */}
+                {currentFatigue === null ? (
+                    <div className="w-full bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+                        <h3 className="text-sm font-semibold text-gray-700 mb-3">Contextualize this analysis: How were you feeling during this run?</h3>
+                        <div className="flex gap-2 relative">
+                            {isSavingFatigue && (
+                                <div className="absolute inset-0 bg-white/50 flex items-center justify-center rounded-lg z-10 backdrop-blur-[1px]">
+                                    <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+                                </div>
+                            )}
+                            {[
+                                { level: 1, label: "Fresh", emoji: "🔋" },
+                                { level: 2, label: "Good", emoji: "🙂" },
+                                { level: 3, label: "Normal", emoji: "😐" },
+                                { level: 4, label: "Tired", emoji: "😮‍💨" },
+                                { level: 5, label: "Exhausted", emoji: "🪫" },
+                            ].map(item => (
+                                <button
+                                    key={item.level}
+                                    onClick={() => handleFatigueChange(item.level)}
+                                    disabled={isSavingFatigue}
+                                    className="flex-1 flex flex-col items-center py-2 px-1 rounded-xl border border-gray-100 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 grayscale hover:grayscale-0"
+                                >
+                                    <span className="text-2xl mb-1">{item.emoji}</span>
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 hidden sm:block">{item.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="w-full">
+                        <div className={`p-4 rounded-xl border flex items-start gap-4 ${
+                            currentFatigue >= 4 ? 'bg-orange-50 border-orange-200' 
+                            : currentFatigue === 1 ? 'bg-green-50 border-green-200'
+                            : 'bg-blue-50 border-blue-100'
+                        }`}>
+                            <div className="text-3xl mt-0.5">
+                                {currentFatigue === 1 && "🔋"}
+                                {currentFatigue === 2 && "🙂"}
+                                {currentFatigue === 3 && "😐"}
+                                {currentFatigue === 4 && "😮‍💨"}
+                                {currentFatigue === 5 && "🪫"}
+                            </div>
+                            <div className="flex-1">
+                                <div className="flex justify-between items-start">
+                                    <h3 className={`font-bold text-lg mb-1 leading-none ${
+                                        currentFatigue >= 4 ? 'text-orange-900' 
+                                        : currentFatigue === 1 ? 'text-green-900'
+                                        : 'text-blue-900'
+                                    }`}>
+                                        Fatigue Context: {
+                                            currentFatigue === 1 ? "Fresh" :
+                                            currentFatigue === 2 ? "Good" :
+                                            currentFatigue === 3 ? "Normal" :
+                                            currentFatigue === 4 ? "Tired" : "Exhausted"
+                                        }
+                                    </h3>
+                                    <button 
+                                        onClick={() => setCurrentFatigue(null)} 
+                                        className={`text-[10px] font-bold uppercase tracking-wider underline opacity-60 hover:opacity-100 transition-opacity ${
+                                            currentFatigue >= 4 ? 'text-orange-900' 
+                                            : currentFatigue === 1 ? 'text-green-900'
+                                            : 'text-blue-900'
+                                        }`}
+                                    >
+                                        Edit
+                                    </button>
+                                </div>
+                                <p className={`text-sm opacity-90 leading-relaxed mt-1 ${
+                                    currentFatigue >= 4 ? 'text-orange-900' 
+                                    : currentFatigue === 1 ? 'text-green-900'
+                                    : 'text-blue-900'
+                                }`}>
+                                    {currentFatigue >= 4 ? (
+                                        (overall_score ?? 0) < 70 
+                                            ? "You reported feeling exhausted during this run. It's completely normal for biomechanics—especially back posture and core stability—to break down under high fatigue. Don't stress too much about these form scores; focus on recovery!"
+                                            : "You reported feeling exhausted, yet you maintained incredible form! Your muscular endurance is clearly a strong point. Way to hold it together."
+                                    ) : currentFatigue === 1 ? (
+                                        (overall_score ?? 0) < 70
+                                            ? "You reported feeling fresh, but your form scores are lower than expected. This indicates a genuine technical focal point rather than a stamina issue. Dive deep into the drills below!"
+                                            : "You felt fresh and your form reflects it! You executed this run with fantastic biomechanics from the start."
+                                    ) : "You felt relatively normal during this run. The analysis below reflects your reliable baseline running mechanics outside of heavy exhaustion."}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Form Analysis — 3 cols × 2 rows */}
                 <div className="w-full">

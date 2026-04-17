@@ -3,6 +3,8 @@
 import { RunAnalysis } from "@/components/home/RunAnalysis";
 import { NoAnalysis } from "@/components/home/NoAnalysis";
 import { useHistory } from "@/hooks/use-history";
+import { useBadges } from "@/hooks/use-badges";
+import { BADGES, getAchievementsForRun } from "@/lib/badges.config";
 import {
     Card,
     CardContent,
@@ -31,6 +33,24 @@ export default function HomePage() {
             hasFetchedRef.current = true;
         }
     }, [fetchHistory, history.length, isLoading]);
+
+    // Badges logic
+    const { earnedBadges, fetchBadges, evaluateAndAwardBadges, isLoadingBadges } = useBadges();
+    const hasFetchedBadgesRef = useRef(false);
+    useEffect(() => {
+        if (!hasFetchedBadgesRef.current) {
+            fetchBadges();
+            hasFetchedBadgesRef.current = true;
+        }
+    }, [fetchBadges]);
+
+    const hasEvaluatedRef = useRef(false);
+    useEffect(() => {
+        if (history.length > 0 && !hasEvaluatedRef.current) {
+            evaluateAndAwardBadges(history);
+            hasEvaluatedRef.current = true;
+        }
+    }, [history, evaluateAndAwardBadges]);
 
     // Calculate quick stats
     const totalAnalyses = history.length;
@@ -124,6 +144,45 @@ export default function HomePage() {
                     </Card>
                 </div>
 
+                {/* Achievements Row */}
+                {latestAnalysis && (
+                    <div className="space-y-4">
+                        <h2 className="text-xl font-semibold text-gray-900">Achievements Left Behind</h2>
+                        {(() => {
+                            const latestBadges = getAchievementsForRun(latestAnalysis.id, history);
+                            if (latestBadges.length === 0) {
+                                return (
+                                    <div className="p-4 rounded-xl border bg-gray-50 border-gray-100 text-gray-500 text-sm">
+                                        No specific achievements unlocked on your last run. Keep pushing to hit the next milestone!
+                                    </div>
+                                );
+                            }
+
+                            return (
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                    {latestBadges.map((badgeDef) => {
+                                        const Icon = badgeDef.icon;
+                                        return (
+                                            <div 
+                                                key={badgeDef.id} 
+                                                className="p-4 rounded-xl border flex items-center gap-4 transition-all bg-white border-blue-200 shadow-sm ring-1 ring-blue-100 hover:scale-105"
+                                            >
+                                                <div className="p-3 rounded-full shrink-0 bg-blue-50">
+                                                    <Icon className={`h-6 w-6 ${badgeDef.color}`} />
+                                                </div>
+                                                <div>
+                                                    <p className="font-semibold text-sm text-gray-900">{badgeDef.name}</p>
+                                                    <p className="text-xs text-gray-500 line-clamp-2 mt-0.5" title={badgeDef.description}>{badgeDef.description}</p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            );
+                        })()}
+                    </div>
+                )}
+
                 {/* Main Content Grid */}
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                     {/* Latest Analysis & Chart Section */}
@@ -185,8 +244,8 @@ export default function HomePage() {
                                         >
                                             <div className="flex items-center justify-between">
                                                 <div>
-                                                    <p className="font-medium text-gray-900">
-                                                        Analysis #{analysis.id}
+                                                    <p className="font-medium text-gray-900 truncate max-w-[150px]">
+                                                        {analysis.name || `Analysis #${analysis.id}`}
                                                     </p>
                                                     <p className="text-sm text-gray-500">
                                                         {new Date(analysis.created_at).toLocaleDateString('en-US', {

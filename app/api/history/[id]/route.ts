@@ -64,6 +64,68 @@ export async function GET(
     }
 }
 
+export async function PATCH(
+    req: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const paramsObj = await params;
+        const analysisID = paramsObj.id;
+
+        const body = await req.json();
+        const { name, fatigue_level } = body;
+
+        const cookieStore = await cookies();
+        const cookie = cookieStore.get("session")?.value;
+        if (!cookie) {
+            return NextResponse.json(
+                { message: "Not authenticated" },
+                { status: 401 }
+            );
+        }
+
+        const session = await decrypt(cookie);
+        const userID = session?.userId;
+
+        if (name === undefined && fatigue_level === undefined) {
+             return NextResponse.json(
+                { message: "No update parameters provided" },
+                { status: 400 }
+            );
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const updates: any = {};
+        if (name !== undefined) updates.name = name;
+        if (fatigue_level !== undefined) updates.fatigue_level = fatigue_level;
+
+        const { error: updateError } = await supabase
+            .from('analysis_results')
+            .update(updates)
+            .eq('id', analysisID)
+            .eq('user_id', userID);
+
+        if (updateError) {
+            console.error("Error updating analysis name: ", updateError);
+            return NextResponse.json(
+                { message: "Failed to update analysis" },
+                { status: 500 }
+            );
+        }
+
+        return NextResponse.json(
+            { message: "Analysis updated successfully" },
+            { status: 200 }
+        );
+    } catch (error) {
+        console.error("Error updating analysis: ", error);
+        return NextResponse.json(
+            { message: "Server error" },
+            { status: 500 }
+        );
+    }
+}
+
 export async function DELETE(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
