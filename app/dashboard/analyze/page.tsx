@@ -22,7 +22,7 @@ import {
     Info,
     Camera
 } from 'lucide-react';
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Results } from "@/components/analyze/results";
 import { useAuth } from "@/context/user_context";
 import { useHistory } from "@/hooks/use-history";
@@ -92,10 +92,74 @@ export default function AnalyzePage() {
     const [promptAnalysisId, setPromptAnalysisId] = useState<number | null>(null);
     const [analysisName, setAnalysisName] = useState("");
     const [isSavingName, setIsSavingName] = useState(false);
-    
+
     const { renameAnalysis, updateFatigueLevel } = useHistory();
     const [fatigueLevel, setFatigueLevel] = useState<number | null>(null);
     const [isSavingFatigue, setIsSavingFatigue] = useState(false);
+
+    // ✅ NEW: Resume analysis on mount
+    useEffect(() => {
+        const activeJobId = localStorage.getItem('activeJobId');
+        if (activeJobId && !isProcessing && !results) {
+            console.log("🔄 Found active job in storage, resuming...", activeJobId);
+            setIsProcessing(true);
+            connectToProgressStream(activeJobId);
+        }
+    }, [user]); // Re-run if user changes to ensure correct context
+
+    // ✅ NEW: Refactored SSE connection logic
+    const connectToProgressStream = useCallback((jobId: string) => {
+        const sseUrl = `${API_URL}/progress/${jobId}`;
+        console.log("🔌 Connecting to SSE:", sseUrl);
+
+        const eventSource = new EventSource(sseUrl);
+
+        eventSource.onopen = () => {
+            console.log("✅ SSE connection opened successfully");
+        };
+
+        eventSource.onmessage = (event) => {
+            console.log("📨 SSE message received:", event.data);
+
+            try {
+                const data: ProgressUpdate = JSON.parse(event.data);
+
+                if (data.stage === "error") {
+                    console.error("❌ Backend error:", data);
+                    setError(data.message || "Analysis failed");
+                    localStorage.removeItem('activeJobId');
+                    eventSource.close();
+                    setIsProcessing(false);
+                    return;
+                }
+
+                setProgress(data);
+
+                if (data.progress >= 100) {
+                    console.log("✅ Processing complete, fetching results...");
+                    eventSource.close();
+                    fetchResults(jobId);
+                }
+            } catch (parseError) {
+                console.error("❌ Failed to parse SSE data:", parseError, event.data);
+            }
+        };
+
+        eventSource.onerror = (error) => {
+            console.error('❌ SSE Error:', error);
+            eventSource.close();
+
+            // If we're still processing but lost connection, try to reconnect after a delay
+            // logic can be added here if needed, but for now we'll just show error
+            if (progress?.stage !== "complete") {
+                // Keep the jobId in localStorage so the user can try refreshing
+                setError("Lost connection to server. You can try refreshing the page to resume.");
+            }
+            setIsProcessing(false);
+        };
+
+        return () => eventSource.close();
+    }, [API_URL, progress]);
 
     const handleNameSubmit = async () => {
         if (!promptAnalysisId) return;
@@ -246,67 +310,17 @@ export default function AnalyzePage() {
             }
 
             const { job_id, status } = await response.json();
-            console.log("✅ Received job_id:", job_id, "Status:", status); // ✅ Debug
-            // setJobId(job_id);
+            console.log("✅ Received job_id:", job_id, "Status:", status);
+
+            // ✅ Persist job_id
+            localStorage.setItem('activeJobId', job_id);
 
             // ✅ Wait for backend to initialize progress tracker
-            console.log("Waiting 1 second for backend to initialize..."); // ✅ Debug
+            console.log("Waiting 1 second for backend to initialize...");
             await new Promise(resolve => setTimeout(resolve, 1000));
 
-            // ✅ STEP 2: Connect to SSE progress stream
-            const sseUrl = `${API_URL}/progress/${job_id}`;
-            console.log("🔌 Connecting to SSE:", sseUrl); // ✅ Debug
-
-            const eventSource = new EventSource(sseUrl);
-
-            // ✅ Add onopen handler
-            eventSource.onopen = () => {
-                console.log("✅ SSE connection opened successfully");
-            };
-
-            eventSource.onmessage = (event) => {
-                console.log("📨 SSE message received:", event.data); // ✅ Debug
-
-                try {
-                    const data: ProgressUpdate = JSON.parse(event.data);
-                    console.log("📊 Progress update:", data); // ✅ Debug
-
-                    // Check for error in data
-                    if (data.stage === "error") {
-                        console.error("❌ Backend error:", data);
-                        setError(data.message || "Analysis failed");
-                        eventSource.close();
-                        setIsProcessing(false);
-                        return;
-                    }
-
-                    setProgress(data); // ✅ This sets the progress state
-
-                    // Check if complete
-                    if (data.progress >= 100) {
-                        console.log("✅ Processing complete, fetching results...");
-                        eventSource.close();
-                        fetchResults(job_id);
-                    }
-                } catch (parseError) {
-                    console.error("❌ Failed to parse SSE data:", parseError, event.data);
-                }
-            };
-
-            eventSource.onerror = (error) => {
-                console.error('❌ SSE Error:', error);
-                console.log('EventSource readyState:', eventSource.readyState);
-                console.log('EventSource URL:', eventSource.url);
-                eventSource.close();
-
-                // Check if we got an error stage from backend
-                if (progress?.stage === "error") {
-                    setError(progress.message || "Analysis failed");
-                } else {
-                    setError("Lost connection to server. The analysis may still be processing. Please check your history in a moment.");
-                }
-                setIsProcessing(false);
-            };
+            // ✅ Connect to stream
+            connectToProgressStream(job_id);
 
         } catch (error) {
             console.error('❌ Error starting analysis:', error);
@@ -317,6 +331,7 @@ export default function AnalyzePage() {
                 setError(error instanceof Error ? error.message : 'An unexpected error occurred during analysis.');
             }
             setIsProcessing(false);
+            localStorage.removeItem('activeJobId');
         }
     }
 
@@ -357,9 +372,10 @@ export default function AnalyzePage() {
                 // Setup default name automatically in the background
                 renameAnalysis(result.database_records.analysis_id, defaultName).catch(console.error);
 
-                // Clean up backend storage
+                // Clean up backend storage and local storage
                 fetch(`${API_URL}/result/${jobId}`, { method: 'DELETE' })
                     .catch(err => console.warn('Cleanup failed:', err));
+                localStorage.removeItem('activeJobId');
             } else {
                 setError(result.error || 'Analysis failed');
                 setIsProcessing(false); // ✅ Stop loading on error result
@@ -368,7 +384,8 @@ export default function AnalyzePage() {
         } catch (error) {
             console.error('❌ Error fetching results:', error);
             setError(error instanceof Error ? error.message : 'Failed to fetch results');
-            setIsProcessing(false); // ✅ Stop loading on exception
+            setIsProcessing(false);
+            localStorage.removeItem('activeJobId');
         }
     }
 
@@ -876,9 +893,9 @@ export default function AnalyzePage() {
                                 Your running form analysis is ready
                             </CardDescription>
                         </CardHeader>
-                        <Results 
-                            download_url={results.download_url} 
-                            analysis_summary={results.analysis_summary} 
+                        <Results
+                            download_url={results.download_url}
+                            analysis_summary={results.analysis_summary}
                             analysisName={analysisName}
                             setAnalysisName={setAnalysisName}
                             onSaveName={handleNameSubmit}
