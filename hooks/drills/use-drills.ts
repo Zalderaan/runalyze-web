@@ -4,6 +4,10 @@ import { useEffect, useState } from "react";
 
 export interface Drill {
     id: string | number;
+    // Template reference
+    template_id?: number | null;
+    template_name?: string | null;
+    // Core fields (resolved from template + override)
     drill_name: string;
     area: string;
     performance_level: string;
@@ -19,6 +23,12 @@ export interface Drill {
     not_helpful_count: number;
     justification?: string;
     reference?: string;
+    // Per-assignment override fields
+    instructions_override?: { steps: Array<string> } | null;
+    justification_override?: string | null;
+    // Per-assignment context fields (user-specific)
+    difficulty_level?: number;
+    is_high_impact?: boolean;
     created_at: Date;
     updated_at: Date;
 }

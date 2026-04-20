@@ -17,7 +17,7 @@ import { Plus } from "lucide-react";
 
 // Forms imports
 import {
-    step1Schema, step2Schema, step3Schema, step4Schema, step5schema, 
+    step1Schema, step2Schema, step3Schema, step4Schema, step4SchemaEdit, step5schema,
     type FullFormData,
 } from "@/schemas/admin/drillFormSchemas"
 
@@ -31,6 +31,7 @@ import { Step3Instructions } from "./Step3Instructions";
 import { Step4Video } from "./Step4Video";
 import { useDrills } from "@/hooks/drills/use-drills";
 import { Step5Explanation } from "./Step5Explanation";
+import { type DrillTemplate } from "@/hooks/drills/use-drill-templates";
 
 export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
     const { addDrill, addLoading, addError } = useDrills();
@@ -38,24 +39,44 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
     const [formData, setFormData] = useState<Partial<FullFormData>>({});
     const [isOpen, setIsOpen] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
-    const TOTAL_STEPS = 5;
 
-    const stepSchemas = {
-        1: step1Schema,
-        2: step2Schema,
-        3: step3Schema,
-        4: step4Schema,
-        5: step5schema
-    }
+    // Track the selected template so we can pass data to steps 3 & 5
+    const [selectedTemplate, setSelectedTemplate] = useState<DrillTemplate | null>(null);
+    const hasTemplate = selectedTemplate !== null;
+
+    // When a template is selected, step 4 (video) is skipped
+    const TOTAL_STEPS = hasTemplate ? 4 : 5;
+
+    // Step number to component mapping (steps 3-5 shift when template is selected)
+    const getStepLabel = (s: number) => {
+        if (hasTemplate) {
+            // Steps: 1=Basic, 2=Training Params, 3=Instructions Override, 4=Explanation
+            return s;
+        }
+        return s; // same order as before
+    };
+
+    // Step schemas
+    const step4SchemaForMode = hasTemplate ? step4SchemaEdit : step4Schema;
+    const stepSchemas: Record<number, z.ZodTypeAny> = hasTemplate
+        ? { 1: step1Schema, 2: step2Schema, 3: step3Schema, 4: step5schema }
+        : { 1: step1Schema, 2: step2Schema, 3: step3Schema, 4: step4SchemaForMode, 5: step5schema };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const stepDefaults: Record<number, any> = {
-        1: { drill_name: "", area: undefined, performance_level: undefined },
-        2: { sets: undefined, reps: undefined, frequency: undefined },
-        3: { instructions: { steps: [] } }, // Add step 3 default values when you define the schema
-        4: { video: undefined }, // Add step 4 default values when you define the schema
-        5: { justification: "", reference: ""}
-    }
+    const stepDefaults: Record<number, any> = hasTemplate
+        ? {
+            1: { drill_name: selectedTemplate?.name ?? "", area: undefined, performance_level: undefined, template_id: selectedTemplate?.id },
+            2: { sets: undefined, reps: undefined, frequency: undefined },
+            3: { has_instructions_override: false },
+            4: { justification: "", reference: "", has_justification_override: false }
+        }
+        : {
+            1: { drill_name: "", area: undefined, performance_level: undefined },
+            2: { sets: undefined, reps: undefined, frequency: undefined },
+            3: { instructions: { steps: [] } },
+            4: { video: undefined },
+            5: { justification: "", reference: "" }
+        };
 
     const currentSchema = stepSchemas[step as keyof typeof stepSchemas] as z.ZodTypeAny;
     const defaultValues = stepDefaults[step];
@@ -64,59 +85,44 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
         resolver: zodResolver(currentSchema),
         mode: "onSubmit",
         defaultValues
-    })
+    });
+
+    function handleTemplateSelected(template: DrillTemplate | null) {
+        setSelectedTemplate(template);
+        // Reset to step 1 if template selection changes (to avoid stale form data)
+        if (step > 1) {
+            setStep(1);
+            setFormData({});
+        }
+    }
 
     async function onStepSubmit(values: z.infer<typeof currentSchema>) {
-        console.log('values: ', values);
-        console.log('formData: ', formData);
-        const updatedData = { ...formData, ...values }
+        const updatedData = { ...formData, ...values };
         setFormData(updatedData);
-        console.log('updated: ', updatedData)
-        // move to the next step
+
         if (step < TOTAL_STEPS) {
-            // form.reset();
             setStep((prev) => prev + 1);
-            // submit to backend
-            // close
         } else {
-            // Prepare FormData for file upload
+            // Final step — build FormData and submit
             const formPayload = new FormData();
             Object.entries(updatedData).forEach(([key, value]) => {
-                if (value !== undefined) {
-                    if (key === "instructions") {
-                        formPayload.append("instructions", JSON.stringify(value));
-                    } else {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        formPayload.append(key, value as any);
-                    }
+                if (value === undefined || value === null) return;
+
+                if (key === "instructions" || key === "instructions_override") {
+                    formPayload.append(key, JSON.stringify(value));
+                } else if (key === "has_instructions_override" || key === "has_justification_override") {
+                    // Internal toggle state — don't send to API
+                    return;
+                } else {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    formPayload.append(key, value as any);
                 }
             });
 
             try {
                 await addDrill(formPayload);
-
-                // const response = await fetch("/api/admin/drills", {
-                //     method: "POST",
-                //     body: formPayload,
-                // });
-                // if (!response.ok) {
-                //     let errorMsg = "Failed to submit drill";
-                //     try {
-                //         const errorData = await response.json();
-                //         errorMsg = `${errorData.message}: ${errorData.error}` || errorMsg;
-                //         console.error("Backend error: ", errorData);
-                //     } catch (parseErr) {
-                //         console.error("Error parsing backend error: ", parseErr)
-                //     }
-                //     setSubmitError(errorMsg); // <-- set error here
-                //     return;
-                // }
                 onSuccess?.();
-                setIsOpen(false);
-                setStep(1);
-                setFormData({});
-                form.reset();
-                setSubmitError(null);
+                resetDialog();
             } catch (error) {
                 setSubmitError(error instanceof Error ? error.message : String(error));
                 console.error(error);
@@ -126,6 +132,45 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
 
     function prevStep() {
         setStep((prev) => prev - 1);
+    }
+
+    function resetDialog() {
+        setIsOpen(false);
+        setStep(1);
+        setFormData({});
+        setSelectedTemplate(null);
+        form.reset();
+        setSubmitError(null);
+    }
+
+    // Determine which step component to render
+    function renderStep() {
+        // Template mode: steps are 1=Basic, 2=Training, 3=Instructions, 4=Explanation
+        if (hasTemplate) {
+            if (step === 1) return <Step1BasicInfo onTemplateSelected={handleTemplateSelected} />;
+            if (step === 2) return <Step2TrainingParameters />;
+            if (step === 3) return (
+                <Step3Instructions
+                    hasTemplate={hasTemplate}
+                    templateInstructions={selectedTemplate?.instructions}
+                />
+            );
+            if (step === 4) return (
+                <Step5Explanation
+                    hasTemplate={hasTemplate}
+                    templateJustification={selectedTemplate?.justification}
+                    templateReference={selectedTemplate?.reference}
+                />
+            );
+        }
+
+        // New drill mode: original 5-step flow
+        if (step === 1) return <Step1BasicInfo onTemplateSelected={handleTemplateSelected} />;
+        if (step === 2) return <Step2TrainingParameters />;
+        if (step === 3) return <Step3Instructions hasTemplate={false} />;
+        if (step === 4) return <Step4Video />;
+        if (step === 5) return <Step5Explanation hasTemplate={false} />;
+        return null;
     }
 
     return (
@@ -141,14 +186,15 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
                     <form onSubmit={form.handleSubmit(onStepSubmit)} className="space-y-4">
                         <DialogHeader>
                             <DialogTitle>Add Drill</DialogTitle>
-                            <DialogDescription>Add a new drill to be suggested for users (Step {step} of {TOTAL_STEPS})</DialogDescription>
+                            <DialogDescription>
+                                {hasTemplate
+                                    ? `Assigning "${selectedTemplate?.name}" template (Step ${step} of ${TOTAL_STEPS})`
+                                    : `Add a new drill to be suggested for users (Step ${step} of ${TOTAL_STEPS})`
+                                }
+                            </DialogDescription>
                         </DialogHeader>
 
-                        {step === 1 && <Step1BasicInfo />}
-                        {step === 2 && <Step2TrainingParameters />}
-                        {step === 3 && <Step3Instructions />}
-                        {step === 4 && <Step4Video />}
-                        {step === 5 && <Step5Explanation />}
+                        {renderStep()}
 
                         {submitError && (
                             <div className="text-red-600 text-sm mt-2 px-4">

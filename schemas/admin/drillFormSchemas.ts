@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
 export const step1Schema = z.object({
+    // If template_id is set, we're reusing an existing template
+    template_id: z.number().optional(),
     drill_name: z.string().min(1, "Drill name is required"),
     area: z.enum(["head_position", "back_position", "arm_flexion", "right_knee", "left_knee", "foot_strike"], {
         errorMap: () => ({ message: "Please select a valid area" }),
@@ -30,7 +32,13 @@ export const step3Schema = z.object({
     instructions: z.object({
         steps: z.array(z.string().min(1, "Instruction step cannot be empty"))
             .min(1, "At least one instruction is required")
-    })
+    }).optional(),
+    // Override instructions for a specific assignment (when reusing a template)
+    instructions_override: z.object({
+        steps: z.array(z.string().min(1, "Instruction step cannot be empty"))
+    }).optional(),
+    // Whether the user has enabled the override toggle
+    has_instructions_override: z.boolean().optional(),
 });
 
 export const step4Schema = z.object({
@@ -45,13 +53,23 @@ export const step4SchemaEdit = z.object({
 
 export const step5schema = z.object({
     justification: z.string().optional(),
-    reference: z.string().optional()
+    reference: z.string().optional(),
+    // Override justification for a specific assignment (when reusing a template)
+    justification_override: z.string().optional(),
+    has_justification_override: z.boolean().optional(),
 })
 
 export const fullFormSchema = step1Schema
     .merge(step2Schema)
     .merge(step3Schema)
     .merge(step4Schema)
+    .merge(step5schema);
+
+// Template-only flow: video is not required when selecting an existing template
+export const fullFormSchemaWithTemplate = step1Schema
+    .merge(step2Schema)
+    .merge(step3Schema)
+    .merge(z.object({ video: z.instanceof(File).optional() }))
     .merge(step5schema);
 
 // export types for each schema
@@ -62,3 +80,4 @@ export type Step4FormData = z.infer<typeof step4Schema>;
 export type Step4EditFormData = z.infer<typeof step4SchemaEdit>;
 export type Step5FormData = z.infer<typeof step5schema>;
 export type FullFormData = z.infer<typeof fullFormSchema>;
+export type FullFormDataWithTemplate = z.infer<typeof fullFormSchemaWithTemplate>;

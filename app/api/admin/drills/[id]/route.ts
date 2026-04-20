@@ -2,66 +2,67 @@ import { NextRequest, NextResponse } from "next/server"
 import { supabase } from '@/lib/supabase'
 import { cookies } from 'next/headers'
 
-interface DrillUpdateFields {
-    drill_name?: string;
-    area?: string;
-    performance_level?: string;
-    sets?: string;
-    reps?: string;
-    rep_type?: string;
-    frequency?: string;
-    instructions?: {
-        steps: string[];
-    } // Replace 'any' with a more specific type if possible
-    video_url?: string;
-    justification?: string,
-    reference?: string
+// ---------------------------------------------------------------------------
+// Helper: Merge drills row with its joined drill_template
+// ---------------------------------------------------------------------------
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mergeDrillWithTemplate(drill: any) {
+    const tpl = drill.drill_templates ?? {};
+    return {
+        ...drill,
+        drill_name: drill.drill_name ?? tpl.name ?? null,
+        video_url: drill.video_url ?? tpl.video_url ?? null,
+        instructions: drill.instructions_override ?? tpl.instructions ?? drill.instructions ?? null,
+        justification: drill.justification_override ?? tpl.justification ?? drill.justification ?? null,
+        reference: drill.reference ?? tpl.reference ?? null,
+        helpful_count: tpl.helpful_count ?? drill.helpful_count ?? 0,
+        not_helpful_count: tpl.not_helpful_count ?? drill.not_helpful_count ?? 0,
+        template_id: drill.template_id ?? null,
+        template_name: tpl.name ?? drill.drill_name ?? null,
+        drill_templates: undefined,
+    };
 }
 
-
-// export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+// ---------------------------------------------------------------------------
+// GET /api/admin/drills/[id]
+// ---------------------------------------------------------------------------
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-    const paramsObj = await params;
-    const id = paramsObj.id;
-
+    const { id } = await params;
     try {
         const { data, error } = await supabase
             .from('drills')
-            .select('*')
+            .select(`
+                *,
+                drill_templates(name, video_url, instructions, justification, reference, helpful_count, not_helpful_count)
+            `)
             .eq('id', id)
-            .single()
+            .single();
 
         if (error) {
-            console.error("Error getting drill details: ", error);
+            console.error("Error getting drill details:", error);
             return NextResponse.json(
-                { message: 'Error Fetching drill details', error: error instanceof Error ? error.message : error },
+                { message: "Error fetching drill details", error: error.message },
                 { status: 500 }
-            )
-        };
-
-        if (!data) {
-            return NextResponse.json(
-                { message: "Drill not found" },
-                { status: 404 }
             );
+        }
+        if (!data) {
+            return NextResponse.json({ message: "Drill not found" }, { status: 404 });
         }
 
         return NextResponse.json(
-            {
-                message: "Drill details found successfully",
-                drill: data
-            },
+            { message: "Drill details found successfully", drill: mergeDrillWithTemplate(data) },
             { status: 200 }
-        )
+        );
     } catch (error) {
-        console.error("Error getting drill details: ", error);
-        return NextResponse.json(
-            { message: "Server error" },
-            { status: 500 }
-        )
+        console.error("Error getting drill details:", error);
+        return NextResponse.json({ message: "Server error" }, { status: 500 });
     }
 }
 
+// ---------------------------------------------------------------------------
+// PATCH /api/admin/drills/[id] — Helpful / not_helpful voting
+// Votes are tracked on drill_templates (global, per-drill feedback)
+// ---------------------------------------------------------------------------
 export async function PATCH(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
@@ -70,165 +71,260 @@ export async function PATCH(
         const cookieStore = await cookies();
         const cookie = cookieStore.get("session")?.value;
         if (!cookie) {
-            return NextResponse.json(
-                { message: "Not authenticated" },
-                { status: 401 }
-            );
+            return NextResponse.json({ message: "Not authenticated" }, { status: 401 });
         }
 
         const { id } = await params;
         const body = await request.json();
         const { action } = body; // 'helpful' or 'not_helpful'
 
-        const columnToUpdate = action === 'helpful' ? 'helpful_count' : 'not_helpful_count';
-
-        // Fetch both counts
-        const { data: drill } = await supabase
+        // Resolve the template_id for this drill assignment
+        const { data: drillRow, error: drillFetchError } = await supabase
             .from('drills')
-            .select('helpful_count, not_helpful_count')
+            .select('template_id, helpful_count, not_helpful_count')
             .eq('id', id)
             .single();
 
-        // Increment the appropriate column
-        const { data, error } = await supabase
-            .from('drills')
-            .update({ [columnToUpdate]: (drill?.[columnToUpdate] || 0) + 1 })
-            .eq('id', id)
-            .select()
-            .single();
-
-        if (error) {
-            return NextResponse.json(
-                { message: "Error updating helpful count", error: error.message },
-                { status: 500 }
-            );
+        if (drillFetchError || !drillRow) {
+            return NextResponse.json({ message: "Drill not found" }, { status: 404 });
         }
 
-        return NextResponse.json({ data }, { status: 200 });
+        const columnToUpdate = action === 'helpful' ? 'helpful_count' : 'not_helpful_count';
+
+        if (drillRow.template_id) {
+            // Vote on the template (preferred path)
+            const { data: template } = await supabase
+                .from('drill_templates')
+                .select('helpful_count, not_helpful_count')
+                .eq('id', drillRow.template_id)
+                .single();
+
+            const { data, error } = await supabase
+                .from('drill_templates')
+                .update({ [columnToUpdate]: (template?.[columnToUpdate] || 0) + 1 })
+                .eq('id', drillRow.template_id)
+                .select()
+                .single();
+
+            if (error) {
+                return NextResponse.json(
+                    { message: "Error updating helpful count on template", error: error.message },
+                    { status: 500 }
+                );
+            }
+            return NextResponse.json({ data }, { status: 200 });
+        } else {
+            // Fallback: no template_id yet, vote on the drills row (legacy)
+            const { data, error } = await supabase
+                .from('drills')
+                .update({ [columnToUpdate]: (drillRow?.[columnToUpdate] || 0) + 1 })
+                .eq('id', id)
+                .select()
+                .single();
+
+            if (error) {
+                return NextResponse.json(
+                    { message: "Error updating helpful count", error: error.message },
+                    { status: 500 }
+                );
+            }
+            return NextResponse.json({ data }, { status: 200 });
+        }
     } catch (error) {
         console.error("Error updating helpful count:", error);
-        return NextResponse.json(
-            { message: "Server error" },
-            { status: 500 }
-        );
+        return NextResponse.json({ message: "Server error" }, { status: 500 });
     }
 }
 
-// export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+// ---------------------------------------------------------------------------
+// PUT /api/admin/drills/[id] — Update drill
+//
+// update_scope = 'template' (default):
+//   Updates drill_templates (name, video_url, instructions, justification, reference).
+//   Clears instructions_override and justification_override on this assignment
+//   so it falls back to the fresh template values.
+//
+// update_scope = 'assignment':
+//   Updates only this drills row (instructions_override, justification_override).
+//   Template is left untouched.
+//
+// Assignment-level fields (area, performance_level, sets, reps, rep_type, frequency,
+// difficulty_level, is_high_impact) always update the drills row regardless of scope.
+// ---------------------------------------------------------------------------
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const formData = await req.formData();
-    const drill_name = formData.get("drill_name") as string | null;
+
+    const update_scope = (formData.get("update_scope") as string | null) ?? 'template';
+
+    // --- Assignment-level fields (always update drills row) ---
     const area = formData.get("area") as string | null;
     const performance_level = formData.get("performance_level") as string | null;
     const sets = formData.get("sets") as string | null;
     const reps = formData.get("reps") as string | null;
     const rep_type = formData.get("rep_type") as string | null;
     const frequency = formData.get("frequency") as string | null;
-    const instructions = formData.get("instructions") as string | null;
+    const difficulty_level = formData.get("difficulty_level") ? Number(formData.get("difficulty_level")) : null;
+    const is_high_impact_raw = formData.get("is_high_impact");
+    const is_high_impact = is_high_impact_raw !== null ? is_high_impact_raw === "true" : null;
+
+    // --- Shared content fields ---
+    const drill_name = formData.get("drill_name") as string | null;
+    const instructionsRaw = formData.get("instructions") as string | null;
+    const instructions = instructionsRaw ? JSON.parse(instructionsRaw) : null;
     const justification = formData.get("justification") as string | null;
     const reference = formData.get("reference") as string | null;
-
     const videoFile = formData.get("video") as File | null;
 
-    let video_url = null;
-    const uuid = crypto.randomUUID();
+    // Fetch the current drill to get its template_id
+    const { data: currentDrill, error: fetchError } = await supabase
+        .from('drills')
+        .select('template_id, drill_name, video_url')
+        .eq('id', id)
+        .single();
 
-    // upload videoFile to get video_url from supabase
-    if (videoFile) {
-        const filePath = `drill-videos/${uuid}-${videoFile.name}`;
-        const { error } = await supabase.storage
-            .from("videos")
-            .upload(filePath, videoFile, {
-                cacheControl: "3600",
-                upsert: false
-            });
-
-        if (error) {
-            return NextResponse.json(
-                {
-                    message: "Video upload error while updating drill from api",
-                    error: error.message || error
-                },
-                { status: 500 }
-            )
-        }
-
-        // get the uploaded video's public URL
-        const publicUrl = supabase.storage
-            .from("videos")
-            .getPublicUrl(filePath).data.publicUrl
-
-        video_url = publicUrl;
+    if (fetchError || !currentDrill) {
+        return NextResponse.json({ message: "Drill not found" }, { status: 404 });
     }
 
-    // build update object
-    const updateFields: DrillUpdateFields = {};
-    if (drill_name !== null) updateFields.drill_name = drill_name;
-    if (area !== null) updateFields.area = area;
-    if (performance_level !== null) updateFields.performance_level = performance_level;
-    if (sets !== null) updateFields.sets = sets;
-    if (reps !== null) updateFields.reps = reps;
-    if (rep_type !== null) updateFields.rep_type = rep_type;
-    if (frequency !== null) updateFields.frequency = frequency;
-    if (instructions !== null) {
-        try {
-            updateFields.instructions = JSON.parse(instructions);
-        } catch {
-            updateFields.instructions = { steps: [instructions] }; // wrap string in object
-        }
-    }
-    if (video_url) updateFields.video_url = video_url;
-    if (justification !== null) updateFields.justification = justification;  // Added to updateFields
-    if (reference !== null) updateFields.reference = reference;
+    // Build assignment-level update object (always applied)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const assignmentUpdate: Record<string, any> = {};
+    if (area !== null) assignmentUpdate.area = area;
+    if (performance_level !== null) assignmentUpdate.performance_level = performance_level;
+    if (sets !== null) assignmentUpdate.sets = sets;
+    if (reps !== null) assignmentUpdate.reps = reps;
+    if (rep_type !== null) assignmentUpdate.rep_type = rep_type;
+    if (frequency !== null) assignmentUpdate.frequency = frequency;
+    if (difficulty_level !== null) assignmentUpdate.difficulty_level = difficulty_level;
+    if (is_high_impact !== null) assignmentUpdate.is_high_impact = is_high_impact;
 
     try {
-        // console.log('This is updateFields object: ', updateFields);
-        const { data, error } = await supabase
-            .from('drills')
-            .update(updateFields)
-            .eq('id', id)
-            .select()
-            .single()
+        if (update_scope === 'assignment') {
+            // ---------------------------------------------------------------
+            // SCOPE: assignment — write overrides onto drills row only
+            // ---------------------------------------------------------------
+            if (instructions !== null) assignmentUpdate.instructions_override = instructions;
+            if (justification !== null) assignmentUpdate.justification_override = justification;
+            // Keep legacy columns in sync for Python backend
+            if (drill_name !== null) assignmentUpdate.drill_name = drill_name;
 
-        if (error) {
-            console.error("Error updating drill: ", error);
-            return NextResponse.json(
-                { message: "Error updating drills", error: error instanceof Error ? error.message : error },
-                { status: 500 }
-            );
-        }
+            const { data, error } = await supabase
+                .from('drills')
+                .update(assignmentUpdate)
+                .eq('id', id)
+                .select()
+                .single();
 
-        if (!data) {
-            return NextResponse.json(
-                { message: "Drill not found" },
-                { status: 404 }
-            );
-        }
-
-        return NextResponse.json(
-            { message: "Drill updated successfully", drill: data },
-            { status: 200 }
-        )
-
-    } catch (error) {
-        // console.log("Error updating drill in route.ts: ", error);
-        return NextResponse.json(
-            {
-                message: "Server error while updating drill",
-                error: error
-            },
-            {
-                status: 500
+            if (error) {
+                return NextResponse.json(
+                    { message: "Error updating drill assignment", error: error.message },
+                    { status: 500 }
+                );
             }
-        )
+            return NextResponse.json(
+                { message: "Drill assignment updated successfully", drill: data },
+                { status: 200 }
+            );
+
+        } else {
+            // ---------------------------------------------------------------
+            // SCOPE: template (default) — update the shared template,
+            // then clear overrides on this assignment so it uses fresh values
+            // ---------------------------------------------------------------
+
+            // Handle optional video upload
+            let video_url: string | null = null;
+            if (videoFile) {
+                const uuid = crypto.randomUUID();
+                const filePath = `drill-videos/${uuid}-${videoFile.name}`;
+                const { error: storageError } = await supabase.storage
+                    .from("videos")
+                    .upload(filePath, videoFile, { cacheControl: "3600", upsert: false });
+
+                if (storageError) {
+                    return NextResponse.json(
+                        { message: "Video upload error", error: storageError.message },
+                        { status: 500 }
+                    );
+                }
+                video_url = supabase.storage.from("videos").getPublicUrl(filePath).data.publicUrl;
+            }
+
+            if (currentDrill.template_id) {
+                // Update the template
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const templateUpdate: Record<string, any> = { updated_at: new Date().toISOString() };
+                if (drill_name !== null) templateUpdate.name = drill_name;
+                if (instructions !== null) templateUpdate.instructions = instructions;
+                if (justification !== null) templateUpdate.justification = justification;
+                if (reference !== null) templateUpdate.reference = reference;
+                if (video_url !== null) templateUpdate.video_url = video_url;
+
+                const { error: templateError } = await supabase
+                    .from('drill_templates')
+                    .update(templateUpdate)
+                    .eq('id', currentDrill.template_id);
+
+                if (templateError) {
+                    return NextResponse.json(
+                        { message: "Error updating drill template", error: templateError.message },
+                        { status: 500 }
+                    );
+                }
+
+                // Clear overrides so this assignment defers to the updated template
+                assignmentUpdate.instructions_override = null;
+                assignmentUpdate.justification_override = null;
+                // Keep legacy columns in sync for Python backend
+                if (drill_name !== null) assignmentUpdate.drill_name = drill_name;
+                if (instructions !== null) assignmentUpdate.instructions = instructions;
+                if (justification !== null) assignmentUpdate.justification = justification;
+                if (reference !== null) assignmentUpdate.reference = reference;
+                if (video_url !== null) assignmentUpdate.video_url = video_url;
+            } else {
+                // No template yet (legacy row) — just update the drills row directly
+                if (drill_name !== null) assignmentUpdate.drill_name = drill_name;
+                if (instructions !== null) assignmentUpdate.instructions = instructions;
+                if (justification !== null) assignmentUpdate.justification = justification;
+                if (reference !== null) assignmentUpdate.reference = reference;
+                if (video_url !== null) assignmentUpdate.video_url = video_url;
+            }
+
+            const { data, error } = await supabase
+                .from('drills')
+                .update(assignmentUpdate)
+                .eq('id', id)
+                .select()
+                .single();
+
+            if (error) {
+                return NextResponse.json(
+                    { message: "Error updating drill", error: error.message },
+                    { status: 500 }
+                );
+            }
+            if (!data) {
+                return NextResponse.json({ message: "Drill not found" }, { status: 404 });
+            }
+
+            return NextResponse.json(
+                { message: "Drill updated successfully", drill: data },
+                { status: 200 }
+            );
+        }
+    } catch (error) {
+        console.error("Error updating drill:", error);
+        return NextResponse.json({ message: "Server error while updating drill" }, { status: 500 });
     }
 }
 
+// ---------------------------------------------------------------------------
+// DELETE /api/admin/drills/[id]
+// Deletes the assignment row only. Template is preserved.
+// ---------------------------------------------------------------------------
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-    // export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const { id } = await params;
-
     try {
         const { data, error } = await supabase
             .from("drills")
@@ -238,38 +334,20 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
             .single();
 
         if (!data) {
-            console.error("Drill not found");
-            return NextResponse.json(
-                { message: "Drill to delete not found" },
-                { status: 404 }
-            )
+            return NextResponse.json({ message: "Drill to delete not found" }, { status: 404 });
         }
-
         if (error) {
-            console.error("Error deleting drill: ", error);
             return NextResponse.json(
-                {
-                    message: "There was an error deleting a drill",
-                    error: error,
-                },
+                { message: "There was an error deleting a drill", error },
                 { status: 500 }
-            )
+            );
         }
 
-        // Success
         return NextResponse.json(
             { message: "Drill deleted successfully", drill: data },
             { status: 200 }
         );
-
     } catch (error) {
-        // console.log("An unexpected error occurred: ", error);
-        return NextResponse.json(
-            {
-                message: "Server error",
-                error: error
-            },
-            { status: 500 }
-        )
+        return NextResponse.json({ message: "Server error", error }, { status: 500 });
     }
 }

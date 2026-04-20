@@ -11,6 +11,9 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { AlertCircle } from "lucide-react";
 
 // icons
 import { Edit } from "lucide-react";
@@ -37,8 +40,13 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
     const [updateDrillError, setUpdateDrillError] = useState<string | null>(null);
     const [formData, setFormData] = useState<Partial<FullFormData>>({});
 
+    // Controls whether changes apply to the template (all assignments) or just this one
+    const [updateScope, setUpdateScope] = useState<'template' | 'assignment'>('template');
+    const isAssignmentOverride = updateScope === 'assignment';
+
     const { updateDrill, updateLoading, updateError } = useUpdateDrill();
 
+    const hasTemplate = !!drill.template_id;
     const TOTAL_STEPS = 5;
     const stepSchemas = {
         1: step1Schema,
@@ -48,13 +56,13 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
         5: step5schema
     }
 
-    // get current values
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const stepDefaults: Record<number, any> = {
         1: {
             drill_name: drill.drill_name,
             area: drill.area,
-            performance_level: drill.performance_level
+            performance_level: drill.performance_level,
+            template_id: drill.template_id ?? undefined,
         },
         2: {
             sets: drill.sets,
@@ -62,9 +70,18 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
             rep_type: drill.rep_type,
             frequency: drill.frequency
         },
-        3: { instructions: drill.instructions }, // Add step 3 default values when you define the schema
-        4: { video: undefined }, // Add step 4 default values when you define the schema
-        5: { justification: drill.justification, reference: drill.reference }
+        3: {
+            instructions: drill.instructions,
+            instructions_override: drill.instructions_override ?? undefined,
+            has_instructions_override: !!drill.instructions_override,
+        },
+        4: { video: undefined },
+        5: {
+            justification: drill.justification,
+            reference: drill.reference,
+            justification_override: drill.justification_override ?? undefined,
+            has_justification_override: !!drill.justification_override,
+        }
     }
 
     const currentSchema = stepSchemas[step as keyof typeof stepSchemas] as z.ZodTypeAny;
@@ -77,54 +94,36 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
     });
 
     async function onStepSubmit(values: z.infer<typeof currentSchema>) {
-        // console.log('values: ', values);
-        // console.log('formData: ', formData);
-        const updatedData = { ...formData, ...values }
+        const updatedData = { ...formData, ...values };
         setFormData(updatedData);
-        // console.log('updated: ', updatedData)
-        // move to the next step
+
         if (step < TOTAL_STEPS) {
             const nextStep = step + 1;
             setFormData(updatedData);
             setStep(nextStep);
-            // Merge all previous data with the next step's defaults
             form.reset({ ...stepDefaults[nextStep], ...updatedData });
             return;
         } else {
-            // Prepare FormData for file upload
+            // Build FormData payload
             const formPayload = new FormData();
+            formPayload.append("update_scope", updateScope);
+
             Object.entries(updatedData).forEach(([key, value]) => {
-                if (value !== undefined) {
-                    if (key === "instructions") {
-                        formPayload.append("instructions", JSON.stringify(value));
-                    } else {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        formPayload.append(key, value as any);
-                    }
+                if (value === undefined || value === null) return;
+
+                if (key === "instructions" || key === "instructions_override") {
+                    formPayload.append(key, JSON.stringify(value));
+                } else if (key === "has_instructions_override" || key === "has_justification_override") {
+                    // Internal toggle state — don't send to API
+                    return;
+                } else {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    formPayload.append(key, value as any);
                 }
             });
 
             try {
                 await updateDrill(formPayload, drill.id);
-                // console.log('This is formPayload: ', updatedData);
-                // console.log("Update drill submitted");
-
-                // const response = await fetch("/api/admin/drills", {
-                //     method: "POST",
-                //     body: formPayload,
-                // });
-                // if (!response.ok) {
-                //     let errorMsg = "Failed to submit drill";
-                //     try {
-                //         const errorData = await response.json();
-                //         errorMsg = `${errorData.message}: ${errorData.error}` || errorMsg;
-                //         console.error("Backend error: ", errorData);
-                //     } catch (parseErr) {
-                //         console.error("Error parsing backend error: ", parseErr)
-                //     }
-                //     setSubmitError(errorMsg); // <-- set error here
-                //     return;
-                // }
                 onSuccess?.();
                 setIsOpen(false);
                 setStep(1);
@@ -157,6 +156,37 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
                             <DialogDescription>Update an existing drill (Step {step} of {TOTAL_STEPS})</DialogDescription>
                         </DialogHeader>
 
+                        {/* Scope selector — shown only when the drill has a linked template */}
+                        {hasTemplate && (
+                            <div className="p-3 rounded-lg border bg-muted/30 space-y-3">
+                                <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                                    <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                                    <span>
+                                        This drill is linked to a shared template.
+                                        Changes to name, video, instructions, and justification default to updating the{" "}
+                                        <strong>template</strong>, which affects all other assignments of this drill.
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Checkbox
+                                        id="assignment-override-checkbox"
+                                        checked={isAssignmentOverride}
+                                        onCheckedChange={(checked) =>
+                                            setUpdateScope(checked === true ? 'assignment' : 'template')
+                                        }
+                                    />
+                                    <Label htmlFor="assignment-override-checkbox" className="text-sm cursor-pointer">
+                                        Override for this assignment only (leave template unchanged)
+                                    </Label>
+                                </div>
+                                {isAssignmentOverride && (
+                                    <p className="text-xs text-amber-600 dark:text-amber-400 pl-6">
+                                        Changes to instructions and justification will only apply to this assignment.
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
                         {/* Show local updateDrillError */}
                         {updateDrillError && (
                             <div className="text-red-600 text-sm mt-2 px-4">
@@ -173,9 +203,20 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
 
                         {step === 1 && <Step1BasicInfo />}
                         {step === 2 && <Step2TrainingParameters />}
-                        {step === 3 && <Step3Instructions />}
+                        {step === 3 && (
+                            <Step3Instructions
+                                hasTemplate={hasTemplate && isAssignmentOverride}
+                                templateInstructions={drill.instructions}
+                            />
+                        )}
                         {step === 4 && <Step4VideoEdit video_url={drill.video_url} />}
-                        {step === 5 && <Step5Explanation />}
+                        {step === 5 && (
+                            <Step5Explanation
+                                hasTemplate={hasTemplate && isAssignmentOverride}
+                                templateJustification={drill.justification}
+                                templateReference={drill.reference}
+                            />
+                        )}
 
                         {updateError && (
                             <div className="text-red-600 text-sm mt-2 px-4">
