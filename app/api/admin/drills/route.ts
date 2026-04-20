@@ -179,6 +179,8 @@ export async function GET(req: NextRequest) {
         const page = parseInt(searchParams.get('page') || '1');
         const limit = parseInt(searchParams.get('limit') || '10');
         const search = searchParams.get('search') || '';
+        const area = searchParams.get('area') || '';
+        const performanceLevel = searchParams.get('performance_level') || '';
         const offset = (page - 1) * limit;
 
         let query = supabase
@@ -190,14 +192,24 @@ export async function GET(req: NextRequest) {
                  difficulty_level, is_high_impact, created_at, updated_at,
                  drill_templates(name, video_url, instructions, justification, reference, helpful_count, not_helpful_count)`,
                 { count: 'exact' }
-            )
-            .order('created_at', { ascending: false })
-            .range(offset, offset + limit - 1);
+            );
 
         if (search) {
             // Search both the legacy drill_name column and (via text cast) the template name
             query = query.ilike('drill_name', `%${search}%`);
         }
+
+        if (area && area !== 'All') {
+            query = query.eq('area', area);
+        }
+
+        if (performanceLevel && performanceLevel !== 'All') {
+            query = query.eq('performance_level', performanceLevel);
+        }
+
+        query = query
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1);
 
         const { data, error, count } = await query;
 

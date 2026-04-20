@@ -8,6 +8,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 interface DrillsListProps {
     refreshKey: number;
     searchTerm: string;
+    area: string;
+    performanceLevel: string;
     currentPage: number;
     itemsPerPage: number;
     onPageChange: (page: number) => void;
@@ -16,6 +18,8 @@ interface DrillsListProps {
 export function DrillsList({
     refreshKey,
     searchTerm,
+    area,
+    performanceLevel,
     currentPage,
     itemsPerPage,
     onPageChange
@@ -24,11 +28,19 @@ export function DrillsList({
         currentPage,
         itemsPerPage,
         searchTerm,
-        refreshKey
+        refreshKey,
+        area,
+        performanceLevel
     );
 
     if (loading) {
-        return <div className="p-4">Loading drills...</div>;
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4">
+                {[...Array(itemsPerPage)].map((_, i) => (
+                    <div key={i} className="h-[250px] rounded-2xl bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+                ))}
+            </div>
+        );
     }
 
     if (error) {
@@ -36,10 +48,16 @@ export function DrillsList({
     }
 
     return (
-        <div className="space-y-4">
-            <div className="p-4 space-y-4">
+        <div className="space-y-8">
+            <div className="p-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {drills.length === 0 ? (
-                    <div className="text-center text-gray-500">No drills found</div>
+                    <div className="col-span-full py-20 flex flex-col items-center justify-center text-zinc-500">
+                        <div className="h-16 w-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4 text-zinc-300">
+                            <ChevronLeft className="h-8 w-8 rotate-90" />
+                        </div>
+                        <p className="font-medium">No drills found</p>
+                        <p className="text-sm opacity-70">Try adjusting your search terms</p>
+                    </div>
                 ) : (
                     drills.map((drill) => (
                         <DrillsCard
@@ -57,42 +75,70 @@ export function DrillsList({
 
             {/* Pagination Controls */}
             {pagination && pagination.totalPages > 1 && (
-                <div className="flex items-center justify-between px-4 py-3 border-t">
-                    <div className="text-sm text-gray-700">
-                        Showing <span className="font-medium">{((currentPage - 1) * itemsPerPage) + 1}</span> to{" "}
-                        <span className="font-medium">
+                <div className="flex items-center justify-between px-4 py-6 border-t border-zinc-100 dark:border-zinc-800 mt-10">
+                    <div className="text-sm text-zinc-500">
+                        Showing <span className="font-bold text-zinc-900 dark:text-zinc-100">{((currentPage - 1) * itemsPerPage) + 1}</span> to{" "}
+                        <span className="font-bold text-zinc-900 dark:text-zinc-100">
                             {Math.min(currentPage * itemsPerPage, pagination.total)}
                         </span> of{" "}
-                        <span className="font-medium">{pagination.total}</span> drills
+                        <span className="font-bold text-zinc-900 dark:text-zinc-100">{pagination.total}</span> drills
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                         <Button
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
+                            className="hover:bg-zinc-100 dark:hover:bg-zinc-800"
                             onClick={() => onPageChange(currentPage - 1)}
                             disabled={currentPage === 1}
                         >
-                            <ChevronLeft className="h-4 w-4" />
+                            <ChevronLeft className="h-4 w-4 mr-1" />
                             Previous
                         </Button>
 
-                        <span className="text-sm text-gray-700">
-                            Page {currentPage} of {pagination.totalPages}
-                        </span>
+                        <div className="flex items-center gap-1">
+                            {[...Array(pagination.totalPages)].map((_, i) => {
+                                const page = i + 1;
+                                // Simple logic to show current page and neighbors
+                                if (
+                                    page === 1 || 
+                                    page === pagination.totalPages || 
+                                    (page >= currentPage - 1 && page <= currentPage + 1)
+                                ) {
+                                    return (
+                                        <Button
+                                            key={page}
+                                            variant={currentPage === page ? "default" : "ghost"}
+                                            size="icon"
+                                            className="h-8 w-8 text-xs"
+                                            onClick={() => onPageChange(page)}
+                                        >
+                                            {page}
+                                        </Button>
+                                    );
+                                } else if (
+                                    (page === currentPage - 2 && page > 1) ||
+                                    (page === currentPage + 2 && page < pagination.totalPages)
+                                ) {
+                                    return <span key={page} className="text-zinc-400">...</span>;
+                                }
+                                return null;
+                            })}
+                        </div>
 
                         <Button
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
+                            className="hover:bg-zinc-100 dark:hover:bg-zinc-800"
                             onClick={() => onPageChange(currentPage + 1)}
                             disabled={currentPage === pagination.totalPages}
                         >
                             Next
-                            <ChevronRight className="h-4 w-4" />
+                            <ChevronRight className="h-4 w-4 ml-1" />
                         </Button>
                     </div>
                 </div>
             )}
         </div>
     );
-}
+}

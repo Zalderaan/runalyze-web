@@ -42,7 +42,7 @@ export interface PaginationInfo {
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL
 
-export function useDrills(page = 1, limit = 10, searchTerm = "", refreshKey?: number) {
+export function useDrills(page = 1, limit = 10, searchTerm = "", refreshKey?: number, area = "All", performanceLevel = "All") {
     const [drills, setDrills] = useState<Drill[]>([]);
     const [pagination, setPagination] = useState<PaginationInfo | null>(null);
     const [loading, setLoading] = useState(true);
@@ -53,7 +53,7 @@ export function useDrills(page = 1, limit = 10, searchTerm = "", refreshKey?: nu
 
     useEffect(() => {
         fetchDrills();
-    }, [refreshKey, page, limit, searchTerm]);
+    }, [refreshKey, page, limit, searchTerm, area, performanceLevel]);
 
     async function fetchDrills() {
         setLoading(true);
@@ -62,7 +62,9 @@ export function useDrills(page = 1, limit = 10, searchTerm = "", refreshKey?: nu
             const params = new URLSearchParams({
                 page: page.toString(),
                 limit: limit.toString(),
-                search: searchTerm
+                search: searchTerm,
+                area: area,
+                performance_level: performanceLevel
             });
             
             const res = await fetch(`/api/admin/drills?${params}`);

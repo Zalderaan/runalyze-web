@@ -5,8 +5,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { ThumbsDown, ThumbsUp } from "lucide-react";
-
+import { ThumbsDown, ThumbsUp, Drill, ArrowRight } from "lucide-react";
 
 export interface DrillPreview {
     id: string | number,
@@ -21,35 +20,51 @@ export function DrillsCard({ title, area, performance_level, id, helpful_count, 
     const score = helpful_count - not_helpful_count;
     
     return (
-        <Link href={`/dashboard/admin/drills/${id}`} className="block w-full h-full">
-            <Card>
-                <CardContent>
-                    <span className="font-medium">{title === '' ? 'No name' : `${title}`}</span>
-                </CardContent>
-                <CardFooter className="flex flex-col items-start space-y-2">
-                    <div className="flex flex-row items-center space-x-2">
-                        <Badge>{area}</Badge>
-                        <Badge variant={"secondary"}>{performance_level}</Badge>
+        <Link href={`/dashboard/admin/drills/${id}`} className="group block h-full">
+            <Card className="glass-card h-full flex flex-col border-none shadow-md hover:shadow-xl transition-all duration-300">
+                <div className="h-32 bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900 flex items-center justify-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
+                    <Drill className="h-10 w-10 text-zinc-400 dark:text-zinc-500 group-hover:rotate-12 transition-transform" />
+                    <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute top-2 right-2">
+                        <Badge variant="outline" className="bg-white/50 backdrop-blur-sm border-none text-[10px]">
+                            ID: {id}
+                        </Badge>
                     </div>
+                </div>
+                
+                <CardContent className="pt-4 flex-grow">
+                    <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">
+                            {title === '' ? 'Untitled Drill' : title}
+                        </h3>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                        <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary border-none">
+                            {area}
+                        </Badge>
+                        <Badge variant="outline" className="text-[10px] opacity-70">
+                            {performance_level}
+                        </Badge>
+                    </div>
+                </CardContent>
 
-                    {/* Feedback Stats */}
-                    <div className="flex items-center space-x-4 text-sm text-gray-600">
+                <CardFooter className="pt-0 border-t border-zinc-100 dark:border-zinc-800 mt-2 py-3 flex items-center justify-between">
+                    <div className="flex items-center space-x-3 text-xs text-zinc-500">
                         <div className="flex items-center gap-1">
-                            <ThumbsUp className="h-4 w-4 text-green-600" />
+                            <ThumbsUp className="h-3.5 w-3.5 text-green-500" />
                             <span>{helpful_count}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                            <ThumbsDown className="h-4 w-4 text-red-600" />
+                            <ThumbsDown className="h-3.5 w-3.5 text-red-500" />
                             <span>{not_helpful_count}</span>
                         </div>
-                        {score !== 0 && (
-                            <span className={`text-xs font-medium ${score > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {score > 0 ? '+' : ''}{score}
-                            </span>
-                        )}
+                    </div>
+                    
+                    <div className="flex items-center gap-1 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0">
+                        Edit <ArrowRight className="h-3 w-3" />
                     </div>
                 </CardFooter>
-            </Card >
+            </Card>
         </Link>
     )
-}
+}
