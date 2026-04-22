@@ -4,6 +4,7 @@ import { RunAnalysis } from "@/components/home/RunAnalysis";
 import { NoAnalysis } from "@/components/home/NoAnalysis";
 import { useHistory } from "@/hooks/use-history";
 import { useBadges } from "@/hooks/use-badges";
+import { BiomechanicsRadar } from "@/components/charts/biomechanics-radar";
 import { BADGES, getAchievementsForRun } from "@/lib/badges.config";
 import {
     Card,
@@ -270,21 +271,11 @@ export default function HomePage() {
                         )}
 
                         {jointAverages && (
-                            <Card className="p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Average Joint Scores</h3>
-                                <div className="space-y-3">
-                                    {Object.entries(jointAverages).map(([joint, score]) => (
-                                        <div key={joint} className="flex justify-between items-center">
-                                            <span className="text-sm text-gray-600 capitalize">
-                                                {joint.replace(/_/g, ' ')}
-                                            </span>
-                                            <span className={`font-semibold ${score >= 80 ? 'text-green-600' :
-                                                score >= 60 ? 'text-yellow-600' : 'text-red-600'
-                                                }`}>
-                                                {score}%
-                                            </span>
-                                        </div>
-                                    ))}
+                            <Card className="p-6 glass-card overflow-hidden">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">Average Joint Scores</h3>
+                                <p className="text-sm text-gray-500 mb-6">Aggregate biomechanics across all your analyses.</p>
+                                <div className="relative -mx-2">
+                                    <BiomechanicsRadar data={jointAverages as any} />
                                 </div>
                             </Card>
                         )}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Upload, X, FileText, ExternalLink, Loader2 } from 'lucide-react'
+import { Upload, X, FileText, ExternalLink, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -20,6 +20,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 export default function AdminApplicationPage() {
     const [files, setFiles] = useState<File[]>([])
     const [uploading, setUploading] = useState(false)
+    const [uploadProgress, setUploadProgress] = useState(0)
     const [dragActive, setDragActive] = useState(false)
 
     const { application, loading: appLoading } = useGetApplication()
@@ -97,11 +98,23 @@ export default function AdminApplicationPage() {
         }
 
         setUploading(true)
+        setUploadProgress(10)
         const uploadToast = toast.loading('Uploading files...')
 
         try {
             const formData = new FormData()
             files.forEach(file => formData.append('files', file))
+
+            // Simulating upload progress
+            const interval = setInterval(() => {
+                setUploadProgress((prev) => {
+                    if (prev >= 90) {
+                        clearInterval(interval)
+                        return prev
+                    }
+                    return prev + 10
+                })
+            }, 200)
 
             const response = await fetch('/api/admin-application/submit-forms', {
                 method: 'POST',
@@ -110,18 +123,26 @@ export default function AdminApplicationPage() {
 
             const result = await response.json()
 
+            clearInterval(interval)
+            setUploadProgress(100)
+
             if (!response.ok) {
                 throw new Error(result.error || 'Upload failed')
             }
 
-            toast.success('Files uploaded successfully!', { id: uploadToast })
-            setFiles([])
-            refetch() // Refresh submitted files list
+            setTimeout(() => {
+                toast.success('Files uploaded successfully!', { id: uploadToast })
+                setFiles([])
+                setUploadProgress(0)
+                refetch() // Refresh submitted files list
+            }, 500)
+
         } catch (error) {
             console.error('Upload error:', error)
+            setUploadProgress(0)
             toast.error(error instanceof Error ? error.message : 'Upload failed', { id: uploadToast })
         } finally {
-            setUploading(false)
+            setTimeout(() => setUploading(false), 500)
         }
     }
 
@@ -133,15 +154,42 @@ export default function AdminApplicationPage() {
         )
     }
 
-    // Show read-only view when application is under review
-    if (application?.status === "for_review") {
+    const isRejected = application?.status === "rejected";
+    const isNeedsInfo = application?.status === "needs_info";
+    const isUnderReview = application?.status === "for_review";
+
+    // Show read-only view when application is under review or rejected
+    if (isUnderReview || isRejected) {
         return (
-            <div className='flex flex-col space-y-2 w-full'>
-                <Card>
+            <div className='flex flex-col space-y-6 w-full max-w-4xl mx-auto py-8'>
+                {/* Stepper */}
+                <div className="flex items-center space-x-2 md:space-x-4 justify-center mb-2 text-xs md:text-sm">
+                    <div className="flex items-center text-primary font-medium">
+                        <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center mr-2">✓</span>
+                        Account Created
+                    </div>
+                    <div className="h-px w-4 md:w-8 bg-primary"></div>
+                    <div className="flex items-center text-primary font-medium">
+                        <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center mr-2">✓</span>
+                        Documents Uploaded
+                    </div>
+                    <div className="h-px w-4 md:w-8 bg-primary"></div>
+                    <div className={`flex items-center font-medium ${isRejected ? 'text-red-500' : 'text-primary'}`}>
+                        <span className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mr-2 ${isRejected ? 'border-red-500 text-red-500' : 'border-primary text-primary animate-pulse'}`}>3</span>
+                        {isRejected ? 'Rejected' : 'In Review'}
+                    </div>
+                </div>
+
+                <Card className={`shadow-sm ${isRejected ? 'border-red-500/20 bg-red-50/10 dark:bg-red-950/10' : 'border-primary/20'}`}>
                     <CardHeader>
-                        <CardTitle>Uploaded Documents</CardTitle>
-                        <CardDescription>
-                            Application status: Under Review
+                        <CardTitle className="text-2xl flex items-center gap-2">
+                            {isRejected && <AlertCircle className="h-6 w-6 text-red-500" />}
+                            {isRejected ? 'Application Rejected' : 'Application Under Review'}
+                        </CardTitle>
+                        <CardDescription className="text-base">
+                            {isRejected 
+                                ? 'Unfortunately, your application has not been approved at this time.' 
+                                : 'We have received your documents and are currently reviewing your application.'}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -186,20 +234,66 @@ export default function AdminApplicationPage() {
                         )}
                     </CardContent>
                 </Card>
-                <p className='text-xs text-center text-muted-foreground'>
-                    Your application is being reviewed. We&apos;ll notify you once it&apos;s processed.
-                </p>
+                <div className='flex flex-col gap-1 items-center px-4'>
+                    <p className={`text-sm font-medium text-center ${isRejected ? 'text-red-500' : 'text-primary'}`}>
+                        {isRejected 
+                            ? 'You can reach out to support if you believe this was a mistake.' 
+                            : 'Your application is being reviewed. We\'ll notify you via email once it\'s processed.'}
+                    </p>
+                    {!isRejected && (
+                        <p className='text-sm text-center text-muted-foreground'>
+                            Once approved, you will need to log out and log back in to access your coach dashboard.
+                        </p>
+                    )}
+                </div>
             </div>
         )
     }
 
     return (
         <RoleGuard allowedRoles={["admin_applicant"]}>
-            <div className="flex flex-col space-y-4 w-full">
-                <Card>
+            <div className="flex flex-col space-y-6 w-full max-w-4xl mx-auto py-8">
+                {/* Stepper */}
+                <div className="flex items-center space-x-2 md:space-x-4 justify-center mb-2 text-xs md:text-sm">
+                    <div className="flex items-center text-primary font-medium">
+                        <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center mr-2">✓</span>
+                        Account Created
+                    </div>
+                    <div className="h-px w-4 md:w-8 bg-primary"></div>
+                    <div className={`flex items-center font-medium ${isNeedsInfo ? 'text-amber-500' : 'text-primary'}`}>
+                        <span className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mr-2 ${isNeedsInfo ? 'border-amber-500 text-amber-500' : 'border-primary text-primary'}`}>2</span>
+                        {isNeedsInfo ? 'Update Documents' : 'Upload Documents'}
+                    </div>
+                    <div className={`h-px w-4 md:w-8 ${isNeedsInfo ? 'bg-amber-200 dark:bg-amber-900' : 'bg-muted border-b border-border'}`}></div>
+                    <div className={`flex items-center font-medium ${isNeedsInfo ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                        <span className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mr-2 ${isNeedsInfo ? 'border-amber-500 text-amber-500' : 'border-border text-muted-foreground'}`}>3</span>
+                        {isNeedsInfo ? 'Needs Info' : 'In Review'}
+                    </div>
+                </div>
+
+                <Card className={`shadow-sm ${isNeedsInfo ? 'border-amber-500/30 bg-amber-50/30 dark:bg-amber-950/10' : 'border-primary/20'}`}>
                     <CardHeader>
-                        <CardTitle>Admin Application</CardTitle>
-                        <CardDescription>Upload and manage application documents</CardDescription>
+                        <CardTitle className="text-2xl flex items-center gap-2">
+                            {isNeedsInfo && <AlertCircle className="h-6 w-6 text-amber-500" />}
+                            {isNeedsInfo ? 'Additional Information Required' : 'Coach Registration'}
+                        </CardTitle>
+                        <CardDescription className="text-base mt-2">
+                            {isNeedsInfo ? (
+                                <span className="text-amber-600 dark:text-amber-400">
+                                    The administration has requested additional documents or corrections. Please upload the required files below to continue your application process.
+                                </span>
+                            ) : (
+                                <>
+                                    Please upload a <span className="font-semibold text-primary">compiled PDF</span> containing your:
+                                    <ul className="list-disc list-inside mt-2 space-y-1 text-sm text-muted-foreground">
+                                        <li>Coaching experience / resume</li>
+                                        <li>Certificates of attended seminars</li>
+                                        <li>Medical certificates</li>
+                                        <li>Certificate of accreditation or license</li>
+                                    </ul>
+                                </>
+                            )}
+                        </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         {/* Show previously uploaded files */}
@@ -303,11 +397,17 @@ export default function AdminApplicationPage() {
                                 <Button
                                     onClick={handleUpload}
                                     disabled={uploading}
-                                    className="w-full"
+                                    className="w-full relative overflow-hidden"
                                     size="lg"
                                 >
-                                    {uploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    {uploading ? 'Uploading...' : 'Upload Files'}
+                                    <div 
+                                        className="absolute left-0 top-0 h-full bg-white/20 dark:bg-black/20 transition-all duration-300 ease-out"
+                                        style={{ width: `${uploadProgress}%`, opacity: uploading ? 1 : 0 }}
+                                    />
+                                    <span className="relative z-10 flex items-center">
+                                        {uploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        {uploading ? `Uploading... ${uploadProgress}%` : 'Upload Files'}
+                                    </span>
                                 </Button>
                             </div>
                         )}

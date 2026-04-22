@@ -80,9 +80,9 @@ export function AdminApplyForm({
             await login(data.email, data.password);
 
             toast.success(
-                <div className="flex flex-col">
+                <div className="flex flex-col gap-1">
                     <strong>Account created!</strong>
-                    <span className="text-xs text-gray-500">You may now upload required documents to queue your applicaiton for review.</span>
+                    <span className="text-xs text-gray-500">You may now upload your coaching credentials in the next step to complete your application.</span>
                 </div>,
                 {
                     duration: 5000
@@ -101,10 +101,13 @@ export function AdminApplyForm({
         <div className={cn("w-full max-w-md mx-auto p-4 sm:p-6", className)} {...props}>
             <Card className="w-full">
                 <CardHeader>
-                    <span className='text-2xl sm:text-3xl font-medium'>Apply for Admin Access</span>
+                    <span className='text-2xl sm:text-3xl font-medium'>Become a Coach</span>
                     <CardDescription className="text-sm sm:text-base">
-                        Create an account to apply as a coach administrator
+                        Create an account to join Runalyze as a coach.
                     </CardDescription>
+                    <p className="text-xs text-muted-foreground mt-2 border-l-2 border-primary/50 pl-2">
+                        Note: To ensure quality, we require coaches to provide credentials. You will be asked to upload these in the next step. 
+                    </p>
                 </CardHeader>
                 <CardContent className='flex flex-col gap-4 items-center px-4 sm:px-6'>
                     <Form {...form}>

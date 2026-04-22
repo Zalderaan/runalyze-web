@@ -1,10 +1,12 @@
 'use client';
 
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { RoleGuard } from "@/components/RoleGuard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/user_context";
 import { useGetTopDrills } from "@/hooks/drills/use-get-top-drills";
-import { Dumbbell, Users, FileText, ThumbsUp, ArrowUpRight, Plus, Settings } from "lucide-react";
+import { Dumbbell, Users, FileText, ThumbsUp, ArrowUpRight, Plus, Settings, X, CheckCircle2 } from "lucide-react";
 import { TopDrillsList } from "@/components/drills/TopDrillsList";
 import Link from "next/link";
 import { useGetDrillCount } from "@/hooks/drills/use-get-drill-count";
@@ -25,6 +27,7 @@ export default function AdminPage() {
     const { drills, loading: drillsLoading } = useDrills(1, 50); // Get a larger sample for insights
 
     const { applications, applicationsLoading, applicationsError, refreshApplications } = useApplications();
+    const [showQuickStart, setShowQuickStart] = useState(true);
 
     const recentApplications = applications
         .filter(app => app.submittedAt && app.applicationId !== null)
@@ -57,14 +60,14 @@ export default function AdminPage() {
                 {/* Immersive Header */}
                 <div className="relative overflow-hidden rounded-3xl p-8 bg-gradient-to-br from-zinc-900 to-zinc-800 text-white shadow-2xl dark:from-zinc-950 dark:to-zinc-900">
                     <div className="relative z-10">
-                        <div className="flex items-center gap-2 text-primary/80 mb-2">
-                            <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                        <div className={`flex items-center gap-2 mb-2 ${isOwner ? 'text-primary/80' : 'text-orange-500/80'}`}>
+                            <div className={`h-1.5 w-1.5 rounded-full animate-pulse ${isOwner ? 'bg-primary' : 'bg-orange-500'}`} />
                             <span className="text-xs font-semibold tracking-wider uppercase">
                                 {isOwner ? 'Owner Dashboard' : 'Administrator Overview'}
                             </span>
                         </div>
                         <h1 className="font-bold text-4xl tracking-tight mb-2">
-                            Welcome back, <span className="text-primary">{user?.username}</span>
+                            Welcome back, <span className={isOwner ? 'text-primary' : 'text-orange-500'}>{user?.username}</span>
                         </h1>
                         <p className="text-zinc-400 max-w-md">
                             Monitor platform health, manage drill libraries, and review expert coach applications.
@@ -74,6 +77,51 @@ export default function AdminPage() {
                     <div className="absolute top-0 right-0 -mr-10 -mt-10 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
                     <div className="absolute bottom-0 left-0 -ml-10 -mb-10 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
                 </div>
+
+                <AnimatePresence>
+                    {showQuickStart && (
+                        <motion.div 
+                            initial={{ opacity: 0, y: -20 }} 
+                            animate={{ opacity: 1, y: 0 }} 
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="relative overflow-hidden rounded-3xl p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-100 dark:border-blue-900/50 shadow-sm"
+                        >
+                            <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="absolute top-4 right-4 text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-full"
+                                onClick={() => setShowQuickStart(false)}
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                            <div className="flex items-start gap-4">
+                                <div className="p-3 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-2xl shadow-inner">
+                                    <CheckCircle2 className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100 mb-1">Quick Start Guide</h3>
+                                    <p className="text-blue-700/80 dark:text-blue-300 mb-4 text-sm max-w-2xl">
+                                        Welcome to your coach workspace. Get started by setting up your essentials and tracking platform insights.
+                                    </p>
+                                    <div className="flex flex-wrap gap-3">
+                                        <div className="flex items-center gap-2 bg-white/60 dark:bg-zinc-900/40 px-3 py-1.5 rounded-full border border-blue-200/50 dark:border-blue-800/30 text-xs font-semibold text-blue-800 dark:text-blue-200">
+                                            <span className="h-5 w-5 rounded-full bg-blue-200 dark:bg-blue-800 flex items-center justify-center text-[10px]">1</span>
+                                            Create Drills
+                                        </div>
+                                        <div className="flex items-center gap-2 bg-white/60 dark:bg-zinc-900/40 px-3 py-1.5 rounded-full border border-blue-200/50 dark:border-blue-800/30 text-xs font-semibold text-blue-800 dark:text-blue-200">
+                                            <span className="h-5 w-5 rounded-full bg-blue-200 dark:bg-blue-800 flex items-center justify-center text-[10px]">2</span>
+                                            Review Consultations
+                                        </div>
+                                        <div className="flex items-center gap-2 bg-white/60 dark:bg-zinc-900/40 px-3 py-1.5 rounded-full border border-blue-200/50 dark:border-blue-800/30 text-xs font-semibold text-blue-800 dark:text-blue-200">
+                                            <span className="h-5 w-5 rounded-full bg-blue-200 dark:bg-blue-800 flex items-center justify-center text-[10px]">3</span>
+                                            Track Insights
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Quick Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -127,68 +175,76 @@ export default function AdminPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Recent Applications Feed */}
-                    <Card className="lg:col-span-2 glass-card">
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <div>
-                                <CardTitle className="text-xl">Recent Activity</CardTitle>
-                                <CardDescription>Latest coach onboarding applications</CardDescription>
-                            </div>
-                            <Link href="/dashboard/admin/consultations" className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
-                                View History <ArrowUpRight className="h-3 w-3" />
-                            </Link>
-                        </CardHeader>
-                        <CardContent>
-                            <RecentApplications applications={recentApplications} />
-                        </CardContent>
-                    </Card>
+                    {isOwner && (
+                        <Card className="lg:col-span-2 glass-card">
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <div>
+                                    <CardTitle className="text-xl">Recent Activity</CardTitle>
+                                    <CardDescription>Latest coach onboarding applications</CardDescription>
+                                </div>
+                                <Link href="/dashboard/admin/consultations" className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
+                                    View History <ArrowUpRight className="h-3 w-3" />
+                                </Link>
+                            </CardHeader>
+                            <CardContent>
+                                <RecentApplications applications={recentApplications} />
+                            </CardContent>
+                        </Card>
+                    )}
 
                     {/* Quick Access Actions */}
-                    <div className="flex flex-col gap-6">
+                    <div className={`gap-6 ${isOwner ? 'flex flex-col' : 'lg:col-span-3 grid grid-cols-1 md:grid-cols-2'}`}>
                         <Card className="glass-card">
                             <CardHeader>
                                 <CardTitle className="text-xl">Quick Actions</CardTitle>
                                 <CardDescription>Common management tasks</CardDescription>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-3">
-                                <Link
-                                    href="/dashboard/admin/drills"
-                                    className="group p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all flex items-center justify-between"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                                            <Dumbbell className="h-5 w-5" />
-                                        </div>
-                                        <span className="font-medium">Drill Library</span>
-                                    </div>
-                                    <Plus className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </Link>
-                                
-                                <Link
-                                    href="/dashboard/admin/consultations"
-                                    className="group p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all flex items-center justify-between"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
-                                            <FileText className="h-5 w-5" />
-                                        </div>
-                                        <span className="font-medium">Applications</span>
-                                    </div>
-                                    <ArrowUpRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </Link>
-
-                                {isOwner && (
-                                    <Link 
-                                        href="/dashboard/admin/manage" 
-                                        className="group p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all flex items-center justify-between"
+                                <motion.div whileHover={{ y: -4 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
+                                    <Link
+                                        href="/dashboard/admin/drills"
+                                        className="group p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all flex items-center justify-between"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500 group-hover:bg-amber-500 group-hover:text-white transition-colors">
-                                                <Users className="h-5 w-5" />
+                                            <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                                                <Dumbbell className="h-5 w-5" />
                                             </div>
-                                            <span className="font-medium">Access Control</span>
+                                            <span className="font-medium">Drill Library</span>
                                         </div>
-                                        <Settings className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <Plus className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </Link>
+                                </motion.div>
+                                
+                                <motion.div whileHover={{ y: -4 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
+                                    <Link
+                                        href="/dashboard/admin/consultations"
+                                        className="group p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all flex items-center justify-between"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                                <FileText className="h-5 w-5" />
+                                            </div>
+                                            <span className="font-medium">Applications</span>
+                                        </div>
+                                        <ArrowUpRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    </Link>
+                                </motion.div>
+
+                                {isOwner && (
+                                    <motion.div whileHover={{ y: -4 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
+                                        <Link 
+                                            href="/dashboard/admin/manage" 
+                                            className="group p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all flex items-center justify-between"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500 group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                                                    <Users className="h-5 w-5" />
+                                                </div>
+                                                <span className="font-medium">Access Control</span>
+                                            </div>
+                                            <Settings className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        </Link>
+                                    </motion.div>
                                 )}
                             </CardContent>
                         </Card>

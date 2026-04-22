@@ -1,7 +1,8 @@
 // import { useGetTopDrills } from "@/hooks/drills/use-get-top-drills";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ThumbsUp, ThumbsDown, Trophy, Loader2, AlertCircle } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ThumbsUp, ThumbsDown, Trophy, Loader2, AlertCircle, Dumbbell } from "lucide-react";
 
 interface TopDrill {
     id: number;
@@ -39,9 +40,11 @@ export function TopDrillsList({ topDrills, isLoading, error }: TopDrillsListProp
 
     if (!topDrills || topDrills.length === 0) {
         return (
-            <div className="text-sm text-gray-500 text-center p-6">
-                No drills found
-            </div>
+            <EmptyState 
+                icon={Dumbbell}
+                title="No drills found"
+                description="Once users rate drills, the top performers will appear here."
+            />
         );
     }
 
