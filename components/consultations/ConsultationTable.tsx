@@ -12,8 +12,9 @@ import {
     type SortingState,
     type VisibilityState,
 } from "@tanstack/react-table"
-import { Archive, ArrowUpDown, Check, CheckCircle, ChevronDown, MoreHorizontal, Trash2, X, XCircle } from "lucide-react"
+import { Archive, ArrowUpDown, Check, CheckCircle, ChevronDown, MoreHorizontal, Trash2, X, XCircle, Activity } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -37,6 +38,8 @@ import { useAuth } from "@/context/user_context"
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"  // Add this import
 import { ArchiveDialog } from "./ArchiveDialog"
+import { CancelDialog } from "./CancelDialog"
+import { DeleteDialog } from "./DeleteDialog"
 
 export type ConsultationStatus = 'pending' | 'declined' | 'in-progress' | 'completed' | 'cancelled';
 
@@ -51,16 +54,21 @@ export interface Consultation {
     user_email: string;
     coach_email: string;
     is_archived: boolean;
+    analysis_id?: number;
+    analysis_results?: {
+        name: string | null;
+    } | null;
 }
 
 interface ConsultationTableProps {
     consultations: Consultation[],
     onUpdateStatus?: (id: string, status: ConsultationStatus, is_archived?: boolean) => void,
     onArchiveConsultation?: (id: string) => void,
+    onDeleteConsultation?: (id: string) => void,
     isLoading?: boolean
 }
 
-export function ConsultationTable({ consultations, onUpdateStatus, onArchiveConsultation, isLoading }: ConsultationTableProps) {
+export function ConsultationTable({ consultations, onUpdateStatus, onArchiveConsultation, onDeleteConsultation, isLoading }: ConsultationTableProps) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -76,9 +84,6 @@ export function ConsultationTable({ consultations, onUpdateStatus, onArchiveCons
     //     setDialogOpen(true);
     // };
 
-    const validStatuses = isCoach
-        ? ['pending', 'in-progress', 'completed', 'declined', 'cancelled']
-        : ['completed', 'cancelled'];  // Updated: Allow non-coaches to select 'completed' or 'cancelled'
 
     const columns: ColumnDef<Consultation>[] = [
         {
@@ -109,25 +114,6 @@ export function ConsultationTable({ consultations, onUpdateStatus, onArchiveCons
                     }
                 }
 
-                if (!isCoach && (status === 'pending' || status === 'in-progress')) {
-                    return (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Badge variant={getBadgeVariant(status)} className={`${getBadgeClassName(status)} w-full cursor-pointer`}>
-                                    {status}
-                                </Badge>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuItem
-                                    onClick={() => onUpdateStatus && onUpdateStatus(consultation.id, 'cancelled', true)}
-                                >
-                                    Cancel
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    );
-                }
-
                 return <Badge variant={getBadgeVariant(status)} className={`${getBadgeClassName(status)} w-full`}>{status}</Badge>;
             },
         },
@@ -148,20 +134,30 @@ export function ConsultationTable({ consultations, onUpdateStatus, onArchiveCons
                 const message = row.getValue("message") as string;
                 const truncated = message.length > 50 ? `${message.substring(0, 50)}...` : message;
                 return (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <div className="truncate max-w-xs cursor-help">
-                                    {truncated}
-                                </div>
-                            </TooltipTrigger>
-                            <TooltipContent
-                                side="top"  // Default to right; adjust dynamically if needed
-                                className="max-w-sm sm:max-w-md md:max-w-lg lg:max-w-3xl p-4 bg-white text-black border rounded shadow-lg"                            >
-                                <p>{message}</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                    <div className="space-y-2">
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="truncate max-w-xs cursor-help">
+                                        {truncated}
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent
+                                    side="top"  // Default to right; adjust dynamically if needed
+                                    className="max-w-sm sm:max-w-md md:max-w-lg lg:max-w-3xl p-4 bg-white text-black border rounded shadow-lg"                            >
+                                    <p>{message}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                        {row.original.analysis_id && (
+                            <Link href={`/dashboard/history/${row.original.analysis_id}`}>
+                                <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200 mt-1 cursor-pointer w-max space-x-1 max-w-xs truncate">
+                                    <Activity className="w-3 h-3 flex-shrink-0" />
+                                    <span className="truncate">{row.original.analysis_results?.name || `Analysis #${row.original.analysis_id}`}</span>
+                                </Badge>
+                            </Link>
+                        )}
+                    </div>
                 );
             }
         },
@@ -199,21 +195,43 @@ export function ConsultationTable({ consultations, onUpdateStatus, onArchiveCons
                 //     }
                 // }
                 if (!isCoach) {
-                    if (status === 'completed' || status === 'declined' || status === 'cancelled') {
-                        return (
-                            <ArchiveDialog
-                                coach_email={consultation.coach_email}
-                                consultationDate={consultation.created_at}
-                                onConfirm={() => console.log("Confirm archive clicked!")}
-                            />
-                        )
-                    }
-
                     if (status === 'pending') {
                         return (
-                            <Button>
-                                test
-                            </Button>
+                            <div className="flex space-x-2">
+                                <CancelDialog 
+                                    coachEmail={consultation.coach_email}
+                                    consultationDate={consultation.created_at}
+                                    onConfirm={() => onUpdateStatus && onUpdateStatus(consultation.id, 'cancelled', true)}
+                                />
+                                {onDeleteConsultation && consultation.is_archived && (
+                                    <DeleteDialog
+                                        coachEmail={consultation.coach_email}
+                                        consultationDate={consultation.created_at}
+                                        onConfirm={() => onDeleteConsultation(consultation.id)}
+                                    />
+                                )}
+                            </div>
+                        );
+                    }
+
+                    if (status === 'completed' || status === 'declined' || status === 'cancelled') {
+                        return (
+                            <div className="flex space-x-2">
+                                {!consultation.is_archived && (
+                                    <ArchiveDialog
+                                        coach_email={consultation.coach_email}
+                                        consultationDate={consultation.created_at}
+                                        onConfirm={() => onUpdateStatus && onUpdateStatus(consultation.id, status, true)}
+                                    />
+                                )}
+                                {onDeleteConsultation && consultation.is_archived && (
+                                    <DeleteDialog
+                                        coachEmail={consultation.coach_email}
+                                        consultationDate={consultation.created_at}
+                                        onConfirm={() => onDeleteConsultation(consultation.id)}
+                                    />
+                                )}
+                            </div>
                         )
                     }
                 }

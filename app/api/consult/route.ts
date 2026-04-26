@@ -8,7 +8,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
     try {
-        const { coach_id, message } = await req.json();
+        const { coach_id, message, analysisId } = await req.json();
 
         // get user id
         const cookieStore = await cookies();
@@ -52,7 +52,8 @@ export async function POST(req: NextRequest) {
                 status: 'pending',
                 coach_email: coach.email,
                 user_email: user?.email,
-                is_archived: false
+                is_archived: false,
+                analysis_id: analysisId || null
             })
             .select()
             .single();
@@ -71,6 +72,7 @@ export async function POST(req: NextRequest) {
                 <p><strong>From:</strong> ${user?.username || 'A user'} (${user?.email})</p>
                 <p><strong>Message:</strong></p>
                 <p>${message}</p>
+                ${analysisId ? `<p><strong>Attached Analysis ID:</strong> ${analysisId}</p>` : ''}
                 <br>
                 <p>Log in to your dashboard to respond to this request.</p>
             `
@@ -128,7 +130,10 @@ export async function GET(req: NextRequest) {
         const query = supabase
             .from('consultations')
             .select(`
-                id, user_id, coach_id, message, created_at, updated_at, status, coach_email, user_email
+                id, user_id, coach_id, message, created_at, updated_at, status, coach_email, user_email, is_archived, analysis_id,
+                analysis_results (
+                    name
+                )
             `);
 
         if (isCoach) {

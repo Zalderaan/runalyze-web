@@ -1,5 +1,5 @@
 import { useAuth } from "@/context/user_context";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 export interface Application {
     applicationId: number;
@@ -11,6 +11,7 @@ interface UseGetApplicationResult {
     application: Application | null;
     loading: boolean;
     error: string | null;
+    refetch: () => Promise<void>;
 }
 
 export function useGetApplication(): UseGetApplicationResult {
@@ -19,26 +20,29 @@ export function useGetApplication(): UseGetApplicationResult {
     const [error, setError] = useState<string | null>(null);
     const { user } = useAuth();
 
-    useEffect(() => {
-        const fetchApplication = async () => {
-            try {
-                const response = await fetch(`/api/admin-application/${user?.id}`);
-                const result = await response.json();
+    const fetchApplication = useCallback(async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(`/api/admin-application/${user?.id}`);
+            const result = await response.json();
 
-                if (!response.ok) {
-                    throw new Error(result.error || "Failed to fetch application");
-                }
-
-                setApplication(result.application);
-            } catch (err) {
-                setError(err instanceof Error ? err.message : "Failed to fetch");
-            } finally {
-                setLoading(false);
+            if (!response.ok) {
+                throw new Error(result.error || "Failed to fetch application");
             }
-        };
 
-        fetchApplication();
-    }, []);
+            setApplication(result.application);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to fetch");
+        } finally {
+            setLoading(false);
+        }
+    }, [user?.id]);
 
-    return { application, loading, error };
+    useEffect(() => {
+        if (user?.id) {
+            fetchApplication();
+        }
+    }, [fetchApplication, user?.id]);
+
+    return { application, loading, error, refetch: fetchApplication };
 }

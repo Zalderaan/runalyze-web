@@ -12,6 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAdmins } from '@/hooks/users/use-admins';
 import { ConsultationTable } from '@/components/consultations/ConsultationTable';
 import { useGetConsultations } from '@/hooks/consultation/use-get-consultations';
+import { useHistory } from '@/hooks/use-history';
+import { motion } from 'framer-motion';
+import { UserIcon, Activity, MessageSquare, Send } from 'lucide-react';
 
 // import {
 //     useFormField,
@@ -30,6 +33,7 @@ import { useGetConsultations } from '@/hooks/consultation/use-get-consultations'
 export default function ConsultPage() {
     const { user } = useAuth();
     const [selectedCoach, setSelectedCoach] = useState<string>('');
+    const [selectedAnalysis, setSelectedAnalysis] = useState<string>('none');
     const [message, setMessage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -44,6 +48,7 @@ export default function ConsultPage() {
     // }
 
     const { admins, usersLoading, usersError, refreshUsers } = useAdmins();
+    const { history } = useHistory();
 
     // TODO: Get consultations
     const { consultations, consultationsLoading, consultationsError, refetchConsultations } = useGetConsultations();
@@ -68,6 +73,7 @@ export default function ConsultPage() {
                     coach_id: selectedCoach,
                     message: message.trim(),
                     userId: user?.id,  // Include user ID if needed
+                    analysisId: selectedAnalysis === 'none' ? null : Number(selectedAnalysis)
                 }),
             });
 
@@ -75,6 +81,7 @@ export default function ConsultPage() {
                 toast.success('Message sent successfully!');
                 setMessage('');  // Clear the message
                 setSelectedCoach('');  // Reset selection
+                setSelectedAnalysis('none');
             } else {
                 toast.error('Failed to send message. Please try again.');
             }
@@ -86,13 +93,16 @@ export default function ConsultPage() {
         }
     };
 
-    const handleUpdateStatus = async (id: string, newStatus: string) => {
+    const handleUpdateStatus = async (id: string, newStatus: string, is_archived?: boolean) => {
         try {
             // Replace with your actual API endpoint/logic
             const response = await fetch(`/api/consult/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus }),
+                body: JSON.stringify({ 
+                    status: newStatus,
+                    is_archived: is_archived
+                }),
             });
             if (response.ok) {
                 toast.success('Status updated successfully!');
@@ -128,74 +138,146 @@ export default function ConsultPage() {
     }
 
     return (
-        <div className="p-6 max-w-4xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold">Contact a Coach</h1>
-            <p className="text-gray-600">Select a coach and send your message via email.</p>
+        <div className="p-6 max-w-4xl mx-auto space-y-8">
+            <div className="mb-2">
+                <h1 className="text-3xl font-bold tracking-tight text-gray-900">Consultations</h1>
+                <p className="text-gray-500 mt-1">Connect with professional coaches or review your past sessions.</p>
+            </div>
 
             <Tabs defaultValue="contact" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
+                <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="contact">Contact Coach</TabsTrigger>
                     <TabsTrigger value="history">My Consultations</TabsTrigger>
+                    <TabsTrigger value="archived">Archived</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="contact" className='space-y-2'>
-                    {/* Existing Contact Coach UI */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Select a Coach</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {usersLoading ? (
-                                <p>Loading coaches...</p>
-                            ) : admins.length > 0 ? (
-                                <Select value={selectedCoach} onValueChange={setSelectedCoach}>
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Choose a coach" />
+                <TabsContent value="contact" className='mt-6 outline-none'>
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="bg-white/40 backdrop-blur-md border border-gray-200/60 rounded-2xl shadow-sm p-6 sm:p-8"
+                    >
+                        <h2 className="text-xl font-semibold text-gray-800 border-b border-gray-100 pb-4 mb-6">New Request</h2>
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            
+                            {/* Coach Select */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold flex items-center gap-2 text-gray-700">
+                                    <UserIcon className="w-4 h-4 text-blue-500" />
+                                    Select a Coach
+                                </label>
+                                {usersLoading ? (
+                                    <div className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+                                ) : admins.length > 0 ? (
+                                    <Select value={selectedCoach} onValueChange={setSelectedCoach}>
+                                        <SelectTrigger className="w-full h-12 bg-white/60 hover:bg-white border-gray-200 hover:border-gray-300 rounded-lg transition-colors focus:ring-0 focus:ring-offset-0">
+                                            <SelectValue placeholder="Choose an available coach..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {admins.filter(a => a.is_active).map((a) => (
+                                                <SelectItem key={a.id} value={a.id.toString()}>
+                                                    {a.username} ({a.email})
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                ) : (
+                                    <p className="text-sm text-gray-500 italic py-2">No coaches available at the moment.</p>
+                                )}
+                            </div>
+
+                            {/* Analysis Select */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold flex items-center gap-2 text-gray-700">
+                                    <Activity className="w-4 h-4 text-emerald-500" />
+                                    Attach Analysis (Optional)
+                                </label>
+                                <Select value={selectedAnalysis} onValueChange={setSelectedAnalysis}>
+                                    <SelectTrigger className="w-full h-12 bg-white/60 hover:bg-white border-gray-200 hover:border-gray-300 rounded-lg transition-colors focus:ring-0 focus:ring-offset-0">
+                                        <SelectValue placeholder="Select an analysis session to review..." />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {admins.filter(admin => admin.is_active).map((admin) => (
-                                            <SelectItem key={admin.id} value={admin.id}>
-                                                {admin.username} - {admin.email}
+                                        <SelectItem value="none">No analysis attached</SelectItem>
+                                        {history?.map((item) => (
+                                            <SelectItem key={item.id} value={item.id.toString()}>
+                                                {item.name || `Analysis #${item.id}`} - {new Date(item.created_at).toLocaleDateString()}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
-                            ) : (
-                                <p>No coaches available at the moment.</p>
-                            )}
-                        </CardContent>
-                    </Card>
+                            </div>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Send Your Message</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <form onSubmit={handleSubmit} className="space-y-4">
+                            {/* Message Textarea */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold flex items-center gap-2 text-gray-700">
+                                    <MessageSquare className="w-4 h-4 text-purple-500" />
+                                    Your Message
+                                </label>
                                 <Textarea
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}
-                                    placeholder="Enter your message here..."
-                                    rows={6}
+                                    placeholder="Hello Coach, I'm struggling with..."
+                                    rows={5}
                                     required
-                                    className="w-full"
+                                    className="w-full bg-white/60 hover:bg-white border-gray-200 hover:border-gray-300 focus-visible:ring-1 focus-visible:ring-blue-500 rounded-lg p-3 transition-colors resize-none shadow-sm"
                                 />
-                                <Button type="submit" disabled={isSubmitting || !selectedCoach} className="w-full">
-                                    {isSubmitting ? 'Sending...' : 'Send Email'}
+                                <p className="text-xs text-gray-500 text-right mt-1">Be specific about your goals and current challenges.</p>
+                            </div>
+
+                            {/* Submit Button */}
+                            <div className="pt-2">
+                                <Button 
+                                    type="submit" 
+                                    disabled={isSubmitting || !selectedCoach} 
+                                    className="w-full h-12 text-base font-semibold bg-gray-900 hover:bg-gray-800 text-white rounded-lg shadow-md hover:shadow-lg transition-all active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
+                                >
+                                    {isSubmitting ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            Sending Request...
+                                        </span>
+                                    ) : (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <Send className="w-4 h-4" />
+                                            Send Consultation Request
+                                        </span>
+                                    )}
                                 </Button>
-                            </form>
-                        </CardContent>
-                    </Card>
+                            </div>
+
+                        </form>
+                    </motion.div>
                 </TabsContent>
 
                 <TabsContent value="history">
                     <Card>
-                        <CardHeader>
-                            <CardTitle>My Consultations</CardTitle>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle>Active Consultations</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            {/* Placeholder for history; implement with API fetch */}
-                            <ConsultationTable consultations={consultations} onUpdateStatus={handleUpdateStatus} />
+                            <ConsultationTable 
+                                consultations={consultations.filter(c => !c.is_archived)} 
+                                onUpdateStatus={handleUpdateStatus} 
+                                onDeleteConsultation={onDeleteConsultation}
+                                isLoading={consultationsLoading}
+                            />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="archived">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle>Archived Consultations</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ConsultationTable 
+                                consultations={consultations.filter(c => c.is_archived)} 
+                                onUpdateStatus={handleUpdateStatus} 
+                                onDeleteConsultation={onDeleteConsultation}
+                                isLoading={consultationsLoading}
+                            />
                         </CardContent>
                     </Card>
                 </TabsContent>

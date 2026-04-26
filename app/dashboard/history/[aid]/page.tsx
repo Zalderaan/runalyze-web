@@ -368,9 +368,9 @@ export default function AnalysisDetails() {
                         <div className="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full bg-blue-200/30 blur-2xl" />
                         <div className="pointer-events-none absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-indigo-200/30 blur-2xl" />
 
-                        <div className="relative flex flex-wrap items-center gap-6">
+                        <div className="relative flex flex-col md:flex-row items-center md:items-start gap-6">
                             {/* Left — title & assessment */}
-                            <div className="flex-1 min-w-0">
+                            <div className="flex-1 min-w-0 w-full text-center md:text-left">
                                 <p className="text-xs font-semibold uppercase tracking-widest text-blue-500 mb-1">Run Analysis</p>
                                 
                                 {isEditingName ? (
@@ -389,7 +389,7 @@ export default function AnalysisDetails() {
                                     </form>
                                 ) : (
                                     <div 
-                                        className="flex items-center gap-2 group cursor-pointer w-fit"
+                                        className="flex items-center justify-center md:justify-start gap-2 group cursor-pointer w-full md:w-fit"
                                         onClick={() => setIsEditingName(true)}
                                     >
                                         <h1 className="text-2xl font-bold text-gray-900 truncate">
@@ -399,11 +399,11 @@ export default function AnalysisDetails() {
                                     </div>
                                 )}
                                 
-                                <p className="text-sm text-gray-500 mt-2 mb-4 leading-relaxed line-clamp-3">{overall_assessment}</p>
+                                <p className="text-sm text-gray-500 mt-2 mb-4 leading-relaxed line-clamp-3 mx-auto md:mx-0 max-w-2xl">{overall_assessment}</p>
 
                                 {runBadges.length > 0 && (
                                     <TooltipProvider delayDuration={200}>
-                                        <div className="flex flex-wrap gap-2 pt-1 pb-2">
+                                        <div className="flex flex-wrap justify-center md:justify-start gap-2 pt-1 pb-2">
                                             {runBadges.map((badgeDef) => {
                                                 const Icon = badgeDef.icon;
                                                 return (
@@ -428,55 +428,58 @@ export default function AnalysisDetails() {
                                 )}
                             </div>
 
-                            {/* Centre — circular score */}
-                            <div className="flex flex-col items-center gap-1 shrink-0">
-                                {/* Outer ring */}
-                                <div
-                                    className="relative flex items-center justify-center rounded-full shadow-lg"
-                                    style={{
-                                        width: 96,
-                                        height: 96,
-                                        background: `conic-gradient(
-                                            ${(overall_score ?? 0) >= 80 ? '#22c55e' : (overall_score ?? 0) >= 60 ? '#f59e0b' : '#ef4444'} ${(overall_score ?? 0) * 3.6}deg,
-                                            #e2e8f0 0deg
-                                        )`,
-                                        borderRadius: '50%',
-                                        padding: 5,
-                                    }}
-                                >
-                                    <div className="flex flex-col items-center justify-center rounded-full bg-white w-full h-full">
-                                        <span
-                                            className="text-2xl font-extrabold leading-none"
-                                            style={{
-                                                color: (overall_score ?? 0) >= 80 ? '#16a34a' : (overall_score ?? 0) >= 60 ? '#d97706' : '#dc2626',
-                                            }}
-                                        >
-                                            {overall_score?.toFixed(0)}
-                                        </span>
-                                        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">/ 100</span>
+                            {/* Right — Score and BMI group */}
+                            <div className="flex flex-wrap items-center justify-center gap-8 w-full md:w-auto shrink-0">
+                                {/* Centre — circular score */}
+                                <div className="flex flex-col items-center gap-2 shrink-0">
+                                    {/* Outer ring */}
+                                    <div
+                                        className="relative flex items-center justify-center rounded-full shadow-lg"
+                                        style={{
+                                            width: 96,
+                                            height: 96,
+                                            background: `conic-gradient(
+                                                ${(overall_score ?? 0) >= 80 ? '#22c55e' : (overall_score ?? 0) >= 60 ? '#f59e0b' : '#ef4444'} ${(overall_score ?? 0) * 3.6}deg,
+                                                #e2e8f0 0deg
+                                            )`,
+                                            borderRadius: '50%',
+                                            padding: 5,
+                                        }}
+                                    >
+                                        <div className="flex flex-col items-center justify-center rounded-full bg-white w-full h-full">
+                                            <span
+                                                className="text-2xl font-extrabold leading-none"
+                                                style={{
+                                                    color: (overall_score ?? 0) >= 80 ? '#16a34a' : (overall_score ?? 0) >= 60 ? '#d97706' : '#dc2626',
+                                                }}
+                                            >
+                                                {overall_score?.toFixed(0)}
+                                            </span>
+                                            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">/ 100</span>
+                                        </div>
                                     </div>
+                                    <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">Overall Score</span>
                                 </div>
-                                <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">Overall Score</span>
-                            </div>
 
-                            {/* Right — BMI badge */}
-                            {bmi_category && (
-                                <div className="flex flex-col items-center gap-1 shrink-0">
-                                    <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">Body Type</span>
-                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border shadow-sm ${bmi_category === "normal" ? "bg-green-50 text-green-700 border-green-300" :
-                                        bmi_category === "underweight" ? "bg-blue-50 text-blue-700 border-blue-300" :
-                                            bmi_category === "overweight" ? "bg-amber-50 text-amber-700 border-amber-300" :
-                                                "bg-red-50 text-red-700 border-red-300"
-                                        }`}>
-                                        <span>
-                                            {bmi_category === "normal" ? "✅" :
-                                                bmi_category === "underweight" ? "💧" :
-                                                    bmi_category === "overweight" ? "⚠️" : "🔴"}
+                                {/* Right — BMI badge */}
+                                {bmi_category && (
+                                    <div className="flex flex-col items-center gap-2 shrink-0">
+                                        <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">Body Type</span>
+                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border shadow-sm ${bmi_category === "normal" ? "bg-green-50 text-green-700 border-green-300" :
+                                            bmi_category === "underweight" ? "bg-blue-50 text-blue-700 border-blue-300" :
+                                                bmi_category === "overweight" ? "bg-amber-50 text-amber-700 border-amber-300" :
+                                                    "bg-red-50 text-red-700 border-red-300"
+                                            }`}>
+                                            <span>
+                                                {bmi_category === "normal" ? "✅" :
+                                                    bmi_category === "underweight" ? "💧" :
+                                                        bmi_category === "overweight" ? "⚠️" : "🔴"}
+                                            </span>
+                                            BMI · {bmi_category.charAt(0).toUpperCase() + bmi_category.slice(1)}
                                         </span>
-                                        BMI · {bmi_category.charAt(0).toUpperCase() + bmi_category.slice(1)}
-                                    </span>
-                                </div>
-                            )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

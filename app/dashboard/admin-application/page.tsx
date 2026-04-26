@@ -23,7 +23,7 @@ export default function AdminApplicationPage() {
     const [uploadProgress, setUploadProgress] = useState(0)
     const [dragActive, setDragActive] = useState(false)
 
-    const { application, loading: appLoading } = useGetApplication()
+    const { application, loading: appLoading, refetch: refetchApp } = useGetApplication()
     const { files: submittedFiles, loading: filesLoading, refetch } = useGetSubmitted(application?.applicationId ?? null)
 
     const validateFiles = (fileList: File[]) => {
@@ -135,6 +135,7 @@ export default function AdminApplicationPage() {
                 setFiles([])
                 setUploadProgress(0)
                 refetch() // Refresh submitted files list
+                refetchApp() // Refresh application status
             }, 500)
 
         } catch (error) {
