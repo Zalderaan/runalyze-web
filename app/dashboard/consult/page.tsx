@@ -82,6 +82,7 @@ export default function ConsultPage() {
                 setMessage('');  // Clear the message
                 setSelectedCoach('');  // Reset selection
                 setSelectedAnalysis('none');
+                refetchConsultations();  // Refresh the table data automatically
             } else {
                 toast.error('Failed to send message. Please try again.');
             }

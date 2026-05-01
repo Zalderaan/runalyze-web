@@ -2,6 +2,7 @@
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -30,6 +31,9 @@ const formSchema = z.object({
     confirmPassword: z.string().min(1, {
         message: "Confirm password is required",
     }),
+    acceptTerms: z.boolean().refine((val) => val === true, {
+        message: "You must accept the Terms of Use to create an account",
+    }),
 }).refine((data) => data.password === data.confirmPassword, {
     message: "Passwords must match!",
     path: ["confirmPassword"] // show error on confirmPassword field
@@ -51,8 +55,11 @@ export function RegisterForm({
             email: "",
             password: "",
             confirmPassword: "",
+            acceptTerms: false,
         }
     })
+
+    const acceptTerms = form.watch("acceptTerms");
 
     // form submission handler
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
@@ -162,11 +169,44 @@ export function RegisterForm({
                                 />
                             </div>
 
+                            {/* Terms of Use checkbox */}
+                            <FormField
+                                control={form.control}
+                                name="acceptTerms"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-2">
+                                        <FormControl>
+                                            <Checkbox
+                                                id="accept-terms"
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel
+                                                htmlFor="accept-terms"
+                                                className="text-sm text-slate-600 font-normal cursor-pointer"
+                                            >
+                                                I agree to the{' '}
+                                                <Link
+                                                    href="/terms"
+                                                    target="_blank"
+                                                    className="text-blue-600 underline hover:text-blue-800"
+                                                >
+                                                    Terms of Use
+                                                </Link>
+                                            </FormLabel>
+                                            <FormMessage className="text-xs" />
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
+
                             <div className='flex flex-col gap-2 sm:gap-3 w-full pt-2'>
                                 <Button
                                     className='w-full h-10 sm:h-11 text-sm sm:text-base'
                                     type="submit"
-                                    disabled={isSigningUp}
+                                    disabled={isSigningUp || !acceptTerms}
                                 >
                                     {isSigningUp ? "Signing up..." : "Sign Up"}
                                 </Button>

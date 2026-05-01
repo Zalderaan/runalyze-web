@@ -234,6 +234,31 @@ export function ConsultationTable({ consultations, onUpdateStatus, onArchiveCons
                             </div>
                         )
                     }
+
+                    if (status === 'in-progress') {
+                        return (
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div className="cursor-not-allowed">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                disabled
+                                                className="opacity-50 text-gray-400 border-gray-200"
+                                            >
+                                                <X className="h-4 w-4 mr-1" />
+                                                Cancel
+                                            </Button>
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Coach has accepted so you can&apos;t cancel it now</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        );
+                    }
                 }
 
                 return (

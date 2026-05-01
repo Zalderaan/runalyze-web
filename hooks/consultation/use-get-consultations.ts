@@ -1,6 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { Consultation } from "@/components/consultations/ConsultationTable";  // Import your interface
 import { useAuth } from "@/context/user_context";
+import { useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export function useGetConsultations() {
     const { user } = useAuth();
@@ -21,6 +24,54 @@ export function useGetConsultations() {
         staleTime: 5 * 60 * 1000,  // Cache for 5 minutes
         refetchOnWindowFocus: false,  // Optional: disable refetch on focus
     });
+
+    useEffect(() => {
+        if (!user?.id) return;
+
+        const isCoach = user.user_role === 'admin';
+
+        const channel = supabase
+            .channel('consultations-changes')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'consultations',
+                    // Filter by the current user's role and ID to only get relevant updates
+                    filter: isCoach ? `coach_id=eq.${user.id}` : `user_id=eq.${user.id}`
+                },
+                (payload) => {
+                    console.log('Consultation change received:', payload);
+                    query.refetch();
+
+                    // Notify coach about new incoming requests
+                    if (isCoach && payload.eventType === 'INSERT') {
+                        toast.info('New consultation request received!', {
+                            description: 'A new user is looking for your advice.',
+                            duration: 5000,
+                        });
+                    }
+
+                    // Notify user about status changes
+                    if (!isCoach && payload.eventType === 'UPDATE') {
+                        const oldStatus = (payload.old as any).status;
+                        const newStatus = (payload.new as any).status;
+                        if (oldStatus !== newStatus) {
+                            toast.success(`Consultation update: ${newStatus}`, {
+                                description: `Your request status has been updated to ${newStatus}.`,
+                                duration: 5000,
+                            });
+                        }
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [user?.id, user?.user_role, query]);
 
     return {
         consultations: query.data || [],

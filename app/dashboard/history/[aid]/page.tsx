@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TrashIcon, Pencil, Loader2 } from "lucide-react";
+import { TrashIcon, Pencil, Loader2, Download } from "lucide-react";
 import { AreaScore } from "@/components/history/area-score";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DrillCardDialog } from "./DrillCardDialog";
@@ -324,6 +324,129 @@ export default function AnalysisDetails() {
             </div>
         )
     }
+    // Ideal angle ranges — mirrors RFAnalyzer.py ideal_angles (L5-L12)
+    const IDEAL_RANGES: Record<string, string> = {
+        head_position: "10° – 20°",
+        back_position: "6° – 12°",
+        arm_flexion: "70° – 90°",
+        left_knee: "80° – 120°",
+        right_knee: "120° – 170°",
+        foot_strike: "5° – 10°",
+    };
+
+    const FATIGUE_LABELS: Record<number, string> = {
+        1: "Fresh (🔋)",
+        2: "Good (🙂)",
+        3: "Normal (😐)",
+        4: "Tired (😮‍💨)",
+        5: "Exhausted (🪫)",
+    };
+
+    const AREA_ORDER = [
+        "head_position",
+        "back_position",
+        "arm_flexion",
+        "right_knee",
+        "left_knee",
+        "foot_strike",
+    ] as const;
+
+    const AREA_LABELS: Record<string, string> = {
+        head_position: "Head Position",
+        back_position: "Back Position",
+        arm_flexion: "Arm Flexion",
+        right_knee: "Right Knee",
+        left_knee: "Left Knee",
+        foot_strike: "Foot Strike",
+    };
+
+    /** Escape a CSV cell value: wrap in quotes and escape internal quotes. */
+    const csvCell = (value: string | number | undefined | null): string => {
+        if (value === null || value === undefined) return "";
+        const str = String(value);
+        // If it contains a comma, newline, or quote — wrap in double-quotes
+        if (str.includes(",") || str.includes("\n") || str.includes('"')) {
+            return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+    };
+
+    const exportToCSV = () => {
+        if (!analysisDetails || !detailed_feedback) return;
+
+        const generatedAt = new Date().toLocaleString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+
+        const fatigueText = currentFatigue
+            ? FATIGUE_LABELS[currentFatigue] ?? "Not recorded"
+            : "Not recorded";
+
+        // ── Summary header block ──────────────────────────────────────────
+        const headerRows = [
+            ["RUNNING FORM ANALYSIS REPORT"],
+            ["Generated:", csvCell(generatedAt)],
+            ["Analysis Name:", csvCell(name || `Analysis #${id}`)],
+            ["Overall Score:", csvCell(`${overall_score?.toFixed(0)}%`)],
+            ["Fatigue During Run:", csvCell(fatigueText)],
+            ["Overall Assessment:", csvCell(overall_assessment)],
+            [], // blank separator
+        ];
+
+        // ── Column headers ────────────────────────────────────────────────
+        const columnHeaders = [
+            "Metric",
+            "Score (%)",
+            "Performance Level",
+            "Classification",
+            "Your Angle (°)",
+            `Ideal Range (°)`,
+            "Feedback / Coaching Note",
+        ];
+
+        // ── Data rows ─────────────────────────────────────────────────────
+        const dataRows = AREA_ORDER.map((area) => {
+            const data = (detailed_feedback as any)[area];
+            if (!data) return [AREA_LABELS[area], "", "", "", "", "", ""];
+            return [
+                csvCell(AREA_LABELS[area]),
+                csvCell(Math.round(data.score)),
+                csvCell(data.performance_level),
+                csvCell(data.classification),
+                csvCell(data.angle !== undefined ? Math.round(data.angle) : ""),
+                csvCell(IDEAL_RANGES[area] ?? ""),
+                csvCell(data.analysis),
+            ];
+        });
+
+        // ── Assemble ──────────────────────────────────────────────────────
+        const allRows = [
+            ...headerRows.map((r) => r.join(",")),
+            columnHeaders.map(csvCell).join(","),
+            ...dataRows.map((r) => r.join(",")),
+        ];
+
+        const csvContent = allRows.join("\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        const dateSlug = new Date().toISOString().split("T")[0];
+        const safeName = (name || `analysis-${id}`)
+            .replace(/[^a-z0-9]/gi, "-")
+            .toLowerCase();
+        link.setAttribute("href", url);
+        link.setAttribute("download", `runalyze-${safeName}-${dateSlug}.csv`);
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
     // Get all drills from areas that need improvement
     const getAllDrills = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -638,7 +761,18 @@ export default function AnalysisDetails() {
 
 
                 {/* Delete — danger zone */}
-                <div className="flex justify-end pt-2 border-t border-gray-200">
+                <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                    {/* Export Report */}
+                    <Button
+                        variant="outline"
+                        className="flex items-center gap-2"
+                        onClick={exportToCSV}
+                        disabled={!detailed_feedback}
+                    >
+                        <Download className="h-4 w-4" />
+                        Export Report
+                    </Button>
+
                     <Dialog>
                         <DialogTrigger asChild>
                             <Button

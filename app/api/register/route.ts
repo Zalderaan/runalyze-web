@@ -35,7 +35,13 @@ export async function POST(req: NextRequest) {
         // insert user 
         const { data: newUser, error: insertError } = await supabase
             .from('users')
-            .insert([{ email, username, password: hashedPassword, user_role: 'user' }])
+            .insert([{
+                email,
+                username,
+                password: hashedPassword,
+                user_role: 'user',
+                terms_accepted_at: new Date().toISOString(),
+            }])
             .select()
             .single()
 

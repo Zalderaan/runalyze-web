@@ -48,9 +48,9 @@ export function ChartAreaDefault({ history }: ChartAreaDefaultProps) {
 
     return sortedHistory.map((item, index) => ({
       analysis: `#${item.id}`,
-      date: new Date(item.created_at).toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric' 
+      date: new Date(item.created_at).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric'
       }),
       overall_score: Math.round(item.overall_score * 100) / 100, // Round to 2 decimal places
       analysis_number: index + 1,
@@ -60,12 +60,12 @@ export function ChartAreaDefault({ history }: ChartAreaDefaultProps) {
   // Calculate trend
   const trend = useMemo(() => {
     if (chartData.length < 2) return null;
-    
+
     const firstScore = chartData[0].overall_score;
     const lastScore = chartData[chartData.length - 1].overall_score;
     const improvement = lastScore - firstScore;
     const percentChange = ((improvement / firstScore) * 100);
-    
+
     return {
       improvement,
       percentChange: Math.abs(percentChange),
@@ -119,8 +119,8 @@ export function ChartAreaDefault({ history }: ChartAreaDefaultProps) {
               />
               <ChartTooltip
                 cursor={false}
-                content={<ChartTooltipContent 
-                  indicator="dot" 
+                content={<ChartTooltipContent
+                  indicator="dot"
                   labelFormatter={(value, payload) => {
                     const data = payload?.[0]?.payload;
                     return data ? `Analysis ${data.analysis} - ${value}` : value;

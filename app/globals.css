@@ -116,6 +116,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -125,21 +126,22 @@
   .glass-morphism {
     @apply bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl border border-white/20 dark:border-zinc-800/50 shadow-lg;
   }
-  
+
   .glass-card {
     @apply relative overflow-hidden bg-white/40 dark:bg-black/20 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-xl transition-all duration-300 hover:shadow-2xl hover:bg-white/50 dark:hover:bg-black/30;
   }
 
   .theme-owner {
-    --primary: oklch(0.769 0.188 70.08); /* Amber-ish */
+    --primary: oklch(0.769 0.188 70.08);
+    /* Amber-ish */
     --primary-foreground: oklch(0.205 0 0);
     --ring: oklch(0.769 0.188 70.08);
   }
-  
+
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-500 dark:from-white dark:to-zinc-400;
   }
-  
+
   .text-gradient-primary {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-400 dark:from-blue-400 dark:to-indigo-300;
   }

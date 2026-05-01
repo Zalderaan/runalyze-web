@@ -164,8 +164,8 @@ export default function HomePage() {
                                     {latestBadges.map((badgeDef) => {
                                         const Icon = badgeDef.icon;
                                         return (
-                                            <div 
-                                                key={badgeDef.id} 
+                                            <div
+                                                key={badgeDef.id}
                                                 className="p-4 rounded-xl border flex items-center gap-4 transition-all bg-white border-blue-200 shadow-sm ring-1 ring-blue-100 hover:scale-105"
                                             >
                                                 <div className="p-3 rounded-full shrink-0 bg-blue-50">
@@ -206,7 +206,7 @@ export default function HomePage() {
                             ) : latestAnalysis != null ? (
                                 <RunAnalysis analysis={{
                                     ...latestAnalysis,
-                                    thumbnail_url: latestAnalysis.videos[0].thumbnail_url ?? "" 
+                                    thumbnail_url: latestAnalysis.videos[0].thumbnail_url ?? ""
                                 }} />
                             ) : (
                                 <NoAnalysis />

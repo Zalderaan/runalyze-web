@@ -121,6 +121,17 @@ export function AppSidebar() {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter>
+                {state !== "collapsed" && (
+                    <div className="px-3 pb-1">
+                        <Link
+                            href="/terms"
+                            target="_blank"
+                            className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                        >
+                            Terms of Use
+                        </Link>
+                    </div>
+                )}
                 {isLoading ? (
                     <div>Loading user...</div>
                 ) : user ? (
