@@ -10,15 +10,16 @@ function mergeDrillWithTemplate(drill: any) {
     const tpl = drill.drill_templates ?? {};
     return {
         ...drill,
-        drill_name: drill.drill_name ?? tpl.name ?? null,
-        video_url: drill.video_url ?? tpl.video_url ?? null,
-        instructions: drill.instructions_override ?? tpl.instructions ?? drill.instructions ?? null,
-        justification: drill.justification_override ?? tpl.justification ?? drill.justification ?? null,
-        reference: drill.reference ?? tpl.reference ?? null,
+        drill_name: tpl.name || drill.drill_name || null,
+        video_url: tpl.video_url || drill.video_url || null,
+        thumbnail_url: tpl.thumbnail_url || drill.thumbnail_url || null,
+        instructions: drill.instructions_override || tpl.instructions || drill.instructions || null,
+        justification: drill.justification_override || tpl.justification || drill.justification || null,
+        reference: tpl.reference || drill.reference || null,
         helpful_count: tpl.helpful_count ?? drill.helpful_count ?? 0,
         not_helpful_count: tpl.not_helpful_count ?? drill.not_helpful_count ?? 0,
         template_id: drill.template_id ?? null,
-        template_name: tpl.name ?? drill.drill_name ?? null,
+        template_name: tpl.name || drill.drill_name || null,
         drill_templates: undefined,
     };
 }
@@ -33,7 +34,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             .from('drills')
             .select(`
                 *,
-                drill_templates(name, video_url, instructions, justification, reference, helpful_count, not_helpful_count)
+                drill_templates(name, video_url, thumbnail_url, instructions, justification, reference, helpful_count, not_helpful_count)
             `)
             .eq('id', id)
             .single();
@@ -167,6 +168,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const difficulty_level = formData.get("difficulty_level") ? Number(formData.get("difficulty_level")) : null;
     const is_high_impact_raw = formData.get("is_high_impact");
     const is_high_impact = is_high_impact_raw !== null ? is_high_impact_raw === "true" : null;
+    
+    const template_id_raw = formData.get("template_id");
+    const template_id = template_id_raw ? Number(template_id_raw) : null;
 
     // --- Shared content fields ---
     const drill_name = formData.get("drill_name") as string | null;
@@ -198,6 +202,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (frequency !== null) assignmentUpdate.frequency = frequency;
     if (difficulty_level !== null) assignmentUpdate.difficulty_level = difficulty_level;
     if (is_high_impact !== null) assignmentUpdate.is_high_impact = is_high_impact;
+    if (template_id !== null) assignmentUpdate.template_id = template_id;
 
     try {
         if (update_scope === 'assignment') {
@@ -252,36 +257,56 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             }
 
             if (currentDrill.template_id) {
-                // Update the template
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const templateUpdate: Record<string, any> = { updated_at: new Date().toISOString() };
-                if (drill_name !== null) templateUpdate.name = drill_name;
-                if (instructions !== null) templateUpdate.instructions = instructions;
-                if (justification !== null) templateUpdate.justification = justification;
-                if (reference !== null) templateUpdate.reference = reference;
-                if (video_url !== null) templateUpdate.video_url = video_url;
+                const isReassignment = template_id !== null && template_id !== currentDrill.template_id;
 
-                const { error: templateError } = await supabase
-                    .from('drill_templates')
-                    .update(templateUpdate)
-                    .eq('id', currentDrill.template_id);
+                if (!isReassignment) {
+                    // Update the template
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const templateUpdate: Record<string, any> = { updated_at: new Date().toISOString() };
+                    if (drill_name !== null) templateUpdate.name = drill_name;
+                    if (instructions !== null) templateUpdate.instructions = instructions;
+                    if (justification !== null) templateUpdate.justification = justification;
+                    if (reference !== null) templateUpdate.reference = reference;
+                    if (video_url !== null) templateUpdate.video_url = video_url;
 
-                if (templateError) {
-                    return NextResponse.json(
-                        { message: "Error updating drill template", error: templateError.message },
-                        { status: 500 }
-                    );
+                    const { error: templateError } = await supabase
+                        .from('drill_templates')
+                        .update(templateUpdate)
+                        .eq('id', currentDrill.template_id);
+
+                    if (templateError) {
+                        return NextResponse.json(
+                            { message: "Error updating drill template", error: templateError.message },
+                            { status: 500 }
+                        );
+                    }
+
+                    // Keep legacy columns in sync for Python backend
+                    if (drill_name !== null) assignmentUpdate.drill_name = drill_name;
+                    if (instructions !== null) assignmentUpdate.instructions = instructions;
+                    if (justification !== null) assignmentUpdate.justification = justification;
+                    if (reference !== null) assignmentUpdate.reference = reference;
+                    if (video_url !== null) assignmentUpdate.video_url = video_url;
+                } else {
+                    // It's a reassignment. Fetch the new template to sync legacy columns.
+                    const { data: newTemplate } = await supabase
+                        .from('drill_templates')
+                        .select('*')
+                        .eq('id', template_id)
+                        .single();
+                        
+                    if (newTemplate) {
+                        assignmentUpdate.drill_name = newTemplate.name;
+                        assignmentUpdate.instructions = newTemplate.instructions;
+                        assignmentUpdate.justification = newTemplate.justification;
+                        assignmentUpdate.reference = newTemplate.reference;
+                        assignmentUpdate.video_url = newTemplate.video_url;
+                    }
                 }
 
-                // Clear overrides so this assignment defers to the updated template
+                // Clear overrides so this assignment defers to the updated (or newly assigned) template
                 assignmentUpdate.instructions_override = null;
                 assignmentUpdate.justification_override = null;
-                // Keep legacy columns in sync for Python backend
-                if (drill_name !== null) assignmentUpdate.drill_name = drill_name;
-                if (instructions !== null) assignmentUpdate.instructions = instructions;
-                if (justification !== null) assignmentUpdate.justification = justification;
-                if (reference !== null) assignmentUpdate.reference = reference;
-                if (video_url !== null) assignmentUpdate.video_url = video_url;
             } else {
                 // No template yet (legacy row) — just update the drills row directly
                 if (drill_name !== null) assignmentUpdate.drill_name = drill_name;

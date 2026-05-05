@@ -11,18 +11,19 @@ function mergeDrillWithTemplate(drill: any) {
     return {
         ...drill,
         // Resolve display name from template (assignments don't carry their own drill_name after migration)
-        drill_name: drill.drill_name ?? tpl.name ?? null,
-        video_url: drill.video_url ?? tpl.video_url ?? null,
+        drill_name: tpl.name || drill.drill_name || null,
+        video_url: tpl.video_url || drill.video_url || null,
+        thumbnail_url: tpl.thumbnail_url || drill.thumbnail_url || null,
         // Override takes priority over template value, which takes priority over legacy column
-        instructions: drill.instructions_override ?? tpl.instructions ?? drill.instructions ?? null,
-        justification: drill.justification_override ?? tpl.justification ?? drill.justification ?? null,
-        reference: drill.reference ?? tpl.reference ?? null,
+        instructions: drill.instructions_override || tpl.instructions || drill.instructions || null,
+        justification: drill.justification_override || tpl.justification || drill.justification || null,
+        reference: tpl.reference || drill.reference || null,
         // Aggregate feedback lives on the template
         helpful_count: tpl.helpful_count ?? drill.helpful_count ?? 0,
         not_helpful_count: tpl.not_helpful_count ?? drill.not_helpful_count ?? 0,
         // Keep template metadata available for the UI
         template_id: drill.template_id ?? null,
-        template_name: tpl.name ?? drill.drill_name ?? null,
+        template_name: tpl.name || drill.drill_name || null,
         // Remove the nested drill_templates object to keep response flat
         drill_templates: undefined,
     };
@@ -97,8 +98,10 @@ export async function POST(req: NextRequest) {
         const justification = formData.get("justification") as string | null;
         const reference = formData.get("reference") as string | null;
         const videoFile = formData.get("video") as File | null;
+        const thumbnailFile = formData.get("thumbnail") as File | null;
 
         let video_url: string | null = null;
+        let thumbnail_url: string | null = null;
 
         // Upload video to Supabase Storage
         if (videoFile) {
@@ -117,11 +120,26 @@ export async function POST(req: NextRequest) {
             video_url = supabase.storage.from("videos").getPublicUrl(filePath).data.publicUrl;
         }
 
+        // Upload thumbnail to Supabase Storage
+        if (thumbnailFile) {
+            const uuid = crypto.randomUUID();
+            const filePath = `drill-thumbnails/${uuid}-${thumbnailFile.name}`;
+            const { error: storageError } = await supabase.storage
+                .from("videos") // Reusing "videos" bucket or should I use a new one?
+                                // Usually better to use the same or a specific one.
+                                // Let's check if "videos" bucket exists.
+                .upload(filePath, thumbnailFile, { cacheControl: "3600", upsert: false });
+
+            if (!storageError) {
+                thumbnail_url = supabase.storage.from("videos").getPublicUrl(filePath).data.publicUrl;
+            }
+        }
+
         try {
             // 1. Insert into drill_templates
             const { data: newTemplate, error: templateError } = await supabase
                 .from('drill_templates')
-                .insert([{ name: drill_name, video_url, instructions, justification, reference }])
+                .insert([{ name: drill_name, video_url, thumbnail_url, instructions, justification, reference }])
                 .select()
                 .single();
 
@@ -147,6 +165,7 @@ export async function POST(req: NextRequest) {
                     difficulty_level,
                     is_high_impact,
                     video_url,        // kept for backwards compat
+                    thumbnail_url,
                     instructions,     // kept for backwards compat
                     justification,    // kept for backwards compat
                     reference,        // kept for backwards compat
@@ -181,16 +200,17 @@ export async function GET(req: NextRequest) {
         const search = searchParams.get('search') || '';
         const area = searchParams.get('area') || '';
         const performanceLevel = searchParams.get('performance_level') || '';
+        const templateId = searchParams.get('template_id') || '';
         const offset = (page - 1) * limit;
 
         let query = supabase
             .from('drills')
             .select(
-                `id, drill_name, area, performance_level, video_url, sets, reps, rep_type, frequency,
+                `id, drill_name, area, performance_level, video_url, thumbnail_url, sets, reps, rep_type, frequency,
                  instructions, justification, reference, helpful_count, not_helpful_count,
                  template_id, instructions_override, justification_override,
                  difficulty_level, is_high_impact, created_at, updated_at,
-                 drill_templates(name, video_url, instructions, justification, reference, helpful_count, not_helpful_count)`,
+                 drill_templates(name, video_url, thumbnail_url, instructions, justification, reference, helpful_count, not_helpful_count)`,
                 { count: 'exact' }
             );
 
@@ -205,6 +225,10 @@ export async function GET(req: NextRequest) {
 
         if (performanceLevel && performanceLevel !== 'All') {
             query = query.eq('performance_level', performanceLevel);
+        }
+
+        if (templateId) {
+            query = query.eq('template_id', Number(templateId));
         }
 
         query = query

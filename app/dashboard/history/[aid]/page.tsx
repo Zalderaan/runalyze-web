@@ -849,7 +849,14 @@ export default function AnalysisDetails() {
                                     <CardContent className="space-y-4">
                                         <div className="rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center min-h-[180px]">
                                             {drill.video_url
-                                                ? <video src={drill.video_url} controls className="w-full max-h-60 object-contain bg-black rounded" />
+                                                ? (
+                                                    <video 
+                                                        src={drill.video_url} 
+                                                        controls 
+                                                        className="w-full max-h-60 object-contain bg-black rounded" 
+                                                        poster={drill.thumbnail_url}
+                                                    />
+                                                )
                                                 : <div className="text-gray-400 italic py-8">No video provided</div>
                                             }
                                         </div>

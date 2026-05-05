@@ -28,13 +28,18 @@ import { cn } from "@/lib/utils";
 
 interface Step1BasicInfoProps {
     onTemplateSelected?: (template: DrillTemplate | null) => void;
+    isTemplateMode?: boolean;
+    fixedTemplate?: DrillTemplate;
+    isEditMode?: boolean;
+    initialTemplate?: { id: number, name: string } | null;
 }
 
-export function Step1BasicInfo({ onTemplateSelected }: Step1BasicInfoProps) {
+export function Step1BasicInfo({ onTemplateSelected, isTemplateMode = false, fixedTemplate, isEditMode = false, initialTemplate }: Step1BasicInfoProps) {
     const { control, setValue, watch } = useFormContext();
-    const [useExisting, setUseExisting] = useState(false);
+    const [useExisting, setUseExisting] = useState(isEditMode || !!fixedTemplate);
     const [open, setOpen] = useState(false);
-    const [selectedTemplate, setSelectedTemplate] = useState<DrillTemplate | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [selectedTemplate, setSelectedTemplate] = useState<any | null>(fixedTemplate || initialTemplate || null);
     const [templateSearch, setTemplateSearch] = useState("");
 
     const { templates, templatesLoading } = useDrillTemplates(templateSearch);
@@ -49,6 +54,7 @@ export function Step1BasicInfo({ onTemplateSelected }: Step1BasicInfoProps) {
     }
 
     function handleToggleMode(checked: boolean) {
+        if (fixedTemplate) return;
         setUseExisting(checked);
         if (!checked) {
             // Clear template selection when switching back to "New"
@@ -62,6 +68,7 @@ export function Step1BasicInfo({ onTemplateSelected }: Step1BasicInfoProps) {
     return (
         <div className="space-y-4">
             {/* Toggle: New vs Existing */}
+            {!isTemplateMode && !fixedTemplate && !isEditMode && (
             <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
                 <div className="flex items-center gap-2">
                     <Plus className="h-4 w-4 text-muted-foreground" />
@@ -77,67 +84,80 @@ export function Step1BasicInfo({ onTemplateSelected }: Step1BasicInfoProps) {
                     <Label htmlFor="use-existing" className="text-sm text-muted-foreground cursor-pointer">Use Existing Template</Label>
                 </div>
             </div>
+            )}
 
             {/* Template Selector (when using existing) */}
-            {useExisting ? (
+            {!isTemplateMode && useExisting ? (
                 <FormItem>
-                    <FormLabel>Select Drill Template</FormLabel>
-                    <FormDescription className="text-xs">Choose from your existing drill library.</FormDescription>
-                    <Popover open={open} onOpenChange={setOpen}>
-                        <PopoverTrigger asChild>
-                            <Button
-                                variant="outline"
-                                role="combobox"
-                                aria-expanded={open}
-                                className="w-full justify-between"
-                            >
-                                {selectedTemplate ? (
-                                    <span className="flex items-center gap-2">
-                                        {selectedTemplate.name}
-                                        <Badge variant="secondary" className="text-xs">Template</Badge>
-                                    </span>
-                                ) : (
-                                    <span className="text-muted-foreground">Search drill templates...</span>
-                                )}
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-full p-0" align="start">
-                            <Command>
-                                <CommandInput
-                                    placeholder="Search templates..."
-                                    value={templateSearch}
-                                    onValueChange={setTemplateSearch}
-                                />
-                                <CommandList>
-                                    {templatesLoading ? (
-                                        <div className="py-6 text-center text-sm text-muted-foreground">Loading templates...</div>
+                    <FormLabel>Drill Template</FormLabel>
+                    <FormDescription className="text-xs">
+                        {fixedTemplate ? "This assignment will be linked to this template." : "Choose from your existing drill library."}
+                    </FormDescription>
+                    
+                    {fixedTemplate ? (
+                        <div className="flex items-center gap-2 p-3 rounded-lg border bg-muted/30">
+                            <Library className="h-4 w-4 text-primary" />
+                            <span className="text-sm font-medium">{fixedTemplate.name}</span>
+                            <Badge variant="secondary" className="text-[10px] ml-auto">Fixed Template</Badge>
+                        </div>
+                    ) : (
+                        <Popover open={open} onOpenChange={setOpen}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={open}
+                                    className="w-full justify-between"
+                                >
+                                    {selectedTemplate ? (
+                                        <span className="flex items-center gap-2">
+                                            {selectedTemplate.name}
+                                            <Badge variant="secondary" className="text-xs">Template</Badge>
+                                        </span>
                                     ) : (
-                                        <>
-                                            <CommandEmpty>No templates found.</CommandEmpty>
-                                            <CommandGroup heading="Drill Library">
-                                                {templates.map((template) => (
-                                                    <CommandItem
-                                                        key={template.id}
-                                                        value={template.name}
-                                                        onSelect={() => handleTemplateSelect(template)}
-                                                    >
-                                                        <Check
-                                                            className={cn(
-                                                                "mr-2 h-4 w-4",
-                                                                selectedTemplateId === template.id ? "opacity-100" : "opacity-0"
-                                                            )}
-                                                        />
-                                                        {template.name}
-                                                    </CommandItem>
-                                                ))}
-                                            </CommandGroup>
-                                        </>
+                                        <span className="text-muted-foreground">Search drill templates...</span>
                                     )}
-                                </CommandList>
-                            </Command>
-                        </PopoverContent>
-                    </Popover>
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full p-0" align="start">
+                                <Command>
+                                    <CommandInput
+                                        placeholder="Search templates..."
+                                        value={templateSearch}
+                                        onValueChange={setTemplateSearch}
+                                    />
+                                    <CommandList>
+                                        {templatesLoading ? (
+                                            <div className="py-6 text-center text-sm text-muted-foreground">Loading templates...</div>
+                                        ) : (
+                                            <>
+                                                <CommandEmpty>No templates found.</CommandEmpty>
+                                                <CommandGroup heading="Drill Library">
+                                                    {templates.map((template) => (
+                                                        <CommandItem
+                                                            key={template.id}
+                                                            value={template.name}
+                                                            onSelect={() => handleTemplateSelect(template)}
+                                                        >
+                                                            <Check
+                                                                className={cn(
+                                                                    "mr-2 h-4 w-4",
+                                                                    selectedTemplateId === template.id ? "opacity-100" : "opacity-0"
+                                                                )}
+                                                            />
+                                                            {template.name}
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                            </>
+                                        )}
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
+                    )}
+
                     {/* Hidden field to register template_id */}
                     <FormField
                         control={control}
@@ -168,9 +188,11 @@ export function Step1BasicInfo({ onTemplateSelected }: Step1BasicInfoProps) {
                 />
             )}
 
-            <FormField
-                control={control}
-                name="area"
+            {!isTemplateMode && (
+                <>
+                    <FormField
+                        control={control}
+                        name="area"
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Area</FormLabel>
@@ -219,6 +241,8 @@ export function Step1BasicInfo({ onTemplateSelected }: Step1BasicInfoProps) {
                     </FormItem>
                 )}
             />
+            </>
+            )}
         </div>
     )
 }

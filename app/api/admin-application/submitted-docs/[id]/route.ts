@@ -132,6 +132,20 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
             );
         }
 
+        // 4. Check if there are any files left for this application
+        const { count, error: countError } = await supabase
+            .from("admin_applications_metadata")
+            .select('*', { count: 'exact', head: true })
+            .eq("application_id", fileData.application_id);
+
+        if (!countError && count === 0) {
+            // Update application status back to pending
+            await supabase
+                .from("admin_applications")
+                .update({ status: 'pending' })
+                .eq("application_id", fileData.application_id);
+        }
+
         return NextResponse.json(
             { message: "File deleted successfully!" },
             { status: 200 }

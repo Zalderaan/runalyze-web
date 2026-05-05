@@ -17,7 +17,7 @@ export function ArchiveDialog({ isOpen, onClose, onConfirm, consultationDate, co
                 <Button
                     variant="destructive"
                     size="sm"
-                    title="Archive"
+                    title="Dismiss"
                     className="bg-red-800 hover:bg-red-600/80 border-red-400 border-1"
                 >
                     <Archive className="h-4 w-4 text-red-300" />
@@ -25,9 +25,11 @@ export function ArchiveDialog({ isOpen, onClose, onConfirm, consultationDate, co
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Archive Consultation</DialogTitle>
+                    <DialogTitle>Dismiss Consultation</DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to archive the consultation to {coach_email}, made on {consultationDate}? This action cannot be undone.
+                        This will hide the consultation from your active list. 
+                        The other party will still be able to see it. 
+                        Permanent deletion happens automatically after a 30-day grace period once both parties have dismissed.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
@@ -40,10 +42,10 @@ export function ArchiveDialog({ isOpen, onClose, onConfirm, consultationDate, co
                         variant="destructive"
                         size="sm"
                         onClick={onConfirm}
-                        title="Confirm Archive"
-                        className="bg-red-800 hover:bg-red-600/80 border-red-400 border-1"
+                        title="Confirm Dismiss"
+                        className="bg-orange-600 hover:bg-orange-700 border-orange-400 border-1"
                     >
-                        Archive
+                        Dismiss
                     </Button>
                 </DialogFooter>
             </DialogContent>

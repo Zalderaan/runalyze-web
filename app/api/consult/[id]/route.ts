@@ -11,7 +11,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
     try {
         const { id } = await params;
-        const { status, is_archived } = await req.json();  // Expect { status: "completed" | "accepted" | etc. }
+        const { status, dismiss } = await req.json();  // Expect { status: "completed" | "accepted" | etc. }
 
         // Authenticate user
         const cookieStore = await cookies();
@@ -33,7 +33,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         // Get consultation details
         const { data: consultation, error: fetchError } = await supabase
             .from('consultations')
-            .select('user_id, coach_id, status, is_archived, user_email')
+            .select('user_id, coach_id, status, is_archived, user_email, coach_email, cancel_requested_by, complete_requested_by, hidden_by_user, hidden_by_coach')
             .eq('id', id)
             .single();
 
@@ -65,51 +65,113 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
         // Authorization logic
         if (status) {
-            // Only validate if status is actually changing
             if (status !== consultation.status) {
-                if (isOwner && !isCoach) {
-                    // User can mark as "completed" (anytime) or "cancelled" (only if pending)
-                    if (status === "cancelled") {
-                        if (consultation.status !== "pending") {
-                            return NextResponse.json(
-                                { message: "Cannot cancel a consultation that has already been accepted" },
-                                { status: 403 }
-                            );
-                        }
-                    } else if (status !== "completed") {
-                        return NextResponse.json(
-                            { message: "Users can only mark consultations as completed or cancelled" },
-                            { status: 403 }
-                        );
+                // --- PRE-ACCEPTANCE: User can cancel pending freely ---
+                if (status === "cancelled" && consultation.status === "pending") {
+                    if (!isOwner) {
+                        return NextResponse.json({ message: "Only the requester can cancel a pending consultation" }, { status: 403 });
                     }
-                } else if (isAssignedCoach && isCoach) {
-                    // Coach can update to "accepted", "in-progress", etc.
-                    const validCoachStatuses = ["accepted", "in-progress", "completed", "declined", "cancelled"];
-                    if (!validCoachStatuses.includes(status)) {
-                        return NextResponse.json(
-                            { message: "Invalid status for coach update" },
-                            { status: 400 }
-                        );
+                }
+                // --- REQUEST CANCEL (from in-progress) ---
+                else if (status === "cancel-requested" && consultation.status === "in-progress") {
+                    if (!isOwner && !isAssignedCoach) {
+                        return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
                     }
-                } else {
-                    return NextResponse.json(
-                        { message: "Unauthorized" },
-                        { status: 403 }
-                    );
+                    updateFields.cancel_requested_by = session.userId;
+                }
+                // --- APPROVE CANCEL (from cancel-requested → cancelled) ---
+                else if (status === "cancelled" && consultation.status === "cancel-requested") {
+                    if (!isOwner && !isAssignedCoach) {
+                        return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+                    }
+                    if (String(consultation.cancel_requested_by) === String(session.userId)) {
+                        return NextResponse.json({ message: "Waiting for the other party to approve cancellation" }, { status: 403 });
+                    }
+                }
+                // --- REJECT CANCEL (from cancel-requested → back to in-progress) ---
+                else if (status === "in-progress" && consultation.status === "cancel-requested") {
+                    if (!isOwner && !isAssignedCoach) {
+                        return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+                    }
+                    if (String(consultation.cancel_requested_by) === String(session.userId)) {
+                        return NextResponse.json({ message: "You cannot reject your own cancel request" }, { status: 403 });
+                    }
+                    updateFields.cancel_requested_by = null;
+                }
+                // --- REQUEST COMPLETE (from in-progress) ---
+                else if (status === "complete-requested" && consultation.status === "in-progress") {
+                    if (!isOwner && !isAssignedCoach) {
+                        return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+                    }
+                    updateFields.complete_requested_by = session.userId;
+                }
+                // --- APPROVE COMPLETE (from complete-requested → completed) ---
+                else if (status === "completed" && consultation.status === "complete-requested") {
+                    if (!isOwner && !isAssignedCoach) {
+                        return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+                    }
+                    if (String(consultation.complete_requested_by) === String(session.userId)) {
+                        return NextResponse.json({ message: "Waiting for the other party to confirm completion" }, { status: 403 });
+                    }
+                }
+                // --- REJECT COMPLETE (from complete-requested → back to in-progress) ---
+                else if (status === "in-progress" && consultation.status === "complete-requested") {
+                    if (!isOwner && !isAssignedCoach) {
+                        return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+                    }
+                    if (String(consultation.complete_requested_by) === String(session.userId)) {
+                        return NextResponse.json({ message: "You cannot reject your own completion request" }, { status: 403 });
+                    }
+                    updateFields.complete_requested_by = null;
+                }
+                // --- COACH ACCEPTS pending → in-progress ---
+                else if (status === "in-progress" && consultation.status === "pending") {
+                    if (!isAssignedCoach || !isCoach) {
+                        return NextResponse.json({ message: "Only the assigned coach can accept" }, { status: 403 });
+                    }
+                }
+                // --- COACH DECLINES pending → declined ---
+                else if (status === "declined" && consultation.status === "pending") {
+                    if (!isAssignedCoach || !isCoach) {
+                        return NextResponse.json({ message: "Only the assigned coach can decline" }, { status: 403 });
+                    }
+                }
+                // --- All other transitions are invalid ---
+                else {
+                    return NextResponse.json({ message: "Invalid status transition" }, { status: 400 });
                 }
             }
             updateFields.status = status;
         }
 
-        if (is_archived !== undefined) {
-            // allow only if the user is the owner or is the assigned coach
-            if (!isOwner && !isAssignedCoach) {
+        if (dismiss === true) {
+            // Only allow dismissing terminal consultations
+            const terminalStatuses = ['completed', 'cancelled', 'declined'];
+            if (!terminalStatuses.includes(consultation.status)) {
                 return NextResponse.json(
-                    { message: "Unauthorized to archive" },
-                    { status: 403 }
-                )
+                    { message: "Can only dismiss concluded consultations" },
+                    { status: 400 }
+                );
             }
-            updateFields.is_archived = is_archived;
+
+            if (isOwner) {
+                updateFields.hidden_by_user = true;
+                // If coach already dismissed, schedule purge
+                if (consultation.hidden_by_coach) {
+                    updateFields.purge_after = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+                }
+            } else if (isAssignedCoach) {
+                updateFields.hidden_by_coach = true;
+                // If user already dismissed, schedule purge
+                if (consultation.hidden_by_user) {
+                    updateFields.purge_after = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+                }
+            } else {
+                return NextResponse.json(
+                    { message: "Unauthorized" },
+                    { status: 403 }
+                );
+            }
         }
 
         // Update the consultation
@@ -124,25 +186,33 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
             throw updateError;
         }
 
-        // Send notification email to the user if a coach changed the status
-        if (isCoach && status && status !== consultation.status && data?.user_email) {
+        // Send notification email if a status change occurred
+        if (status && status !== consultation.status && data) {
             const statusMap: Record<string, string> = {
                 'in-progress': 'Accepted',
                 'completed': 'Completed',
                 'declined': 'Declined',
+                'cancel-requested': 'Cancellation Requested',
+                'cancelled': 'Cancelled',
+                'complete-requested': 'Completion Requested',
             };
             const friendlyStatus = statusMap[status] || status;
-            
-            if (['in-progress', 'completed', 'declined'].includes(status)) {
+
+            // Determine recipient: notify the OTHER party
+            const recipientEmail = (String(session.userId) === String(consultation.user_id))
+                ? consultation.coach_email  // user made the change, notify coach
+                : data.user_email;          // coach made the change, notify user
+
+            if (recipientEmail) {
                 await resend.emails.send({
                     from: 'Runalyze Notifications <noreply@mail.runalyze.online>',
-                    to: data.user_email,
+                    to: recipientEmail,
                     subject: `Consultation Update: ${friendlyStatus}`,
                     html: `
                         <h2>Consultation Status Update</h2>
-                        <p>Your consultation request has been updated.</p>
+                        <p>A consultation has been updated.</p>
                         <p><strong>New Status:</strong> ${friendlyStatus}</p>
-                        <p>Log in to your Runalyze dashboard for more details.</p>
+                        <p>Log in to your Runalyze dashboard to take action.</p>
                     `
                 });
             }
@@ -155,80 +225,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     } catch (error: any) {
         console.error("Error updating consultation: ", error);
-        return NextResponse.json(
-            { message: "Internal server error", error: error.message },
-            { status: 500 }
-        );
-    }
-}
-
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-    try {
-        const { id } = params;
-
-        // Authenticate user
-        const cookieStore = await cookies();
-        const cookie = cookieStore.get("session")?.value;
-        if (!cookie) {
-            return NextResponse.json(
-                { message: "Not authenticated" },
-                { status: 401 }
-            );
-        }
-        const session = await decrypt(cookie);
-        if (!session?.userId) {
-            return NextResponse.json(
-                { message: "Invalid session" },
-                { status: 401 }
-            );
-        }
-
-        // Verify the consultation belongs to the user
-        const { data: consultation, error: fetchError } = await supabase
-            .from('consultations')
-            .select('user_id, status')
-            .eq('id', id)
-            .single();
-
-        if (fetchError || !consultation) {
-            return NextResponse.json(
-                { message: "Consultation not found" },
-                { status: 404 }
-            );
-        }
-
-        if (consultation.user_id !== session.userId) {
-            return NextResponse.json(
-                { message: "Unauthorized" },
-                { status: 403 }
-            );
-        }
-
-        // Optional: Prevent deletion if status is "in-progress"
-        if (consultation.status === "in-progress") {
-            return NextResponse.json(
-                { message: "Cannot delete an in-progress consultation" },
-                { status: 400 }
-            );
-        }
-
-        // Delete the consultation
-        const { error: deleteError } = await supabase
-            .from('consultations')
-            .delete()
-            .eq('id', id);
-
-        if (deleteError) {
-            throw deleteError;
-        }
-
-        return NextResponse.json(
-            { message: "Consultation deleted successfully" },
-            { status: 200 }
-        );
-
-    } catch (error: any) {
-        console.error("Error deleting consultation: ", error);
         return NextResponse.json(
             { message: "Internal server error", error: error.message },
             { status: 500 }

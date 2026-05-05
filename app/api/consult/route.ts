@@ -130,7 +130,10 @@ export async function GET(req: NextRequest) {
         const query = supabase
             .from('consultations')
             .select(`
-                id, user_id, coach_id, message, created_at, updated_at, status, coach_email, user_email, is_archived, analysis_id,
+                id, user_id, coach_id, message, created_at, updated_at, status,
+                coach_email, user_email, analysis_id,
+                cancel_requested_by, complete_requested_by,
+                hidden_by_user, hidden_by_coach,
                 analysis_results (
                     name
                 )
@@ -138,8 +141,10 @@ export async function GET(req: NextRequest) {
 
         if (isCoach) {
             query.eq('coach_id', session.userId);
+            query.eq('hidden_by_coach', false);
         } else {
             query.eq('user_id', session.userId);
+            query.eq('hidden_by_user', false);
         }
 
         const { data: consultations, error: consultationsError } = await query

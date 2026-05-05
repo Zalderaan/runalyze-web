@@ -43,13 +43,15 @@ export const step3Schema = z.object({
 
 export const step4Schema = z.object({
     video: z.instanceof(File, { message: "A valid video file is required" }),
+    thumbnail: z.instanceof(File).optional(),
 })
 
 export const step4SchemaEdit = z.object({
     video: z
         .instanceof(File, {message: "A valid video file is required" })
-        .optional()
-    })
+        .optional(),
+    thumbnail: z.instanceof(File).optional(),
+})
 
 export const step5schema = z.object({
     justification: z.string().optional(),

@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
 
         let query = supabase
             .from('drill_templates')
-            .select('id, name, video_url, instructions, justification, reference, helpful_count, not_helpful_count, created_at')
+            .select('id, name, video_url, thumbnail_url, instructions, justification, reference, helpful_count, not_helpful_count, created_at, drills(count)')
             .order('name', { ascending: true });
 
         if (search) {
@@ -29,8 +29,15 @@ export async function GET(req: NextRequest) {
             );
         }
 
+        // Flatten the drills(count) relation into a plain drills_count number
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const templates = (data ?? []).map((t: any) => {
+            const { drills, ...rest } = t;
+            return { ...rest, drills_count: (drills as Array<{ count: number }>)?.[0]?.count ?? 0 };
+        });
+
         return NextResponse.json(
-            { templates: data ?? [] },
+            { templates },
             { status: 200 }
         );
     } catch (error) {

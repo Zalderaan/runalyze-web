@@ -68,6 +68,7 @@ export function DrillsList({
                             performance_level={drill.performance_level}
                             helpful_count={drill.helpful_count}
                             not_helpful_count={drill.not_helpful_count}
+                            thumbnail_url={drill.thumbnail_url}
                         />
                     ))
                 )}

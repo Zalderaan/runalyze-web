@@ -6,12 +6,14 @@ export interface DrillTemplate {
     id: number;
     name: string;
     video_url: string | null;
+    thumbnail_url: string | null;
     instructions: { steps: Array<string> } | null;
     justification: string | null;
     reference: string | null;
     helpful_count: number;
     not_helpful_count: number;
     created_at: string;
+    drills_count: number;
 }
 
 export interface PaginationInfo {

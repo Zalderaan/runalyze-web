@@ -201,7 +201,12 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
                             </div>
                         )}
 
-                        {step === 1 && <Step1BasicInfo />}
+                        {step === 1 && (
+                            <Step1BasicInfo
+                                isEditMode={true}
+                                initialTemplate={drill.template_id ? { id: Number(drill.template_id), name: drill.template_name || drill.drill_name || "" } : null}
+                            />
+                        )}
                         {step === 2 && <Step2TrainingParameters />}
                         {step === 3 && (
                             <Step3Instructions

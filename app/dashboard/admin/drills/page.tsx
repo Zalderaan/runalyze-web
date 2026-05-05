@@ -6,6 +6,9 @@ import { useState } from "react"
 import { DrillFilters } from "@/components/admin/DrillFilters";
 import { RoleGuard } from "@/components/RoleGuard";
 import { useAuth } from "@/context/user_context";
+import { TemplatesList } from "@/components/admin/TemplatesList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BookOpen, Dumbbell } from "lucide-react";
 
 export default function AdminDrills() {
     const [searchTerm, setSearchTerm] = useState("");
@@ -27,8 +30,8 @@ export default function AdminDrills() {
     return (
         <RoleGuard allowedRoles={["owner", "admin"]}>
             <main className={`flex flex-col space-y-8 pb-10 ${isOwner ? 'theme-owner' : ''}`}>
-                 {/* Premium Header */}
-                 <div className="relative overflow-hidden rounded-3xl p-8 bg-zinc-900 text-white shadow-xl dark:bg-zinc-950">
+                {/* Premium Header */}
+                <div className="relative overflow-hidden rounded-3xl p-8 bg-zinc-900 text-white shadow-xl dark:bg-zinc-950">
                     <div className="relative z-10 flex flex-col gap-8">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                             <div>
@@ -46,7 +49,32 @@ export default function AdminDrills() {
                                 <AddDrillDialog onSuccess={handleDrillAdded} />
                             </div>
                         </div>
+                    </div>
+                    {/* Decorative element */}
+                    <div className="absolute top-0 right-0 -mr-10 -mt-10 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
+                </div>
 
+                {/* Tabs */}
+                <Tabs defaultValue="drills" className="w-full">
+                    <TabsList className="bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl h-auto mb-2">
+                        <TabsTrigger
+                            value="drills"
+                            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-sm transition-all"
+                        >
+                            <Dumbbell className="h-4 w-4" />
+                            Drill Assignments
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="templates"
+                            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-sm transition-all"
+                        >
+                            <BookOpen className="h-4 w-4" />
+                            Templates
+                        </TabsTrigger>
+                    </TabsList>
+
+                    {/* Drills tab */}
+                    <TabsContent value="drills" className="mt-0 space-y-6">
                         <div className="bg-zinc-800/50 dark:bg-zinc-900/50 p-1 rounded-2xl">
                             <DrillFilters 
                                 searchTerm={searchTerm}
@@ -57,22 +85,24 @@ export default function AdminDrills() {
                                 onPerformanceLevelChange={(val) => { setPerformanceLevel(val); setCurrentPage(1); }}
                             />
                         </div>
-                    </div>
-                    {/* Decorative element */}
-                    <div className="absolute top-0 right-0 -mr-10 -mt-10 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
-                </div>
+                        <div className="px-1">
+                            <DrillsList
+                                refreshKey={refreshKey}
+                                searchTerm={searchTerm}
+                                area={area}
+                                performanceLevel={performanceLevel}
+                                currentPage={currentPage}
+                                itemsPerPage={itemsPerPage}
+                                onPageChange={setCurrentPage}
+                            />
+                        </div>
+                    </TabsContent>
 
-                <div className="px-1">
-                    <DrillsList
-                        refreshKey={refreshKey}
-                        searchTerm={searchTerm}
-                        area={area}
-                        performanceLevel={performanceLevel}
-                        currentPage={currentPage}
-                        itemsPerPage={itemsPerPage}
-                        onPageChange={setCurrentPage}
-                    />
-                </div>
+                    {/* Templates tab */}
+                    <TabsContent value="templates" className="mt-0">
+                        <TemplatesList />
+                    </TabsContent>
+                </Tabs>
             </main>
         </RoleGuard>
     )

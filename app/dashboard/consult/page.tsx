@@ -94,20 +94,18 @@ export default function ConsultPage() {
         }
     };
 
-    const handleUpdateStatus = async (id: string, newStatus: string, is_archived?: boolean) => {
+    const handleUpdateStatus = async (id: string, newStatus: string) => {
         try {
-            // Replace with your actual API endpoint/logic
             const response = await fetch(`/api/consult/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     status: newStatus,
-                    is_archived: is_archived
                 }),
             });
             if (response.ok) {
                 toast.success('Status updated successfully!');
-                refetchConsultations();  // Refresh the table data
+                refetchConsultations();
             } else {
                 toast.error('Failed to update status.');
             }
@@ -117,26 +115,25 @@ export default function ConsultPage() {
         }
     };
 
-    const onDeleteConsultation = async (id: string) => {
+    const handleDismiss = async (id: string) => {
         try {
-            console.log("onDeleteConsultation called!");
-
             const response = await fetch(`/api/consult/${id}`, {
-                method: 'DELETE',
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dismiss: true }),
             });
             if (response.ok) {
-                toast.success('Consultation deleted successfully!');
-                refetchConsultations();  // Refresh the table data
+                toast.success('Consultation dismissed from your view.');
+                refetchConsultations();
             } else {
-                const errorData = await response.json();
-                toast.error(`Failed to delete: ${errorData.message || 'Unknown error'}`);
+                const err = await response.json();
+                toast.error(err.message || 'Failed to dismiss.');
             }
         } catch (error) {
-            console.error("Error deleting consultation");
-            toast.error("An error occurred while deleting the consultation")
+            console.error('Error dismissing consultation:', error);
+            toast.error('An error occurred while dismissing.');
         }
-    }
+    };
 
     return (
         <div className="p-6 max-w-4xl mx-auto space-y-8">
@@ -145,11 +142,10 @@ export default function ConsultPage() {
                 <p className="text-gray-500 mt-1">Connect with professional coaches or review your past sessions.</p>
             </div>
 
-            <Tabs defaultValue="contact" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+            <Tabs defaultValue="history" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="contact">Contact Coach</TabsTrigger>
                     <TabsTrigger value="history">My Consultations</TabsTrigger>
-                    <TabsTrigger value="archived">Archived</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="contact" className='mt-6 outline-none'>
@@ -258,30 +254,15 @@ export default function ConsultPage() {
                         </CardHeader>
                         <CardContent>
                             <ConsultationTable 
-                                consultations={consultations.filter(c => !c.is_archived)} 
+                                consultations={consultations} 
                                 onUpdateStatus={handleUpdateStatus} 
-                                onDeleteConsultation={onDeleteConsultation}
+                                onDismiss={handleDismiss}
                                 isLoading={consultationsLoading}
                             />
                         </CardContent>
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="archived">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle>Archived Consultations</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <ConsultationTable 
-                                consultations={consultations.filter(c => c.is_archived)} 
-                                onUpdateStatus={handleUpdateStatus} 
-                                onDeleteConsultation={onDeleteConsultation}
-                                isLoading={consultationsLoading}
-                            />
-                        </CardContent>
-                    </Card>
-                </TabsContent>
 
             </Tabs>
         </div>

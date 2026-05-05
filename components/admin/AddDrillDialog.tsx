@@ -33,7 +33,7 @@ import { useDrills } from "@/hooks/drills/use-drills";
 import { Step5Explanation } from "./Step5Explanation";
 import { type DrillTemplate } from "@/hooks/drills/use-drill-templates";
 
-export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
+export function AddDrillDialog({ onSuccess, defaultTemplate }: { onSuccess: () => void, defaultTemplate?: DrillTemplate }) {
     const { addDrill, addLoading, addError } = useDrills();
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState<Partial<FullFormData>>({});
@@ -41,7 +41,7 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
     const [submitError, setSubmitError] = useState<string | null>(null);
 
     // Track the selected template so we can pass data to steps 3 & 5
-    const [selectedTemplate, setSelectedTemplate] = useState<DrillTemplate | null>(null);
+    const [selectedTemplate, setSelectedTemplate] = useState<DrillTemplate | null>(defaultTemplate || null);
     const hasTemplate = selectedTemplate !== null;
 
     // When a template is selected, step 4 (video) is skipped
@@ -113,6 +113,11 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
                 } else if (key === "has_instructions_override" || key === "has_justification_override") {
                     // Internal toggle state — don't send to API
                     return;
+                } else if (key === "video" || key === "thumbnail") {
+                    // Files
+                    if (value instanceof File) {
+                        formPayload.append(key, value);
+                    }
                 } else {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     formPayload.append(key, value as any);
@@ -147,7 +152,7 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
     function renderStep() {
         // Template mode: steps are 1=Basic, 2=Training, 3=Instructions, 4=Explanation
         if (hasTemplate) {
-            if (step === 1) return <Step1BasicInfo onTemplateSelected={handleTemplateSelected} />;
+            if (step === 1) return <Step1BasicInfo onTemplateSelected={handleTemplateSelected} fixedTemplate={defaultTemplate} />;
             if (step === 2) return <Step2TrainingParameters />;
             if (step === 3) return (
                 <Step3Instructions
@@ -165,7 +170,7 @@ export function AddDrillDialog({ onSuccess }: { onSuccess: () => void }) {
         }
 
         // New drill mode: original 5-step flow
-        if (step === 1) return <Step1BasicInfo onTemplateSelected={handleTemplateSelected} />;
+        if (step === 1) return <Step1BasicInfo onTemplateSelected={handleTemplateSelected} fixedTemplate={defaultTemplate} />;
         if (step === 2) return <Step2TrainingParameters />;
         if (step === 3) return <Step3Instructions hasTemplate={false} />;
         if (step === 4) return <Step4Video />;

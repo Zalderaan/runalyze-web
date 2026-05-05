@@ -14,24 +14,28 @@ export interface DrillPreview {
     performance_level: string,
     helpful_count: number,
     not_helpful_count: number,
+    thumbnail_url?: string | null,
 }
 
-export function DrillsCard({ title, area, performance_level, id, helpful_count, not_helpful_count }: DrillPreview) {
+export function DrillsCard({ title, area, performance_level, id, helpful_count, not_helpful_count, thumbnail_url }: DrillPreview) {
     const score = helpful_count - not_helpful_count;
-    
+
     return (
         <Link href={`/dashboard/admin/drills/${id}`} className="group block h-full">
             <Card className="glass-card h-full flex flex-col border-none shadow-md hover:shadow-xl transition-all duration-300">
                 <div className="h-32 bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900 flex items-center justify-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
-                    <Drill className="h-10 w-10 text-zinc-400 dark:text-zinc-500 group-hover:rotate-12 transition-transform" />
+                    {thumbnail_url ? (
+                        <img 
+                            src={thumbnail_url} 
+                            alt={title} 
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                        />
+                    ) : (
+                        <Drill className="h-10 w-10 text-zinc-400 dark:text-zinc-500 group-hover:rotate-12 transition-transform" />
+                    )}
                     <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="absolute top-2 right-2">
-                        <Badge variant="outline" className="bg-white/50 backdrop-blur-sm border-none text-[10px]">
-                            ID: {id}
-                        </Badge>
-                    </div>
                 </div>
-                
+
                 <CardContent className="pt-4 flex-grow">
                     <div className="flex items-start justify-between mb-2">
                         <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">
@@ -59,7 +63,7 @@ export function DrillsCard({ title, area, performance_level, id, helpful_count, 
                             <span>{not_helpful_count}</span>
                         </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-1 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0">
                         Edit <ArrowRight className="h-3 w-3" />
                     </div>
@@ -67,4 +71,4 @@ export function DrillsCard({ title, area, performance_level, id, helpful_count, 
             </Card>
         </Link>
     )
-}
+}

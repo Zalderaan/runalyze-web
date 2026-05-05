@@ -55,7 +55,7 @@ export default function DrillDetails() {
                 {/* Go back button at the top left */}
                 <div className="mb-4">
                     <Button asChild variant="outline">
-                        <Link href='/dashboard/drills/'>
+                        <Link href='/dashboard/admin/drills/'>
                             <ArrowLeft className="mr-2" />
                             Go back
                         </Link>

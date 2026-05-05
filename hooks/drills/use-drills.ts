@@ -12,6 +12,7 @@ export interface Drill {
     area: string;
     performance_level: string;
     video_url: string;
+    thumbnail_url?: string | null;
     frequency: number;
     sets: number;
     reps: number;

@@ -53,13 +53,20 @@ export function useGetConsultations() {
                         });
                     }
 
-                    // Notify user about status changes
-                    if (!isCoach && payload.eventType === 'UPDATE') {
+                    if (payload.eventType === 'UPDATE') {
                         const oldStatus = (payload.old as any).status;
                         const newStatus = (payload.new as any).status;
                         if (oldStatus !== newStatus) {
-                            toast.success(`Consultation update: ${newStatus}`, {
-                                description: `Your request status has been updated to ${newStatus}.`,
+                            const messages: Record<string, string> = {
+                                'cancel-requested': 'A cancellation has been requested. Please review.',
+                                'complete-requested': 'A completion has been requested. Please confirm.',
+                                'cancelled': 'Consultation has been cancelled.',
+                                'completed': 'Consultation has been marked as complete!',
+                                'in-progress': 'Consultation is back in progress.',
+                            };
+                            const desc = messages[newStatus] || `Status updated to ${newStatus}.`;
+                            toast.info('Consultation Update', {
+                                description: desc,
                                 duration: 5000,
                             });
                         }

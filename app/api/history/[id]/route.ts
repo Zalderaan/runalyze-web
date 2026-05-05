@@ -45,6 +45,59 @@ export async function GET(
         };
         const rawDetailedFeedback = data.feedbacks?.[0]?.detailed_feedback ?? {};
         const { _bmi_category, ...detailed_feedback } = rawDetailedFeedback;
+
+        // Hydrate drills with latest metadata (video/thumbnail) from DB/templates
+        const allDrillIds: number[] = [];
+        Object.values(detailed_feedback).forEach((area: any) => {
+            if (area.drills && Array.isArray(area.drills)) {
+                area.drills.forEach((d: any) => {
+                    if (d.id) allDrillIds.push(d.id);
+                });
+            }
+        });
+
+        if (allDrillIds.length > 0) {
+            // console.log("Hydrating drills:", allDrillIds);
+            const { data: latestDrills, error: drillError } = await supabase
+                .from('drills')
+                .select('id, video_url, thumbnail_url, drill_templates(video_url, thumbnail_url)')
+                .in('id', allDrillIds);
+
+            if (drillError) {
+                console.error("Error fetching latest drills for hydration:", drillError);
+            }
+
+            if (latestDrills) {
+                const drillMap = new Map(latestDrills.map((d: any) => {
+                    // Handle case where drill_templates might be an array or object
+                    const tplRaw = d.drill_templates;
+                    const tpl = Array.isArray(tplRaw) ? tplRaw[0] : (tplRaw ?? {});
+                    
+                    const resolvedVideo = tpl.video_url || d.video_url || null;
+                    const resolvedThumb = tpl.thumbnail_url || d.thumbnail_url || null;
+                    
+                    // console.log(`Drill ${d.id} resolved video:`, resolvedVideo);
+                    
+                    return [d.id, {
+                        video_url: resolvedVideo,
+                        thumbnail_url: resolvedThumb
+                    }];
+                }));
+
+                Object.values(detailed_feedback).forEach((area: any) => {
+                    if (area.drills && Array.isArray(area.drills)) {
+                        area.drills.forEach((d: any) => {
+                            const latest = drillMap.get(d.id);
+                            if (latest) {
+                                d.video_url = latest.video_url;
+                                d.thumbnail_url = latest.thumbnail_url;
+                            }
+                        });
+                    }
+                });
+            }
+        }
+
         const flattenedData = {
             ...data,
             video_url: data.videos?.[0]?.video_url,

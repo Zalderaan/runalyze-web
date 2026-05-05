@@ -58,7 +58,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         >
             {isAdmin ? <AdminSidebar /> : isApplicant ? <ApplicantSidebar /> : <AppSidebar />}
             <main className="flex flex-col h-full w-full">
-                <header className="p-4 border-b-2 sticky top-0 bg-white">
+                <header className="p-4 border-b-2 sticky top-0 bg-white z-50">
                     <SidebarTrigger />
                 </header>
                 <section className="p-4">
