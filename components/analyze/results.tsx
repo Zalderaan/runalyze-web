@@ -117,8 +117,8 @@ export function Results({
             ["Head Position", Math.round(analysis_summary.head_position.median_score), Math.round(analysis_summary.head_position.average_score), Math.round(analysis_summary.head_position.min_score), Math.round(analysis_summary.head_position.max_score)],
             ["Back Position", Math.round(analysis_summary.back_position.median_score), Math.round(analysis_summary.back_position.average_score), Math.round(analysis_summary.back_position.min_score), Math.round(analysis_summary.back_position.max_score)],
             ["Arm Flexion", Math.round(analysis_summary.arm_flexion.median_score), Math.round(analysis_summary.arm_flexion.average_score), Math.round(analysis_summary.arm_flexion.min_score), Math.round(analysis_summary.arm_flexion.max_score)],
-            ["Right Knee", Math.round(analysis_summary.right_knee.median_score), Math.round(analysis_summary.right_knee.average_score), Math.round(analysis_summary.right_knee.min_score), Math.round(analysis_summary.right_knee.max_score)],
-            ["Left Knee", Math.round(analysis_summary.left_knee.median_score), Math.round(analysis_summary.left_knee.average_score), Math.round(analysis_summary.left_knee.min_score), Math.round(analysis_summary.left_knee.max_score)],
+            ["Front Knee (Landing)", Math.round(analysis_summary.right_knee.median_score), Math.round(analysis_summary.right_knee.average_score), Math.round(analysis_summary.right_knee.min_score), Math.round(analysis_summary.right_knee.max_score)],
+            ["Back Knee (Heel Kick)", Math.round(analysis_summary.left_knee.median_score), Math.round(analysis_summary.left_knee.average_score), Math.round(analysis_summary.left_knee.min_score), Math.round(analysis_summary.left_knee.max_score)],
             ["Foot Strike", Math.round(analysis_summary.foot_strike.median_score), Math.round(analysis_summary.foot_strike.average_score), Math.round(analysis_summary.foot_strike.min_score), Math.round(analysis_summary.foot_strike.max_score)],
         ];
 
@@ -258,11 +258,11 @@ export function Results({
                         score={analysis_summary?.arm_flexion.median_score ?? 0}
                     />
                     <MetricCard
-                        label="Right Knee"
+                        label="Front Knee"
                         score={analysis_summary?.right_knee.median_score ?? 0}
                     />
                     <MetricCard
-                        label="Left Knee"
+                        label="Back Knee"
                         score={analysis_summary?.left_knee.median_score ?? 0}
                     />
                     <MetricCard

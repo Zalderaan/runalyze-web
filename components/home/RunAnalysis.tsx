@@ -95,8 +95,8 @@ export function RunAnalysis({ analysis }: Analysis) {
                                 <Metric label="Arm Pos." value={Number(analysis.arm_flexion.toFixed(0))}></Metric>
                             </section>
                             <section className="flex flex-row w-full justify-between items-center">
-                                <Metric label="Right Knee" value={Number(analysis.right_knee.toFixed(0))}></Metric>
-                                <Metric label="Left Knee" value={Number(analysis.left_knee.toFixed(0))}></Metric>
+                                <Metric label="Front Knee" value={Number(analysis.right_knee.toFixed(0))}></Metric>
+                                <Metric label="Back Knee" value={Number(analysis.left_knee.toFixed(0))}></Metric>
                                 <Metric label="Foot Stk." value={Number(analysis.foot_strike.toFixed(0))}></Metric>
                             </section>
                         </div>

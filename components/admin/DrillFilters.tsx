@@ -24,16 +24,23 @@ export function DrillFilters({
 }: DrillFiltersProps) {
     const areas = [
         { label: "All Areas", value: "All" },
-        { label: "Arm Flexion", value: "arm_flexion" },
         { label: "Head Position", value: "head_position" },
-        { label: "Ankle", value: "ankle" },
-        { label: "Knee", value: "knee" },
-        { label: "Hip", value: "hip" },
-        { label: "Core", value: "core" },
-        { label: "Upper Body", value: "upper_body" },
-        { label: "Full Body", value: "full_body" }
+        { label: "Arm Flexion", value: "arm_flexion" },
+        { label: "Back Position", value: "back_position" },
+        { label: "Right Knee", value: "right_knee" },
+        { label: "Left Knee", value: "left_knee" },
+        { label: "Foot Strike", value: "foot_strike" }
     ];
-    const levels = ["All", "Beginner", "Intermediate", "Advanced", "Elite"];
+    const levels = [
+        { label: "All Levels", value: "All" },
+        { label: "Good", value: "good" },
+        { label: "Excellent", value: "excellent" },
+        { label: "Needs Improvement", value: "needs_improvement" },
+        { label: "Poor", value: "poor" }
+    ];
+
+
+
 
     const clearFilters = () => {
         onSearchChange("");
@@ -75,9 +82,10 @@ export function DrillFilters({
                     </SelectTrigger>
                     <SelectContent>
                         {levels.map(l => (
-                            <SelectItem key={l} value={l}>{l}</SelectItem>
+                            <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>
                         ))}
                     </SelectContent>
+
                 </Select>
 
                 {hasActiveFilters && (

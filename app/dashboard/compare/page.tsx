@@ -224,8 +224,8 @@ function CompareContent() {
         { label: "Head Position", key: "head_position" },
         { label: "Back Position", key: "back_position" },
         { label: "Arm Flexion", key: "arm_flexion" },
-        { label: "Right Knee", key: "right_knee" },
-        { label: "Left Knee", key: "left_knee" },
+        { label: "Front Knee", key: "right_knee" },
+        { label: "Back Knee", key: "left_knee" },
         { label: "Foot Strike", key: "foot_strike" },
     ] as const
 

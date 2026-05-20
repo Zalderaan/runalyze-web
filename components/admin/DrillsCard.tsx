@@ -6,6 +6,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { ThumbsDown, ThumbsUp, Drill, ArrowRight } from "lucide-react";
+import { humanize } from "@/lib/utils";
 
 export interface DrillPreview {
     id: string | number,
@@ -44,13 +45,14 @@ export function DrillsCard({ title, area, performance_level, id, helpful_count, 
                     </div>
                     <div className="flex flex-wrap gap-1.5 mb-4">
                         <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary border-none">
-                            {area}
+                            {humanize(area)}
                         </Badge>
                         <Badge variant="outline" className="text-[10px] opacity-70">
-                            {performance_level}
+                            {humanize(performance_level)}
                         </Badge>
                     </div>
                 </CardContent>
+
 
                 <CardFooter className="pt-0 border-t border-zinc-100 dark:border-zinc-800 mt-2 py-3 flex items-center justify-between">
                     <div className="flex items-center space-x-3 text-xs text-zinc-500">

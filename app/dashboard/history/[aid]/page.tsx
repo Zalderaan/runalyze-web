@@ -355,8 +355,8 @@ export default function AnalysisDetails() {
         head_position: "Head Position",
         back_position: "Back Position",
         arm_flexion: "Arm Flexion",
-        right_knee: "Right Knee",
-        left_knee: "Left Knee",
+        right_knee: "Front Knee (Landing)",
+        left_knee: "Back Knee (Heel Kick)",
         foot_strike: "Foot Strike",
     };
 
@@ -721,14 +721,14 @@ export default function AnalysisDetails() {
                             classification={detailed_feedback?.arm_flexion?.classification ?? ""}
                         />
                         <AreaScore
-                            area="Right Knee"
+                            area="Front Knee (Landing)"
                             score={detailed_feedback?.right_knee?.score ?? 0}
                             analysis={detailed_feedback?.right_knee?.analysis ?? ""}
                             perf_level={detailed_feedback?.right_knee?.performance_level ?? "Unknown"}
                             classification={detailed_feedback?.right_knee?.classification ?? ""}
                         />
                         <AreaScore
-                            area="Left Knee"
+                            area="Back Knee (Heel Kick)"
                             score={detailed_feedback?.left_knee?.score ?? 0}
                             analysis={detailed_feedback?.left_knee?.analysis ?? ""}
                             perf_level={detailed_feedback?.left_knee?.performance_level ?? "Unknown"}

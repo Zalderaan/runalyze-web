@@ -139,10 +139,10 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
             .eq("application_id", fileData.application_id);
 
         if (!countError && count === 0) {
-            // Update application status back to pending
+            // Update application status back to upload_docs
             await supabase
                 .from("admin_applications")
-                .update({ status: 'pending' })
+                .update({ status: 'upload_docs' })
                 .eq("application_id", fileData.application_id);
         }
 

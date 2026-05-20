@@ -231,10 +231,12 @@ export function Step1BasicInfo({ onTemplateSelected, isTemplateMode = false, fix
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="poor">Poor</SelectItem>
-                                    <SelectItem value="needs improvement">Needs Improvement</SelectItem>
+                                    <SelectItem value="needs_improvement">Needs Improvement</SelectItem>
                                     <SelectItem value="good">Good</SelectItem>
                                     <SelectItem value="excellent">Excellent</SelectItem>
                                 </SelectContent>
+
+
                             </Select>
                         </FormControl>
                         <FormMessage className="text-xs" />

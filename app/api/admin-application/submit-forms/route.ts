@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
                 .from("admin_applications")
                 .insert({
                     user_id: session.userId,
-                    status: 'pending'
+                    status: 'upload_docs'
                 })
                 .select("application_id")
                 .single();

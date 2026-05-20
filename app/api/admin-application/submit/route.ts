@@ -46,6 +46,12 @@ export async function POST(req: NextRequest) {
             )
         }
 
+        // Set initial status to upload_docs
+        await supabase
+            .from("admin_applications")
+            .update({ status: 'upload_docs' })
+            .eq("application_id", data.application_id);
+
         return NextResponse.json({
             message: "Admin application submitted successfully.",
             applicantUserId: data.user_id,

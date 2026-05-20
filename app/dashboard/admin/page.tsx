@@ -21,7 +21,7 @@ import { useDrills } from "@/hooks/drills/use-drills";
 export default function AdminPage() {
     const { user } = useAuth();
     const isOwner = user?.user_role === "owner";
-    
+
     const { count, isLoading, error, refetch } = useGetDrillCount();
     const { users, usersLoading, usersError, refreshUsers } = useUsers();
     const { drills, loading: drillsLoading } = useDrills(1, 50); // Get a larger sample for insights
@@ -80,15 +80,15 @@ export default function AdminPage() {
 
                 <AnimatePresence>
                     {showQuickStart && (
-                        <motion.div 
-                            initial={{ opacity: 0, y: -20 }} 
-                            animate={{ opacity: 1, y: 0 }} 
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="relative overflow-hidden rounded-3xl p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-100 dark:border-blue-900/50 shadow-sm"
                         >
-                            <Button 
-                                variant="ghost" 
-                                size="icon" 
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 className="absolute top-4 right-4 text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-full"
                                 onClick={() => setShowQuickStart(false)}
                             >
@@ -167,9 +167,9 @@ export default function AdminPage() {
                             Update Visuals
                         </Button>
                     </div>
-                    <PlatformInsights 
-                        drills={drills} 
-                        applicationCounts={counts} 
+                    <PlatformInsights
+                        drills={drills}
+                        applicationCounts={counts}
                     />
                 </div>
 
@@ -182,7 +182,7 @@ export default function AdminPage() {
                                     <CardTitle className="text-xl">Recent Activity</CardTitle>
                                     <CardDescription>Latest coach onboarding applications</CardDescription>
                                 </div>
-                                <Link href="/dashboard/admin/consultations" className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
+                                <Link href="/dashboard/admin/manage" className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
                                     View History <ArrowUpRight className="h-3 w-3" />
                                 </Link>
                             </CardHeader>
@@ -214,7 +214,7 @@ export default function AdminPage() {
                                         <Plus className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </Link>
                                 </motion.div>
-                                
+
                                 <motion.div whileHover={{ y: -4 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
                                     <Link
                                         href="/dashboard/admin/consultations"
@@ -232,8 +232,8 @@ export default function AdminPage() {
 
                                 {isOwner && (
                                     <motion.div whileHover={{ y: -4 }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
-                                        <Link 
-                                            href="/dashboard/admin/manage" 
+                                        <Link
+                                            href="/dashboard/admin/manage"
                                             className="group p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all flex items-center justify-between"
                                         >
                                             <div className="flex items-center gap-3">
@@ -291,9 +291,8 @@ function StatsCard({ title, value, icon, description, trend, trendUp }: {
                         <h3 className="text-3xl font-bold mt-1 tracking-tight">{value}</h3>
                         <div className="flex items-center gap-1.5 mt-2">
                             {trend && (
-                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                                    trendUp ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400'
-                                }`}>
+                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${trendUp ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400'
+                                    }`}>
                                     {trend}
                                 </span>
                             )}

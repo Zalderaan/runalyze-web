@@ -32,8 +32,8 @@ const getClassificationPic = (area: string, classification: string | undefined) 
         'Arm Flexion': 'arms',
         'Back Position': 'back',
         'Foot Strike': 'foot_strike',
-        'Left Knee': 'left_knee',
-        'Right Knee': 'right_knee',
+        'Back Knee (Heel Kick)': 'left_knee',
+        'Front Knee (Landing)': 'right_knee',
     }
 
     const fileMap: Record<string, Record<string, string>> = {
@@ -100,8 +100,8 @@ const getIdealPic = (area: string) => {
         'Arm Flexion': 'arms',
         'Back Position': 'back',
         'Foot Strike': 'foot_strike',
-        'Left Knee': 'left_knee',
-        'Right Knee': 'right_knee',
+        'Back Knee (Heel Kick)': 'left_knee',
+        'Front Knee (Landing)': 'right_knee',
     };
 
     const idealFiles: Record<string, string> = {
@@ -128,8 +128,8 @@ const isIdealClassification = (area: string, classification: string | undefined)
         'Arm Flexion': 'well-positioned',
         'Back Position': 'well-positioned with good forward lean',
         'Foot Strike': 'showing good midfoot landing',
-        'Left Knee': 'showing excellent heel kick',
-        'Right Knee': 'showing good bend upon foot landing',
+        'Back Knee (Heel Kick)': 'showing excellent heel kick',
+        'Front Knee (Landing)': 'showing good bend upon foot landing',
     };
 
     return classification === idealMap[area];

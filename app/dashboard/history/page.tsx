@@ -280,8 +280,8 @@ export default function HistoryPage() {
             { name: "Head Position", key: "head_position" },
             { name: "Back Position", key: "back_position" },
             { name: "Arm Flexion", key: "arm_flexion" },
-            { name: "Right Knee", key: "right_knee" },
-            { name: "Left Knee", key: "left_knee" },
+            { name: "Front Knee", key: "right_knee" },
+            { name: "Back Knee", key: "left_knee" },
             { name: "Foot Strike", key: "foot_strike" }
         ];
 

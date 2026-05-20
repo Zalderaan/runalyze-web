@@ -17,6 +17,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { RoleGuard } from "@/components/RoleGuard";
+import { humanize } from "@/lib/utils";
 
 export default function DrillDetails() {
     const [refreshKey, setRefreshKey] = useState(0);
@@ -32,22 +33,24 @@ export default function DrillDetails() {
     if (!drill) return <div className="p-8">No drill found</div>
 
 
-    // Format area name
-    const formatArea = (area: string) => {
-        return area.split('_').map(word =>
-            word.charAt(0).toUpperCase() + word.slice(1)
-        ).join(' ');
-    };
-
     // Get performance level color
     const getPerformanceColor = (level: string) => {
-        switch (level) {
-            case 'Needs Improvement': return 'text-red-600 bg-red-50';
-            case 'Satisfactory': return 'text-yellow-600 bg-yellow-50';
-            case 'Excellent': return 'text-green-600 bg-green-50';
+        const normalizedLevel = level.toLowerCase();
+        switch (normalizedLevel) {
+            case 'poor':
+            case 'needs improvement': 
+            case 'needs_improvement':
+                return 'text-red-600 bg-red-50';
+            case 'satisfactory':
+            case 'good': 
+                return 'text-yellow-600 bg-yellow-50';
+            case 'excellent': 
+                return 'text-green-600 bg-green-50';
             default: return 'text-gray-600 bg-gray-50';
         }
     };
+
+
 
     return (
         <RoleGuard allowedRoles={["owner", "admin"]}>
@@ -68,7 +71,7 @@ export default function DrillDetails() {
                                 {drill.drill_name}
                             </CardTitle>
                             <CardDescription>
-                                {formatArea(drill.area)}
+                                {humanize(drill.area)}
                             </CardDescription>
                         </div>
                         <div className="flex flex-row items-center space-x-2">
@@ -85,9 +88,10 @@ export default function DrillDetails() {
                         <div>
                             <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPerformanceColor(drill.performance_level)}`}>
                                 <Target className="h-4 w-4 mr-2" />
-                                {drill.performance_level}
+                                {humanize(drill.performance_level)}
                             </span>
                         </div>
+
 
                         {/* Feedback Stats */}
                         <div className="grid grid-cols-3 gap-4">

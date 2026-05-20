@@ -18,8 +18,8 @@ export function BiomechanicsRadar({ data }: { data: JointScores | null }) {
         { subject: 'Head', A: data.head_position, fullMark: 100 },
         { subject: 'Back', A: data.back_position, fullMark: 100 },
         { subject: 'Arms', A: data.arm_flexion, fullMark: 100 },
-        { subject: 'Right Knee', A: data.right_knee, fullMark: 100 },
-        { subject: 'Left Knee', A: data.left_knee, fullMark: 100 },
+        { subject: 'Front Knee', A: data.right_knee, fullMark: 100 },
+        { subject: 'Back Knee', A: data.left_knee, fullMark: 100 },
         { subject: 'Foot Strike', A: data.foot_strike, fullMark: 100 },
     ];
 
