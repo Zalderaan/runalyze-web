@@ -99,7 +99,7 @@ export default function DrillDetails() {
 
 
                         {/* Feedback Stats */}
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="grid sm:grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg border border-green-200">
                                 <ThumbsUp className="h-5 w-5 text-green-600" />
                                 <div>

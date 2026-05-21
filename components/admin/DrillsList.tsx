@@ -77,8 +77,8 @@ export function DrillsList({
 
             {/* Pagination Controls */}
             {pagination && pagination.totalPages > 1 && (
-                <div className="flex items-center justify-between px-4 py-6 border-t border-zinc-100 dark:border-zinc-800 mt-10">
-                    <div className="text-sm text-zinc-500">
+                <div className="flex flex-wrap items-center justify-between px-4 py-6 border-t border-zinc-100 dark:border-zinc-800 mt-10 space-y-4">
+                    <div className="text-sm text-zinc-500 w-full text-center md:text-left md:w-fit">
                         Showing <span className="font-bold text-zinc-900 dark:text-zinc-100">{((currentPage - 1) * itemsPerPage) + 1}</span> to{" "}
                         <span className="font-bold text-zinc-900 dark:text-zinc-100">
                             {Math.min(currentPage * itemsPerPage, pagination.total)}
@@ -103,8 +103,8 @@ export function DrillsList({
                                 const page = i + 1;
                                 // Simple logic to show current page and neighbors
                                 if (
-                                    page === 1 || 
-                                    page === pagination.totalPages || 
+                                    page === 1 ||
+                                    page === pagination.totalPages ||
                                     (page >= currentPage - 1 && page <= currentPage + 1)
                                 ) {
                                     return (
@@ -143,4 +143,4 @@ export function DrillsList({
             )}
         </div>
     );
-}
+}
