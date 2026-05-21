@@ -157,3 +157,69 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         return NextResponse.json({ message: 'Server error' }, { status: 500 });
     }
 }
+
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+
+    try {
+        // 1. Check if there are any drills assigned to this template
+        const { count, error: countError } = await supabase
+            .from('drills')
+            .select('*', { count: 'exact', head: true })
+            .eq('template_id', id);
+
+        if (countError) {
+            console.error("Error checking drill assignments:", countError);
+            return NextResponse.json(
+                { message: "Error checking drill assignments", error: countError.message },
+                { status: 500 }
+            );
+        }
+
+        if (count && count > 0) {
+            return NextResponse.json(
+                { message: "Cannot delete template: it has active drill assignments" },
+                { status: 400 }
+            );
+        }
+
+        // 2. Delete the drill template
+        const { error: deleteError } = await supabase
+            .from('drill_templates')
+            .delete()
+            .eq('id', id);
+
+        if (deleteError) {
+            console.error("Error deleting drill template:", deleteError);
+            return NextResponse.json(
+                { message: "Error deleting drill template", error: deleteError.message },
+                { status: 500 }
+            );
+        }
+
+        // 3. Clear cache
+        try {
+            const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+            if (BACKEND_URL) {
+                await fetch(`${BACKEND_URL}/drills/clear-cache/`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                });
+            }
+        } catch (cacheError) {
+            console.error("Failed to clear backend cache after template deletion:", cacheError);
+        }
+
+        return NextResponse.json(
+            { message: "Drill template deleted successfully" },
+            { status: 200 }
+        );
+    } catch (error) {
+        console.error("Server error while deleting drill template:", error);
+        return NextResponse.json(
+            { message: "Server error while deleting drill template" },
+            { status: 500 }
+        );
+    }
+}
+

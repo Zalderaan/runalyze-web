@@ -26,6 +26,8 @@ import {
     Quote,
     ThumbsDown,
     ThumbsUp,
+    Trash2,
+    AlertTriangle,
 } from "lucide-react";
 import type { DrillTemplate } from "@/hooks/drills/use-drill-templates";
 import { useEffect, useState } from "react";
@@ -36,17 +38,51 @@ import type { Drill } from "@/hooks/drills/use-drills";
 import { EditDrillDialog } from "./EditDrillDialog";
 import { AddDrillDialog } from "./AddDrillDialog";
 
+import { useDeleteDrillTemplate } from "@/hooks/drills/use-delete-drill-template";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 interface TemplateDetailSheetProps {
     template: DrillTemplate | null;
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onTemplateUpdated?: (updatedTemplate?: DrillTemplate) => void;
+    onTemplateDeleted?: () => void;
 }
 
-export function TemplateDetailSheet({ template, open, onOpenChange, onTemplateUpdated }: TemplateDetailSheetProps) {
+export function TemplateDetailSheet({ template, open, onOpenChange, onTemplateUpdated, onTemplateDeleted }: TemplateDetailSheetProps) {
     const [assignments, setAssignments] = useState<Drill[]>([]);
     const [loadingAssignments, setLoadingAssignments] = useState(false);
     const isMobile = useIsMobile();
+
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+    const { deleteTemplate, deleteLoading } = useDeleteDrillTemplate();
+
+    const hasDrills = (template?.drills_count ?? 0) > 0 || assignments.length > 0;
+
+    const handleDelete = async () => {
+        if (!template) return;
+        try {
+            await deleteTemplate(template.id);
+            setConfirmDeleteOpen(false);
+            onTemplateDeleted?.();
+        } catch (err) {
+            console.error("Failed to delete template:", err);
+        }
+    };
 
     function fetchAssignments() {
         if (!template) return;
@@ -244,14 +280,49 @@ export function TemplateDetailSheet({ template, open, onOpenChange, onTemplateUp
                                 )}
                             </div>
                         </div>
-                        <EditTemplateDialog
-                            template={template}
-                            onSuccess={(updatedTemplate) => {
-                                // Re-fetch linked drills so they show updated instructions
-                                fetchAssignments();
-                                onTemplateUpdated?.(updatedTemplate);
-                            }}
-                        />
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            <EditTemplateDialog
+                                template={template}
+                                onSuccess={(updatedTemplate) => {
+                                    // Re-fetch linked drills so they show updated instructions
+                                    fetchAssignments();
+                                    onTemplateUpdated?.(updatedTemplate);
+                                }}
+                            />
+                            {hasDrills ? (
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="inline-block cursor-not-allowed">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    disabled
+                                                    className="flex items-center gap-2 pointer-events-none opacity-60 text-zinc-400 border-zinc-200 dark:text-zinc-600 dark:border-zinc-800"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                    Delete
+                                                </Button>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top" align="end" className="bg-zinc-900 text-white dark:bg-zinc-950 border border-zinc-800 p-2 max-w-xs text-xs">
+                                            Cannot delete template: there are drills assigned to it.
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            ) : (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setConfirmDeleteOpen(true)}
+                                    disabled={deleteLoading}
+                                    className="flex items-center gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-900/30 dark:text-red-400 dark:hover:bg-red-950/20 transition-colors"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                    {deleteLoading ? "Deleting..." : "Delete"}
+                                </Button>
+                            )}
+                        </div>
                     </div>
 
                     {/* Feedback chips */}
@@ -291,28 +362,98 @@ export function TemplateDetailSheet({ template, open, onOpenChange, onTemplateUp
 
     if (isMobile) {
         return (
-            <Drawer open={open} onOpenChange={onOpenChange}>
-                <DrawerContent className="flex flex-col p-0 h-full overflow-hidden" style={{ maxHeight: '80svh' }}>
-                    <DrawerHeader className="sr-only">
-                        <DrawerTitle>{template.name}</DrawerTitle>
-                        <DrawerDescription>Template details</DrawerDescription>
-                    </DrawerHeader>
-                    {Content}
-                </DrawerContent>
-            </Drawer>
+            <>
+                <Drawer open={open} onOpenChange={onOpenChange}>
+                    <DrawerContent className="flex flex-col p-0 h-full overflow-hidden" style={{ maxHeight: '80svh' }}>
+                        <DrawerHeader className="sr-only">
+                            <DrawerTitle>{template.name}</DrawerTitle>
+                            <DrawerDescription>Template details</DrawerDescription>
+                        </DrawerHeader>
+                        {Content}
+                    </DrawerContent>
+                </Drawer>
+
+                {/* Delete Confirmation Dialog */}
+                <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400 mb-4">
+                                <AlertTriangle className="h-6 w-6" />
+                            </div>
+                            <DialogTitle className="text-center text-lg font-semibold">Delete Drill Template</DialogTitle>
+                            <DialogDescription className="text-center text-sm text-zinc-500 mt-2">
+                                Are you sure you want to delete <span className="font-semibold text-zinc-900 dark:text-zinc-100">"{template.name}"</span>? 
+                                This action is permanent and cannot be undone.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter className="flex flex-col-reverse sm:flex-row justify-center gap-2 mt-4 sm:space-x-0">
+                            <Button
+                                variant="outline"
+                                onClick={() => setConfirmDeleteOpen(false)}
+                                className="w-full sm:w-auto"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={handleDelete}
+                                disabled={deleteLoading}
+                                className="w-full sm:w-auto bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white"
+                            >
+                                {deleteLoading ? "Deleting..." : "Yes, delete template"}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </>
         );
     }
 
     return (
-        <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent className="w-full sm:max-w-xl flex flex-col gap-0 p-0 h-full overflow-hidden">
-                <SheetHeader className="sr-only">
-                    <SheetTitle>{template.name}</SheetTitle>
-                    <SheetDescription>Template details</SheetDescription>
-                </SheetHeader>
-                {Content}
-            </SheetContent>
-        </Sheet>
+        <>
+            <Sheet open={open} onOpenChange={onOpenChange}>
+                <SheetContent className="w-full sm:max-w-xl flex flex-col gap-0 p-0 h-full overflow-hidden">
+                    <SheetHeader className="sr-only">
+                        <SheetTitle>{template.name}</SheetTitle>
+                        <SheetDescription>Template details</SheetDescription>
+                    </SheetHeader>
+                    {Content}
+                </SheetContent>
+            </Sheet>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400 mb-4">
+                            <AlertTriangle className="h-6 w-6" />
+                        </div>
+                        <DialogTitle className="text-center text-lg font-semibold">Delete Drill Template</DialogTitle>
+                        <DialogDescription className="text-center text-sm text-zinc-500 mt-2">
+                            Are you sure you want to delete <span className="font-semibold text-zinc-900 dark:text-zinc-100">"{template.name}"</span>? 
+                            This action is permanent and cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="flex flex-col-reverse sm:flex-row justify-center gap-2 mt-4 sm:space-x-0">
+                        <Button
+                            variant="outline"
+                            onClick={() => setConfirmDeleteOpen(false)}
+                            className="w-full sm:w-auto"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleDelete}
+                            disabled={deleteLoading}
+                            className="w-full sm:w-auto bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white"
+                        >
+                            {deleteLoading ? "Deleting..." : "Yes, delete template"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }
 

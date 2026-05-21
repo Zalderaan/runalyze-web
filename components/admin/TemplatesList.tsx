@@ -74,6 +74,11 @@ export function TemplatesList() {
                         setSelected(updatedTemplate);
                     }
                 }}
+                onTemplateDeleted={() => {
+                    refetch();
+                    setSheetOpen(false);
+                    setSelected(null);
+                }}
             />
         </div>
     );
