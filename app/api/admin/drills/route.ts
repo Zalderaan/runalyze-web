@@ -5,9 +5,16 @@ import { supabase } from '@/lib/supabase'
 // Helper: Merge a drills row with its joined drill_template into a flat object
 // that is backwards-compatible with the existing Drill interface.
 // ---------------------------------------------------------------------------
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mergeDrillWithTemplate(drill: any) {
-    const tpl = drill.drill_templates ?? {};
+    const tplRaw = drill.drill_templates;
+    const tpl = Array.isArray(tplRaw) ? tplRaw[0] : (tplRaw ?? {});
+    
+    // Check if instructions_override has actual custom steps.
+    // An empty steps array {"steps": []} is treated as no override.
+    const hasOverrideSteps = drill.instructions_override &&
+                             Array.isArray(drill.instructions_override.steps) &&
+                             drill.instructions_override.steps.length > 0;
+
     return {
         ...drill,
         // Resolve display name from template (assignments don't carry their own drill_name after migration)
@@ -15,7 +22,7 @@ function mergeDrillWithTemplate(drill: any) {
         video_url: tpl.video_url || drill.video_url || null,
         thumbnail_url: tpl.thumbnail_url || drill.thumbnail_url || null,
         // Override takes priority over template value, which takes priority over legacy column
-        instructions: drill.instructions_override || tpl.instructions || drill.instructions || null,
+        instructions: hasOverrideSteps ? drill.instructions_override : (tpl.instructions || drill.instructions || null),
         justification: drill.justification_override || tpl.justification || drill.justification || null,
         reference: tpl.reference || drill.reference || null,
         // Aggregate feedback lives on the template
@@ -56,10 +63,31 @@ export async function POST(req: NextRequest) {
         const justification_override = formData.get("justification_override") as string | null;
 
         try {
+            // Fetch the template to seed legacy compat columns on the drills row
+            const { data: template, error: templateFetchError } = await supabase
+                .from('drill_templates')
+                .select('name, instructions, justification, reference, video_url, thumbnail_url')
+                .eq('id', existingTemplateId)
+                .single();
+
+            if (templateFetchError || !template) {
+                return NextResponse.json(
+                    { message: "Template not found", details: templateFetchError?.message },
+                    { status: 400 }
+                );
+            }
+
             const { data: newDrill, error: insertError } = await supabase
                 .from('drills')
                 .insert([{
                     template_id: existingTemplateId,
+                    // Seed legacy compat columns from template so Python backend sees them
+                    drill_name:    template.name,
+                    instructions:  template.instructions,
+                    justification: template.justification,
+                    reference:     template.reference,
+                    video_url:     template.video_url,
+                    thumbnail_url: template.thumbnail_url,
                     area,
                     performance_level,
                     sets,

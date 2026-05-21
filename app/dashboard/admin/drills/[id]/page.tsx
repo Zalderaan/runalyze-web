@@ -38,13 +38,13 @@ export default function DrillDetails() {
         const normalizedLevel = level.toLowerCase();
         switch (normalizedLevel) {
             case 'poor':
-            case 'needs improvement': 
+            case 'needs improvement':
             case 'needs_improvement':
                 return 'text-red-600 bg-red-50';
             case 'satisfactory':
-            case 'good': 
+            case 'good':
                 return 'text-yellow-600 bg-yellow-50';
-            case 'excellent': 
+            case 'excellent':
                 return 'text-green-600 bg-green-50';
             default: return 'text-gray-600 bg-gray-50';
         }
@@ -84,12 +84,17 @@ export default function DrillDetails() {
                     </CardHeader>
 
                     <CardContent className="space-y-6">
-                        {/* Performance Level Badge */}
-                        <div>
+                        {/* Performance Level & High Impact Badges */}
+                        <div className="flex flex-wrap gap-2">
                             <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPerformanceColor(drill.performance_level)}`}>
                                 <Target className="h-4 w-4 mr-2" />
                                 {humanize(drill.performance_level)}
                             </span>
+                            {drill.is_high_impact && (
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400">
+                                    High Impact
+                                </span>
+                            )}
                         </div>
 
 

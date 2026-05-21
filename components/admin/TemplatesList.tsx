@@ -66,12 +66,13 @@ export function TemplatesList() {
                 template={selected}
                 open={sheetOpen}
                 onOpenChange={setSheetOpen}
-                onTemplateUpdated={() => {
+                onTemplateUpdated={(updatedTemplate) => {
+                    // Refresh the template grid
                     refetch();
-                    // Optional: Close the sheet after successful update,
-                    // or we could let it stay open but we need the new data.
-                    // Actually, let's close it so they see the updated card.
-                    setSheetOpen(false);
+                    // If we got the updated template object, update `selected` in-place
+                    if (updatedTemplate) {
+                        setSelected(updatedTemplate);
+                    }
                 }}
             />
         </div>

@@ -34,6 +34,8 @@ export default function AdminDrills() {
                 <DrillsList
                     refreshKey={refreshKey}
                     searchTerm={searchTerm}
+                    area="All"
+                    performanceLevel="All"
                     currentPage={currentPage}
                     itemsPerPage={itemsPerPage}
                     onPageChange={setCurrentPage}

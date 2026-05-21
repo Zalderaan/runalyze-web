@@ -95,13 +95,16 @@ export function useDrills(page = 1, limit = 10, searchTerm = "", refreshKey?: nu
         } catch (err) {
             setAddError("Failed to add drill");
         } finally {
-            // await fetch('http://localhost:8000/drills/clear-cache/', {
-            await fetch(`${API_URL}/drills/clear-cache/`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                }
-            });
+            try {
+                await fetch(`${API_URL}/drills/clear-cache/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    }
+                });
+            } catch (cacheError) {
+                console.error("Failed to clear backend cache on add: ", cacheError);
+            }
             setAddLoading(false);
         }
     }

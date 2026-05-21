@@ -40,7 +40,7 @@ interface TemplateDetailSheetProps {
     template: DrillTemplate | null;
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onTemplateUpdated?: () => void;
+    onTemplateUpdated?: (updatedTemplate?: DrillTemplate) => void;
 }
 
 export function TemplateDetailSheet({ template, open, onOpenChange, onTemplateUpdated }: TemplateDetailSheetProps) {
@@ -104,7 +104,14 @@ export function TemplateDetailSheet({ template, open, onOpenChange, onTemplateUp
                                 )}
                             </div>
                         </div>
-                        <EditTemplateDialog template={template} onSuccess={onTemplateUpdated} />
+                        <EditTemplateDialog
+                            template={template}
+                            onSuccess={(updatedTemplate) => {
+                                // Re-fetch linked drills so they show updated instructions
+                                fetchAssignments();
+                                onTemplateUpdated?.(updatedTemplate);
+                            }}
+                        />
                     </div>
 
                     {/* Feedback chips */}
@@ -244,6 +251,11 @@ export function TemplateDetailSheet({ template, open, onOpenChange, onTemplateUp
                                             <Badge variant="outline" className="text-[10px] opacity-70">
                                                 {drill.performance_level}
                                             </Badge>
+                                            {drill.is_high_impact && (
+                                                <Badge className="text-[10px] bg-rose-500/10 hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-none font-semibold">
+                                                    High Impact
+                                                </Badge>
+                                            )}
                                         </div>
                                         <div className="flex items-center gap-3 text-xs text-zinc-500 flex-shrink-0">
                                             {drill.sets != null && (

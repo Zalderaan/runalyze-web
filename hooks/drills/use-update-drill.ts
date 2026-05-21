@@ -31,14 +31,14 @@ export function useUpdateDrill() {
                 setUpdateError(String(error))
             }
         } finally {
-            // await fetch('http://localhost:8000/drills/clear-cache/', {
-            //     method: "POST",
-            //     headers: { "Content-Type": "application/json" },
-            // });
-            await fetch(`${API_URL}/drills/clear-cache/`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-            });
+            try {
+                await fetch(`${API_URL}/drills/clear-cache/`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                });
+            } catch (cacheError) {
+                console.error("Failed to clear backend cache on update: ", cacheError);
+            }
             setUpdateLoading(false)
         }
     }

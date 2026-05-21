@@ -16,9 +16,10 @@ export interface DrillPreview {
     helpful_count: number,
     not_helpful_count: number,
     thumbnail_url?: string | null,
+    is_high_impact?: boolean,
 }
 
-export function DrillsCard({ title, area, performance_level, id, helpful_count, not_helpful_count, thumbnail_url }: DrillPreview) {
+export function DrillsCard({ title, area, performance_level, id, helpful_count, not_helpful_count, thumbnail_url, is_high_impact }: DrillPreview) {
     const score = helpful_count - not_helpful_count;
 
     return (
@@ -50,6 +51,11 @@ export function DrillsCard({ title, area, performance_level, id, helpful_count, 
                         <Badge variant="outline" className="text-[10px] opacity-70">
                             {humanize(performance_level)}
                         </Badge>
+                        {is_high_impact && (
+                            <Badge className="text-[10px] bg-rose-500/10 hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-none font-semibold">
+                                High Impact
+                            </Badge>
+                        )}
                     </div>
                 </CardContent>
 

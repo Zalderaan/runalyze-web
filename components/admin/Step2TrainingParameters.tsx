@@ -2,6 +2,7 @@ import { useFormContext } from "react-hook-form"
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 export function Step2TrainingParameters() {
     const { control } = useFormContext();
@@ -89,6 +90,28 @@ export function Step2TrainingParameters() {
                                 {...field}
                                 value={field.value ?? ""} // empty string avoids React warning
                                 onChange={(e) => field.onChange(e.target.valueAsNumber)} // ensures number
+                            />
+                        </FormControl>
+                        <FormMessage className="text-xs" />
+                    </FormItem>
+                )}
+            />
+
+            <FormField
+                control={control}
+                name="is_high_impact"
+                render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 p-4 shadow-xs mt-2">
+                        <div className="space-y-0.5">
+                            <FormLabel className="text-sm font-semibold">High Impact Drill</FormLabel>
+                            <FormDescription className="text-xs text-zinc-500 dark:text-zinc-400">
+                                Toggle if this drill involves high-impact movements like plyometrics or heavy landings.
+                            </FormDescription>
+                        </div>
+                        <FormControl>
+                            <Switch
+                                checked={!!field.value}
+                                onCheckedChange={field.onChange}
                             />
                         </FormControl>
                         <FormMessage className="text-xs" />

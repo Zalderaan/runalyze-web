@@ -20,10 +20,15 @@ export function Step3Instructions({ templateInstructions, hasTemplate = false }:
     const { control, watch, setValue } = useFormContext();
     const hasOverride = watch("has_instructions_override") ?? false;
 
+    console.log("[Step3Instructions LOG] props - hasTemplate:", hasTemplate, "templateInstructions:", templateInstructions);
+    console.log("[Step3Instructions LOG] state - hasOverride:", hasOverride);
+
     // Main instructions field array (used for new drills)
     const mainFields = useFieldArray({ control, name: "instructions.steps" });
     // Override field array (used when overriding a template's instructions)
     const overrideFields = useFieldArray({ control, name: "instructions_override.steps" });
+
+    console.log("[Step3Instructions LOG] mainFields count:", mainFields.fields.length, "overrideFields count:", overrideFields.fields.length);
 
     function handleOverrideToggle(checked: boolean) {
         setValue("has_instructions_override", checked);
@@ -135,11 +140,12 @@ export function Step3Instructions({ templateInstructions, hasTemplate = false }:
     // instead of just a bare "+ Add Step" button with no visible validation guidance.
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
+        if (hasTemplate) return;
         if (mainFields.fields.length === 0) {
             mainFields.append("");
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [hasTemplate]);
 
     return (
         <div className="space-y-2">

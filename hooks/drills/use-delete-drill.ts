@@ -28,12 +28,16 @@ export function useDeleteDrill(id: string | number | undefined) {
             }
 
             // // delete backend cache
-            await fetch(`${API_URL}/drills/clear-cache/`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                }
-            });
+            try {
+                await fetch(`${API_URL}/drills/clear-cache/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    }
+                });
+            } catch (cacheError) {
+                console.error("Failed to clear backend cache on delete: ", cacheError);
+            }
             setIsDrillDeleted(true) // successful delete
 
         } catch (error) {

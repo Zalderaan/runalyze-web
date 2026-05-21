@@ -69,12 +69,49 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             );
         }
 
-        // We also want to update the drill_name on the associated drills (to keep backwards compatibility with Python)
-        if (name !== null) {
-            await supabase
-                .from('drills')
-                .update({ drill_name: name })
-                .eq('template_id', id);
+        // Cascade template changes to all linked drills (legacy compat columns).
+        // Skip rows that have an active instructions_override so per-assignment
+        // customisations are preserved.
+        const drillCascade: Record<string, any> = {};
+        if (name         !== null) drillCascade.drill_name    = name;
+        if (instructions !== null) drillCascade.instructions  = instructions;
+        if (justification !== null) drillCascade.justification = justification;
+        if (reference    !== null) drillCascade.reference      = reference;
+        if (video_url    !== null) drillCascade.video_url      = video_url;
+        if (thumbnail_url !== null) drillCascade.thumbnail_url = thumbnail_url;
+
+        if (Object.keys(drillCascade).length > 0) {
+            const instructionFieldsChanged = instructions !== null || justification !== null;
+
+            if (instructionFieldsChanged) {
+                // Drills with NO instructions_override → cascade instructions + other fields
+                await supabase
+                    .from('drills')
+                    .update(drillCascade)
+                    .eq('template_id', id)
+                    .is('instructions_override', null);
+
+                // Drills WITH an instructions_override → cascade only non-instruction fields
+                const nonInstructionCascade: Record<string, any> = {};
+                if (name          !== null) nonInstructionCascade.drill_name    = name;
+                if (reference     !== null) nonInstructionCascade.reference     = reference;
+                if (video_url     !== null) nonInstructionCascade.video_url     = video_url;
+                if (thumbnail_url !== null) nonInstructionCascade.thumbnail_url = thumbnail_url;
+
+                if (Object.keys(nonInstructionCascade).length > 0) {
+                    await supabase
+                        .from('drills')
+                        .update(nonInstructionCascade)
+                        .eq('template_id', id)
+                        .not('instructions_override', 'is', null);
+                }
+            } else {
+                // No instruction fields changed — safe to cascade to all linked drills
+                await supabase
+                    .from('drills')
+                    .update(drillCascade)
+                    .eq('template_id', id);
+            }
         }
 
         return NextResponse.json(
@@ -84,5 +121,39 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     } catch (error) {
         console.error("Error updating drill template:", error);
         return NextResponse.json({ message: "Server error while updating drill template" }, { status: 500 });
+    }
+}
+
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+
+    try {
+        const { data, error } = await supabase
+            .from('drill_templates')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error) {
+            console.error('Error fetching drill template:', error);
+            return NextResponse.json({ message: 'Error fetching drill template', error: error.message }, { status: 500 });
+        }
+
+        // Also fetch a sample drill linked to this template to provide training defaults
+        const { data: sampleDrill, error: drillError } = await supabase
+            .from('drills')
+            .select('sets, reps, rep_type, frequency, is_high_impact')
+            .eq('template_id', id)
+            .limit(1)
+            .single();
+
+        if (drillError && drillError.code !== 'PGRST116') {
+            console.error('Error fetching sample drill for template:', drillError);
+        }
+
+        return NextResponse.json({ template: data, sample_drill: sampleDrill ?? null }, { status: 200 });
+    } catch (err) {
+        console.error('Server error fetching drill template:', err);
+        return NextResponse.json({ message: 'Server error' }, { status: 500 });
     }
 }

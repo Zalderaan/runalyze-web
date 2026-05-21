@@ -69,6 +69,7 @@ export function DrillsList({
                             helpful_count={drill.helpful_count}
                             not_helpful_count={drill.not_helpful_count}
                             thumbnail_url={drill.thumbnail_url}
+                            is_high_impact={drill.is_high_impact}
                         />
                     ))
                 )}

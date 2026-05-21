@@ -5,15 +5,22 @@ import { cookies } from 'next/headers'
 // ---------------------------------------------------------------------------
 // Helper: Merge drills row with its joined drill_template
 // ---------------------------------------------------------------------------
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mergeDrillWithTemplate(drill: any) {
-    const tpl = drill.drill_templates ?? {};
+    const tplRaw = drill.drill_templates;
+    const tpl = Array.isArray(tplRaw) ? tplRaw[0] : (tplRaw ?? {});
+
+    // Check if instructions_override has actual custom steps.
+    // An empty steps array {"steps": []} is treated as no override.
+    const hasOverrideSteps = drill.instructions_override &&
+                             Array.isArray(drill.instructions_override.steps) &&
+                             drill.instructions_override.steps.length > 0;
+
     return {
         ...drill,
         drill_name: tpl.name || drill.drill_name || null,
         video_url: tpl.video_url || drill.video_url || null,
         thumbnail_url: tpl.thumbnail_url || drill.thumbnail_url || null,
-        instructions: drill.instructions_override || tpl.instructions || drill.instructions || null,
+        instructions: hasOverrideSteps ? drill.instructions_override : (tpl.instructions || drill.instructions || null),
         justification: drill.justification_override || tpl.justification || drill.justification || null,
         reference: tpl.reference || drill.reference || null,
         helpful_count: tpl.helpful_count ?? drill.helpful_count ?? 0,
@@ -287,6 +294,50 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                     if (justification !== null) assignmentUpdate.justification = justification;
                     if (reference !== null) assignmentUpdate.reference = reference;
                     if (video_url !== null) assignmentUpdate.video_url = video_url;
+                    
+                    // ── NEW: cascade to sibling drills that share this template ──────────────
+                    const siblingCascade: Record<string, any> = {};
+                    if (drill_name   !== null) siblingCascade.drill_name    = drill_name;
+                    if (instructions !== null) siblingCascade.instructions  = instructions;
+                    if (justification !== null) siblingCascade.justification = justification;
+                    if (reference    !== null) siblingCascade.reference      = reference;
+                    if (video_url    !== null) siblingCascade.video_url      = video_url;
+
+                    if (Object.keys(siblingCascade).length > 0) {
+                        const instructionsChanged = instructions !== null || justification !== null;
+
+                        if (instructionsChanged) {
+                            // Siblings with no override — cascade everything
+                            await supabase
+                                .from('drills')
+                                .update(siblingCascade)
+                                .eq('template_id', currentDrill.template_id)
+                                .neq('id', id)
+                                .is('instructions_override', null);
+
+                            // Siblings WITH override — cascade only non-instruction fields
+                            const nonInstrSibling: Record<string, any> = {};
+                            if (drill_name !== null) nonInstrSibling.drill_name = drill_name;
+                            if (reference  !== null) nonInstrSibling.reference  = reference;
+                            if (video_url  !== null) nonInstrSibling.video_url  = video_url;
+
+                            if (Object.keys(nonInstrSibling).length > 0) {
+                                await supabase
+                                    .from('drills')
+                                    .update(nonInstrSibling)
+                                    .eq('template_id', currentDrill.template_id)
+                                    .neq('id', id)
+                                    .not('instructions_override', 'is', null);
+                            }
+                        } else {
+                            await supabase
+                                .from('drills')
+                                .update(siblingCascade)
+                                .eq('template_id', currentDrill.template_id)
+                                .neq('id', id);
+                        }
+                    }
+                    // ────────────────────────────────────────────────────────────────────────
                 } else {
                     // It's a reassignment. Fetch the new template to sync legacy columns.
                     const { data: newTemplate } = await supabase

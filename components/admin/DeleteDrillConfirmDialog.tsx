@@ -22,7 +22,7 @@ export function DeleteDrillConfirmDialog({ drill_id }: { drill_id: string | numb
     useEffect(() => {
         if (isDrillDeleted) {
             setOpen(false);
-            router.push("/dashboard/drills"); // or your desired route
+            router.replace("/dashboard/admin/drills");
         }
     }, [isDrillDeleted, router]);
 

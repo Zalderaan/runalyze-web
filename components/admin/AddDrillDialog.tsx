@@ -17,7 +17,7 @@ import { Plus } from "lucide-react";
 
 // Forms imports
 import {
-    step1Schema, step2Schema, step3Schema, step4Schema, step4SchemaEdit, step5schema,
+    step1Schema, step2Schema, step3Schema, step3SchemaWithTemplate, step4Schema, step4SchemaEdit, step5schema,
     type FullFormData,
 } from "@/schemas/admin/drillFormSchemas"
 
@@ -59,20 +59,20 @@ export function AddDrillDialog({ onSuccess, defaultTemplate }: { onSuccess: () =
     // Step schemas
     const step4SchemaForMode = hasTemplate ? step4SchemaEdit : step4Schema;
     const stepSchemas: Record<number, z.ZodTypeAny> = hasTemplate
-        ? { 1: step1Schema, 2: step2Schema, 3: step3Schema, 4: step5schema }
+        ? { 1: step1Schema, 2: step2Schema, 3: step3SchemaWithTemplate, 4: step5schema }
         : { 1: step1Schema, 2: step2Schema, 3: step3Schema, 4: step4SchemaForMode, 5: step5schema };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const stepDefaults: Record<number, any> = hasTemplate
         ? {
             1: { drill_name: selectedTemplate?.name ?? "", area: undefined, performance_level: undefined, template_id: selectedTemplate?.id },
-            2: { sets: undefined, reps: undefined, frequency: undefined },
+            2: { sets: undefined, reps: undefined, frequency: undefined, is_high_impact: false },
             3: { has_instructions_override: false },
             4: { justification: "", reference: "", has_justification_override: false }
         }
         : {
             1: { drill_name: "", area: undefined, performance_level: undefined },
-            2: { sets: undefined, reps: undefined, frequency: undefined },
+            2: { sets: undefined, reps: undefined, frequency: undefined, is_high_impact: false },
             3: { instructions: { steps: [] } },
             4: { video: undefined },
             5: { justification: "", reference: "" }
@@ -87,6 +87,12 @@ export function AddDrillDialog({ onSuccess, defaultTemplate }: { onSuccess: () =
         defaultValues
     });
 
+    const formValues = form.watch();
+    const formErrors = form.formState.errors;
+    console.log("[AddDrillDialog LOG] Step:", step, "TOTAL_STEPS:", TOTAL_STEPS, "hasTemplate:", hasTemplate);
+    console.log("[AddDrillDialog LOG] Form Values:", formValues);
+    console.log("[AddDrillDialog LOG] Form Errors:", formErrors);
+
     function handleTemplateSelected(template: DrillTemplate | null) {
         setSelectedTemplate(template);
         // Reset to step 1 if template selection changes (to avoid stale form data)
@@ -97,6 +103,7 @@ export function AddDrillDialog({ onSuccess, defaultTemplate }: { onSuccess: () =
     }
 
     async function onStepSubmit(values: z.infer<typeof currentSchema>) {
+        console.log("[AddDrillDialog LOG] onStepSubmit called on step:", step, "with values:", values);
         const updatedData = { ...formData, ...values };
         setFormData(updatedData);
 
@@ -188,7 +195,13 @@ export function AddDrillDialog({ onSuccess, defaultTemplate }: { onSuccess: () =
             </DialogTrigger>
             <DialogContent className="max-h-[80vh] overflow-y-auto">
                 <FormProvider {...form}>
-                    <form onSubmit={form.handleSubmit(onStepSubmit)} className="space-y-4">
+                    <form 
+                        onSubmit={form.handleSubmit(
+                            onStepSubmit,
+                            (errors) => console.log("[AddDrillDialog LOG] Validation failed:", errors)
+                        )} 
+                        className="space-y-4"
+                    >
                         <DialogHeader>
                             <DialogTitle>Add Drill</DialogTitle>
                             <DialogDescription>

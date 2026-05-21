@@ -20,7 +20,7 @@ import { Edit } from "lucide-react";
 import { useState } from "react";
 
 // forms imports
-import { type FullFormData, step1Schema, step2Schema, step3Schema, step4SchemaEdit, step5schema } from "@/schemas/admin/drillFormSchemas";
+import { type FullFormData, step1Schema, step2Schema, step3Schema, step3SchemaWithTemplate, step4SchemaEdit, step5schema } from "@/schemas/admin/drillFormSchemas";
 import { z } from "zod";
 
 // regular imports
@@ -51,7 +51,7 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
     const stepSchemas = {
         1: step1Schema,
         2: step2Schema,
-        3: step3Schema,
+        3: hasTemplate ? step3SchemaWithTemplate : step3Schema,
         4: step4SchemaEdit,
         5: step5schema
     }
@@ -68,7 +68,8 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
             sets: drill.sets,
             reps: drill.reps,
             rep_type: drill.rep_type,
-            frequency: drill.frequency
+            frequency: drill.frequency,
+            is_high_impact: drill.is_high_impact ?? false
         },
         3: {
             instructions: drill.instructions,
@@ -210,14 +211,14 @@ export function EditDrillDialog({ drill, onSuccess }: { drill: Drill, onSuccess?
                         {step === 2 && <Step2TrainingParameters />}
                         {step === 3 && (
                             <Step3Instructions
-                                hasTemplate={hasTemplate && isAssignmentOverride}
+                                hasTemplate={hasTemplate}
                                 templateInstructions={drill.instructions}
                             />
                         )}
-                        {step === 4 && <Step4VideoEdit video_url={drill.video_url} />}
+                        {step === 4 && <Step4VideoEdit video_url={drill.video_url} thumbnail_url={drill.thumbnail_url} />}
                         {step === 5 && (
                             <Step5Explanation
-                                hasTemplate={hasTemplate && isAssignmentOverride}
+                                hasTemplate={hasTemplate}
                                 templateJustification={drill.justification}
                                 templateReference={drill.reference}
                             />

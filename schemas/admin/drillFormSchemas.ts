@@ -7,7 +7,7 @@ export const step1Schema = z.object({
     area: z.enum(["head_position", "back_position", "arm_flexion", "right_knee", "left_knee", "foot_strike"], {
         errorMap: () => ({ message: "Please select a valid area" }),
     }),
-    performance_level: z.enum(["poor", "needs improvement", "good", "excellent"], {
+    performance_level: z.enum(["poor", "needs_improvement", "good", "excellent"], {
         errorMap: () => ({ message: "Please select a valid performance level" }),
     }),
 });
@@ -26,6 +26,7 @@ export const step2Schema = z.object({
     frequency: z
         .number({ invalid_type_error: "Frequency is required" })
         .positive({ message: "frequency must be greater than 0" }),
+    is_high_impact: z.boolean().optional(),
 });
 
 export const step3Schema = z.object({
@@ -38,6 +39,14 @@ export const step3Schema = z.object({
         steps: z.array(z.string().min(1, "Instruction step cannot be empty"))
     }).optional(),
     // Whether the user has enabled the override toggle
+    has_instructions_override: z.boolean().optional(),
+});
+
+export const step3SchemaWithTemplate = z.object({
+    instructions: z.any().optional(),
+    instructions_override: z.object({
+        steps: z.array(z.string().min(1, "Instruction step cannot be empty"))
+    }).optional(),
     has_instructions_override: z.boolean().optional(),
 });
 

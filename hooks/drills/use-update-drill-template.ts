@@ -29,6 +29,17 @@ export function useUpdateDrillTemplate() {
             toast.error(errorMessage);
             throw err;
         } finally {
+            try {
+                const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+                if (BACKEND_URL) {
+                    await fetch(`${BACKEND_URL}/drills/clear-cache/`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                    });
+                }
+            } catch (cacheError) {
+                console.error("Failed to clear backend cache after template update:", cacheError);
+            }
             setUpdateLoading(false);
         }
     };
