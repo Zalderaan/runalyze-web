@@ -52,9 +52,9 @@ export const BADGES: BadgeDefinition[] = [
 
 export function getAchievementsForRun(runId: number, history: HistoryItem[]): BadgeDefinition[] {
     // Sort history chronologically to determine run indices
-    const sortedHistory = [...history].sort((a,b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    const sortedHistory = [...history].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
     const runIndex = sortedHistory.findIndex(h => h.id === runId);
-    
+
     if (runIndex === -1) return [];
 
     const run = sortedHistory[runIndex];

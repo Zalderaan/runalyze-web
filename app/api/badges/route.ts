@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { decrypt } from '@/lib/auth/session';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         const cookieStore = await cookies();
         const cookie = cookieStore.get("session")?.value;
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
                 { status: 401 }
             );
         }
-        
+
         const session = await decrypt(cookie);
         const userID = session?.userId;
 

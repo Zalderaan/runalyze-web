@@ -72,12 +72,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         // Cascade template changes to all linked drills (legacy compat columns).
         // Skip rows that have an active instructions_override so per-assignment
         // customisations are preserved.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const drillCascade: Record<string, any> = {};
-        if (name         !== null) drillCascade.drill_name    = name;
-        if (instructions !== null) drillCascade.instructions  = instructions;
+        if (name !== null) drillCascade.drill_name = name;
+        if (instructions !== null) drillCascade.instructions = instructions;
         if (justification !== null) drillCascade.justification = justification;
-        if (reference    !== null) drillCascade.reference      = reference;
-        if (video_url    !== null) drillCascade.video_url      = video_url;
+        if (reference !== null) drillCascade.reference = reference;
+        if (video_url !== null) drillCascade.video_url = video_url;
         if (thumbnail_url !== null) drillCascade.thumbnail_url = thumbnail_url;
 
         if (Object.keys(drillCascade).length > 0) {
@@ -92,10 +93,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                     .is('instructions_override', null);
 
                 // Drills WITH an instructions_override → cascade only non-instruction fields
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const nonInstructionCascade: Record<string, any> = {};
-                if (name          !== null) nonInstructionCascade.drill_name    = name;
-                if (reference     !== null) nonInstructionCascade.reference     = reference;
-                if (video_url     !== null) nonInstructionCascade.video_url     = video_url;
+                if (name !== null) nonInstructionCascade.drill_name = name;
+                if (reference !== null) nonInstructionCascade.reference = reference;
+                if (video_url !== null) nonInstructionCascade.video_url = video_url;
                 if (thumbnail_url !== null) nonInstructionCascade.thumbnail_url = thumbnail_url;
 
                 if (Object.keys(nonInstructionCascade).length > 0) {

@@ -127,7 +127,7 @@ export default function AnalysisDetails() {
     const {
         history, fetchHistory,
         getAnalysisDetails, isLoadingDetails,
-        deleteAnalysis, isLoadingDelete, 
+        deleteAnalysis, isLoadingDelete,
         renameAnalysis,
         updateFatigueLevel
     } = useHistory();
@@ -162,7 +162,7 @@ export default function AnalysisDetails() {
     }, [analysisId, getAnalysisDetails]);
 
     // console.log(analysisDetails);
-    const { id, video_url, overall_score, overall_assessment, detailed_feedback, bmi_category, name, fatigue_level } = analysisDetails || {};
+    const { id, video_url, overall_score, overall_assessment, detailed_feedback, bmi_category, name } = analysisDetails || {};
     // head_position, back_position, arm_flexion, right_knee, left_knee, foot_strike 
 
     const [currentFatigue, setCurrentFatigue] = useState<number | null>(null);
@@ -410,6 +410,7 @@ export default function AnalysisDetails() {
 
         // ── Data rows ─────────────────────────────────────────────────────
         const dataRows = AREA_ORDER.map((area) => {
+            // @eslint-disable-next-line @typescript-eslint/no-explicit-any
             const data = (detailed_feedback as any)[area];
             if (!data) return [AREA_LABELS[area], "", "", "", "", "", ""];
             return [
@@ -477,8 +478,8 @@ export default function AnalysisDetails() {
     // };
 
     const drills = getAllDrills();
-    const runBadges = analysisId && history.length > 0 
-        ? getAchievementsForRun(Number(analysisId), history) 
+    const runBadges = analysisId && history.length > 0
+        ? getAchievementsForRun(Number(analysisId), history)
         : [];
 
     return (
@@ -495,7 +496,7 @@ export default function AnalysisDetails() {
                             {/* Left — title & assessment */}
                             <div className="flex-1 min-w-0 w-full text-center md:text-left">
                                 <p className="text-xs font-semibold uppercase tracking-widest text-blue-500 mb-1">Run Analysis</p>
-                                
+
                                 {isEditingName ? (
                                     <form onSubmit={handleSaveName} className="flex items-center gap-2 mb-2">
                                         <Input
@@ -511,7 +512,7 @@ export default function AnalysisDetails() {
                                         </Button>
                                     </form>
                                 ) : (
-                                    <div 
+                                    <div
                                         className="flex items-center justify-center md:justify-start gap-2 group cursor-pointer w-full md:w-fit"
                                         onClick={() => setIsEditingName(true)}
                                     >
@@ -521,7 +522,7 @@ export default function AnalysisDetails() {
                                         <Pencil className="h-4 w-4 text-gray-400 opacity-50 group-hover:opacity-100 transition-opacity" />
                                     </div>
                                 )}
-                                
+
                                 <p className="text-sm text-gray-500 mt-2 mb-4 leading-relaxed line-clamp-3 mx-auto md:mx-0 max-w-2xl">{overall_assessment}</p>
 
                                 {runBadges.length > 0 && (
@@ -532,7 +533,7 @@ export default function AnalysisDetails() {
                                                 return (
                                                     <Tooltip key={badgeDef.id}>
                                                         <TooltipTrigger className="cursor-default">
-                                                            <div 
+                                                            <div
                                                                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-50/80 border border-blue-100 hover:bg-blue-100 transition-colors backdrop-blur-md shadow-sm"
                                                             >
                                                                 <Icon className={`h-4 w-4 ${badgeDef.color}`} />
@@ -638,11 +639,10 @@ export default function AnalysisDetails() {
                     </div>
                 ) : (
                     <div className="w-full">
-                        <div className={`p-4 rounded-xl border flex items-start gap-4 ${
-                            currentFatigue >= 4 ? 'bg-orange-50 border-orange-200' 
+                        <div className={`p-4 rounded-xl border flex items-start gap-4 ${currentFatigue >= 4 ? 'bg-orange-50 border-orange-200'
                             : currentFatigue === 1 ? 'bg-green-50 border-green-200'
-                            : 'bg-blue-50 border-blue-100'
-                        }`}>
+                                : 'bg-blue-50 border-blue-100'
+                            }`}>
                             <div className="text-3xl mt-0.5">
                                 {currentFatigue === 1 && "🔋"}
                                 {currentFatigue === 2 && "🙂"}
@@ -652,36 +652,33 @@ export default function AnalysisDetails() {
                             </div>
                             <div className="flex-1">
                                 <div className="flex justify-between items-start">
-                                    <h3 className={`font-bold text-lg mb-1 leading-none ${
-                                        currentFatigue >= 4 ? 'text-orange-900' 
+                                    <h3 className={`font-bold text-lg mb-1 leading-none ${currentFatigue >= 4 ? 'text-orange-900'
                                         : currentFatigue === 1 ? 'text-green-900'
-                                        : 'text-blue-900'
-                                    }`}>
+                                            : 'text-blue-900'
+                                        }`}>
                                         Fatigue Context: {
                                             currentFatigue === 1 ? "Fresh" :
-                                            currentFatigue === 2 ? "Good" :
-                                            currentFatigue === 3 ? "Normal" :
-                                            currentFatigue === 4 ? "Tired" : "Exhausted"
+                                                currentFatigue === 2 ? "Good" :
+                                                    currentFatigue === 3 ? "Normal" :
+                                                        currentFatigue === 4 ? "Tired" : "Exhausted"
                                         }
                                     </h3>
-                                    <button 
-                                        onClick={() => setCurrentFatigue(null)} 
-                                        className={`text-[10px] font-bold uppercase tracking-wider underline opacity-60 hover:opacity-100 transition-opacity ${
-                                            currentFatigue >= 4 ? 'text-orange-900' 
+                                    <button
+                                        onClick={() => setCurrentFatigue(null)}
+                                        className={`text-[10px] font-bold uppercase tracking-wider underline opacity-60 hover:opacity-100 transition-opacity ${currentFatigue >= 4 ? 'text-orange-900'
                                             : currentFatigue === 1 ? 'text-green-900'
-                                            : 'text-blue-900'
-                                        }`}
+                                                : 'text-blue-900'
+                                            }`}
                                     >
                                         Edit
                                     </button>
                                 </div>
-                                <p className={`text-sm opacity-90 leading-relaxed mt-1 ${
-                                    currentFatigue >= 4 ? 'text-orange-900' 
+                                <p className={`text-sm opacity-90 leading-relaxed mt-1 ${currentFatigue >= 4 ? 'text-orange-900'
                                     : currentFatigue === 1 ? 'text-green-900'
-                                    : 'text-blue-900'
-                                }`}>
+                                        : 'text-blue-900'
+                                    }`}>
                                     {currentFatigue >= 4 ? (
-                                        (overall_score ?? 0) < 70 
+                                        (overall_score ?? 0) < 70
                                             ? "You reported feeling exhausted during this run. It's completely normal for biomechanics—especially back posture and core stability—to break down under high fatigue. Don't stress too much about these form scores; focus on recovery!"
                                             : "You reported feeling exhausted, yet you maintained incredible form! Your muscular endurance is clearly a strong point. Way to hold it together."
                                     ) : currentFatigue === 1 ? (
@@ -850,10 +847,10 @@ export default function AnalysisDetails() {
                                         <div className="rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center min-h-[180px]">
                                             {drill.video_url
                                                 ? (
-                                                    <video 
-                                                        src={drill.video_url} 
-                                                        controls 
-                                                        className="w-full max-h-60 object-contain bg-black rounded" 
+                                                    <video
+                                                        src={drill.video_url}
+                                                        controls
+                                                        className="w-full max-h-60 object-contain bg-black rounded"
                                                         poster={drill.thumbnail_url}
                                                     />
                                                 )

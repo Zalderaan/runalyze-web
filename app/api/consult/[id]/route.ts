@@ -55,12 +55,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         const isOwner = consultation.user_id === session.userId;
         const isAssignedCoach = consultation.coach_id === session.userId;
 
-        // ? Debug logs
-        // console.log("session", session);
-        // console.log("isCoach", isCoach);
-        // console.log("isOwner", isOwner);
-        // console.log("isAssignedCoach", isAssignedCoach);
-
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let updateFields: any = { updated_at: new Date().toISOString };
 
         // Authorization logic
@@ -223,6 +218,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
             { status: 200 }
         );
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         console.error("Error updating consultation: ", error);
         return NextResponse.json(

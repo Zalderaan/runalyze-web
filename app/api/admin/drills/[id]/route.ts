@@ -12,8 +12,8 @@ function mergeDrillWithTemplate(drill: any) {
     // Check if instructions_override has actual custom steps.
     // An empty steps array {"steps": []} is treated as no override.
     const hasOverrideSteps = drill.instructions_override &&
-                             Array.isArray(drill.instructions_override.steps) &&
-                             drill.instructions_override.steps.length > 0;
+        Array.isArray(drill.instructions_override.steps) &&
+        drill.instructions_override.steps.length > 0;
 
     return {
         ...drill,
@@ -175,7 +175,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const difficulty_level = formData.get("difficulty_level") ? Number(formData.get("difficulty_level")) : null;
     const is_high_impact_raw = formData.get("is_high_impact");
     const is_high_impact = is_high_impact_raw !== null ? is_high_impact_raw === "true" : null;
-    
+
     const template_id_raw = formData.get("template_id");
     const template_id = template_id_raw ? Number(template_id_raw) : null;
 
@@ -294,14 +294,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                     if (justification !== null) assignmentUpdate.justification = justification;
                     if (reference !== null) assignmentUpdate.reference = reference;
                     if (video_url !== null) assignmentUpdate.video_url = video_url;
-                    
+
                     // ── NEW: cascade to sibling drills that share this template ──────────────
                     const siblingCascade: Record<string, any> = {};
-                    if (drill_name   !== null) siblingCascade.drill_name    = drill_name;
-                    if (instructions !== null) siblingCascade.instructions  = instructions;
+                    if (drill_name !== null) siblingCascade.drill_name = drill_name;
+                    if (instructions !== null) siblingCascade.instructions = instructions;
                     if (justification !== null) siblingCascade.justification = justification;
-                    if (reference    !== null) siblingCascade.reference      = reference;
-                    if (video_url    !== null) siblingCascade.video_url      = video_url;
+                    if (reference !== null) siblingCascade.reference = reference;
+                    if (video_url !== null) siblingCascade.video_url = video_url;
 
                     if (Object.keys(siblingCascade).length > 0) {
                         const instructionsChanged = instructions !== null || justification !== null;
@@ -316,10 +316,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                                 .is('instructions_override', null);
 
                             // Siblings WITH override — cascade only non-instruction fields
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const nonInstrSibling: Record<string, any> = {};
                             if (drill_name !== null) nonInstrSibling.drill_name = drill_name;
-                            if (reference  !== null) nonInstrSibling.reference  = reference;
-                            if (video_url  !== null) nonInstrSibling.video_url  = video_url;
+                            if (reference !== null) nonInstrSibling.reference = reference;
+                            if (video_url !== null) nonInstrSibling.video_url = video_url;
 
                             if (Object.keys(nonInstrSibling).length > 0) {
                                 await supabase
@@ -345,7 +346,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                         .select('*')
                         .eq('id', template_id)
                         .single();
-                        
+
                     if (newTemplate) {
                         assignmentUpdate.drill_name = newTemplate.name;
                         assignmentUpdate.instructions = newTemplate.instructions;

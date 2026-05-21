@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/context/user_context';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -47,11 +47,10 @@ export default function ConsultPage() {
     //     );
     // }
 
-    const { admins, usersLoading, usersError, refreshUsers } = useAdmins();
+    const { admins, usersLoading } = useAdmins();
     const { history } = useHistory();
 
-    // TODO: Get consultations
-    const { consultations, consultationsLoading, consultationsError, refetchConsultations } = useGetConsultations();
+    const { consultations, consultationsLoading, refetchConsultations } = useGetConsultations();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();  // Prevent default form submission
@@ -99,7 +98,7 @@ export default function ConsultPage() {
             const response = await fetch(`/api/consult/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     status: newStatus,
                 }),
             });
@@ -157,7 +156,7 @@ export default function ConsultPage() {
                     >
                         <h2 className="text-xl font-semibold text-gray-800 border-b border-gray-100 pb-4 mb-6">New Request</h2>
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            
+
                             {/* Coach Select */}
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold flex items-center gap-2 text-gray-700">
@@ -224,9 +223,9 @@ export default function ConsultPage() {
 
                             {/* Submit Button */}
                             <div className="pt-2">
-                                <Button 
-                                    type="submit" 
-                                    disabled={isSubmitting || !selectedCoach} 
+                                <Button
+                                    type="submit"
+                                    disabled={isSubmitting || !selectedCoach}
                                     className="w-full h-12 text-base font-semibold bg-gray-900 hover:bg-gray-800 text-white rounded-lg shadow-md hover:shadow-lg transition-all active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
                                 >
                                     {isSubmitting ? (
@@ -253,9 +252,9 @@ export default function ConsultPage() {
                             <CardTitle>Active Consultations</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <ConsultationTable 
-                                consultations={consultations} 
-                                onUpdateStatus={handleUpdateStatus} 
+                            <ConsultationTable
+                                consultations={consultations}
+                                onUpdateStatus={handleUpdateStatus}
                                 onDismiss={handleDismiss}
                                 isLoading={consultationsLoading}
                             />
