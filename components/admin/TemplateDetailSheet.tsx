@@ -382,7 +382,7 @@ export function TemplateDetailSheet({ template, open, onOpenChange, onTemplateUp
                             </div>
                             <DialogTitle className="text-center text-lg font-semibold">Delete Drill Template</DialogTitle>
                             <DialogDescription className="text-center text-sm text-zinc-500 mt-2">
-                                Are you sure you want to delete <span className="font-semibold text-zinc-900 dark:text-zinc-100">"{template.name}"</span>? 
+                                Are you sure you want to delete <span className="font-semibold text-zinc-900 dark:text-zinc-100">&quot;{template.name}&quot;</span>? 
                                 This action is permanent and cannot be undone.
                             </DialogDescription>
                         </DialogHeader>
@@ -430,7 +430,7 @@ export function TemplateDetailSheet({ template, open, onOpenChange, onTemplateUp
                         </div>
                         <DialogTitle className="text-center text-lg font-semibold">Delete Drill Template</DialogTitle>
                         <DialogDescription className="text-center text-sm text-zinc-500 mt-2">
-                            Are you sure you want to delete <span className="font-semibold text-zinc-900 dark:text-zinc-100">"{template.name}"</span>? 
+                            Are you sure you want to delete <span className="font-semibold text-zinc-900 dark:text-zinc-100">&quot;{template.name}&quot;</span>? 
                             This action is permanent and cannot be undone.
                         </DialogDescription>
                     </DialogHeader>

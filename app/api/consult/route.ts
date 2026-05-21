@@ -84,16 +84,17 @@ export async function POST(req: NextRequest) {
         )
 
 
-    } catch (error: any) {
+    } catch (error) {
         console.error("Error sending consultation email");
+        const errorMessage = error instanceof Error ? error.message : String(error);
         return NextResponse.json(
-            { message: "Error sending consultation email: ", error: error.message },
+            { message: "Error sending consultation email: ", error: errorMessage },
             { status: 500 }
         );
     }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         // Get user id
         const cookieStore = await cookies();

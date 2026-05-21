@@ -97,15 +97,60 @@ export default function AnalyzePage() {
     const [fatigueLevel, setFatigueLevel] = useState<number | null>(null);
     const [isSavingFatigue, setIsSavingFatigue] = useState(false);
 
-    // ✅ NEW: Resume analysis on mount
-    useEffect(() => {
-        const activeJobId = localStorage.getItem('activeJobId');
-        if (activeJobId && !isProcessing && !results) {
-            console.log("🔄 Found active job in storage, resuming...", activeJobId);
-            setIsProcessing(true);
-            connectToProgressStream(activeJobId);
+    // ✅ NEW: Memoized fetchResults so it can be safely used in callbacks
+    const fetchResults = useCallback(async (jobId: string) => {
+        try {
+            console.log('✅ Processing complete, fetching results...');
+            const response = await fetch(`${API_URL}/result/${jobId}`); // ✅ Use API_URL
+
+            // ✅ Handle 202 (still processing)
+            if (response.status === 202) {
+                const status = await response.json();
+                console.log('⏳ Still processing:', status);
+                // Retry after a short delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                return fetchResults(jobId); // Recursive retry - don't stop processing yet
+            }
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch results: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('📊 Results received:', result);
+
+            if (result.success) {
+                setResults(result);
+                setIsProcessing(false); // ✅ Stop loading on success
+                setError(null); // ✅ Clear any previous errors
+
+                // Prepare name state
+                const currentTimestamp = new Date().toLocaleString(undefined, {
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+                const defaultName = `Analysis on ${currentTimestamp}`
+                setAnalysisName(defaultName);
+                setPromptAnalysisId(result.database_records.analysis_id);
+                setFatigueLevel(null);
+                // Setup default name automatically in the background
+                renameAnalysis(result.database_records.analysis_id, defaultName).catch(console.error);
+
+                // Clean up backend storage and local storage
+                fetch(`${API_URL}/result/${jobId}`, { method: 'DELETE' })
+                    .catch(err => console.warn('Cleanup failed:', err));
+                localStorage.removeItem('activeJobId');
+            } else {
+                setError(result.error || 'Analysis failed');
+                setIsProcessing(false); // ✅ Stop loading on error result
+            }
+
+        } catch (error) {
+            console.error('❌ Error fetching results:', error);
+            setError(error instanceof Error ? error.message : 'Failed to fetch results');
+            setIsProcessing(false);
+            localStorage.removeItem('activeJobId');
         }
-    }, [user]); // Re-run if user changes to ensure correct context
+    }, [API_URL, renameAnalysis]);
 
     // ✅ NEW: Refactored SSE connection logic
     const connectToProgressStream = useCallback((jobId: string) => {
@@ -159,7 +204,17 @@ export default function AnalyzePage() {
         };
 
         return () => eventSource.close();
-    }, [API_URL, progress]);
+    }, [API_URL, progress, fetchResults]);
+
+    // ✅ NEW: Resume analysis on mount
+    useEffect(() => {
+        const activeJobId = localStorage.getItem('activeJobId');
+        if (activeJobId && !isProcessing && !results) {
+            console.log("🔄 Found active job in storage, resuming...", activeJobId);
+            setIsProcessing(true);
+            connectToProgressStream(activeJobId);
+        }
+    }, [user, connectToProgressStream, isProcessing, results]); // include deps used inside effect
 
     const handleNameSubmit = async () => {
         if (!promptAnalysisId) return;
@@ -188,7 +243,6 @@ export default function AnalyzePage() {
         }
     };
 
-    // TODO: validate file size and length
     async function validateVideoDuration(file: File): Promise<{ valid: boolean; duration: number; error?: string }> {
         return new Promise((resolve) => {
             const video = document.createElement('video');
@@ -335,59 +389,7 @@ export default function AnalyzePage() {
         }
     }
 
-    async function fetchResults(jobId: string) {
-        try {
-            console.log('✅ Processing complete, fetching results...');
-            const response = await fetch(`${API_URL}/result/${jobId}`); // ✅ Use API_URL
-
-            // ✅ Handle 202 (still processing)
-            if (response.status === 202) {
-                const status = await response.json();
-                console.log('⏳ Still processing:', status);
-                // Retry after a short delay
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                return fetchResults(jobId); // Recursive retry - don't stop processing yet
-            }
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch results: ${response.status}`);
-            }
-
-            const result = await response.json();
-            console.log('📊 Results received:', result);
-
-            if (result.success) {
-                setResults(result);
-                setIsProcessing(false); // ✅ Stop loading on success
-                setError(null); // ✅ Clear any previous errors
-
-                // Prepare name state
-                const currentTimestamp = new Date().toLocaleString(undefined, {
-                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                });
-                const defaultName = `Analysis on ${currentTimestamp}`
-                setAnalysisName(defaultName);
-                setPromptAnalysisId(result.database_records.analysis_id);
-                setFatigueLevel(null);
-                // Setup default name automatically in the background
-                renameAnalysis(result.database_records.analysis_id, defaultName).catch(console.error);
-
-                // Clean up backend storage and local storage
-                fetch(`${API_URL}/result/${jobId}`, { method: 'DELETE' })
-                    .catch(err => console.warn('Cleanup failed:', err));
-                localStorage.removeItem('activeJobId');
-            } else {
-                setError(result.error || 'Analysis failed');
-                setIsProcessing(false); // ✅ Stop loading on error result
-            }
-
-        } catch (error) {
-            console.error('❌ Error fetching results:', error);
-            setError(error instanceof Error ? error.message : 'Failed to fetch results');
-            setIsProcessing(false);
-            localStorage.removeItem('activeJobId');
-        }
-    }
+    
 
     function handleCameraCapture(file: File) {
         setVideoFile(file);

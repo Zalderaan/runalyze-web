@@ -12,7 +12,6 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
     DialogClose,
 } from "@/components/ui/dialog"
 import { toast } from 'sonner'
@@ -469,10 +468,10 @@ export default function AdminApplicationPage() {
                 {isUnderReview && (
                     <div className='flex flex-col gap-1 items-center px-4'>
                         <p className={`text-sm font-medium text-center text-primary`}>
-                            Your application is being reviewed. We'll notify you via email once it's processed.
+                            {"Your application is being reviewed. We'll notify you via email once it's processed."}
                         </p>
                         <p className='text-sm text-center text-muted-foreground'>
-                            Once approved, you will need to log out and log back in to access your coach dashboard.
+                            {"Once approved, you will need to log out and log back in to access your coach dashboard."}
                         </p>
                     </div>
                 )}
@@ -484,7 +483,7 @@ export default function AdminApplicationPage() {
                     <DialogHeader>
                         <DialogTitle>Delete uploaded document?</DialogTitle>
                         <DialogDescription>
-                            This will remove you from the for-review list until you've uploaded another document. Are you sure?
+                            {"This will remove you from the for-review list until you've uploaded another document. Are you sure?"}
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>

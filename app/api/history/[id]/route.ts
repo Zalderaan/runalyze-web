@@ -48,8 +48,10 @@ export async function GET(
 
         // Hydrate drills with latest metadata (video/thumbnail) from DB/templates
         const allDrillIds: number[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         Object.values(detailed_feedback).forEach((area: any) => {
             if (area.drills && Array.isArray(area.drills)) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 area.drills.forEach((d: any) => {
                     if (d.id) allDrillIds.push(d.id);
                 });
@@ -68,6 +70,7 @@ export async function GET(
             }
 
             if (latestDrills) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const drillMap = new Map(latestDrills.map((d: any) => {
                     // Handle case where drill_templates might be an array or object
                     const tplRaw = d.drill_templates;
@@ -84,8 +87,10 @@ export async function GET(
                     }];
                 }));
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 Object.values(detailed_feedback).forEach((area: any) => {
                     if (area.drills && Array.isArray(area.drills)) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         area.drills.forEach((d: any) => {
                             const latest = drillMap.get(d.id);
                             if (latest) {
@@ -211,6 +216,7 @@ export async function DELETE(
             const filesToRemove: string[] = [];
             const videosList = Array.isArray(analysisData.videos) ? analysisData.videos : [analysisData.videos];
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             videosList.forEach((vid: any) => {
                 if (vid.video_url) {
                     const videoPath = vid.video_url.split('/object/public/videos/')[1]?.split('?')[0];
@@ -239,6 +245,7 @@ export async function DELETE(
                 // Since there is a trigger on `videos` interacting with storage.objects, we need to explicitly delete `videos` individually? 
                 // Wait! If the storage API successfully removes the objects, S3 might already cascade delete the video records if the foreign key is set up with ON DELETE CASCADE. 
                 // Just in case the cascade doesn't happen automatically (if FKs are not set), we delete the videos explicitly.
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const videoIds = videosList.map((v: any) => v.id).filter(Boolean);
                 if (videoIds.length > 0) {
                     await supabase.from('videos').delete().in('id', videoIds);

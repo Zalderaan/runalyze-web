@@ -180,7 +180,7 @@ export default function AnalysisDetails() {
         try {
             await updateFatigueLevel(Number(analysisId), level);
             setAnalysisDetails(prev => prev ? { ...prev, fatigue_level: level } : prev);
-        } catch (error) {
+        } catch {
             console.error("Failed to update fatigue level");
         } finally {
             setIsSavingFatigue(false);
@@ -410,7 +410,7 @@ export default function AnalysisDetails() {
 
         // ── Data rows ─────────────────────────────────────────────────────
         const dataRows = AREA_ORDER.map((area) => {
-            // @eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const data = (detailed_feedback as any)[area];
             if (!data) return [AREA_LABELS[area], "", "", "", "", "", ""];
             return [

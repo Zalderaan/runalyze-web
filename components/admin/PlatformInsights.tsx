@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
 
 interface PlatformInsightsProps {
-    drills: any[];
+    drills: { area?: string }[];
     applicationCounts: {
         pending: number;
         approved: number;
@@ -24,12 +24,12 @@ export function PlatformInsights({ drills, applicationCounts }: PlatformInsights
     };
 
     // Group drills by area
-    const drillsByArea = drills.reduce((acc: any, drill: any) => {
+    const drillsByArea = drills.reduce((acc: Record<string, number>, drill: { area?: string }) => {
         const rawArea = drill.area || 'Other';
         const formattedArea = formatLabel(rawArea);
         acc[formattedArea] = (acc[formattedArea] || 0) + 1;
         return acc;
-    }, {});
+    }, {} as Record<string, number>);
 
     const areaData = Object.entries(drillsByArea).map(([name, value]) => ({ name, value }));
 

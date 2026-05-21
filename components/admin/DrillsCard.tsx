@@ -20,7 +20,6 @@ export interface DrillPreview {
 }
 
 export function DrillsCard({ title, area, performance_level, id, helpful_count, not_helpful_count, thumbnail_url, is_high_impact }: DrillPreview) {
-    const score = helpful_count - not_helpful_count;
 
     return (
         <Link href={`/dashboard/admin/drills/${id}`} className="group block h-full">

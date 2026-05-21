@@ -47,14 +47,6 @@ export function AddDrillDialog({ onSuccess, defaultTemplate }: { onSuccess: () =
     // When a template is selected, step 4 (video) is skipped
     const TOTAL_STEPS = hasTemplate ? 4 : 5;
 
-    // Step number to component mapping (steps 3-5 shift when template is selected)
-    const getStepLabel = (s: number) => {
-        if (hasTemplate) {
-            // Steps: 1=Basic, 2=Training Params, 3=Instructions Override, 4=Explanation
-            return s;
-        }
-        return s; // same order as before
-    };
 
     // Step schemas
     const step4SchemaForMode = hasTemplate ? step4SchemaEdit : step4Schema;

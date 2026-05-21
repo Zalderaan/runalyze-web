@@ -8,7 +8,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ...existing code...
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
         const { status, dismiss } = await req.json();  // Expect { status: "completed" | "accepted" | etc. }
@@ -56,7 +56,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         const isAssignedCoach = consultation.coach_id === session.userId;
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let updateFields: any = { updated_at: new Date().toISOString };
+        const updateFields: Record<string, any> = { updated_at: new Date().toISOString() };
 
         // Authorization logic
         if (status) {
@@ -218,11 +218,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
             { status: 200 }
         );
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error) {
         console.error("Error updating consultation: ", error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
         return NextResponse.json(
-            { message: "Internal server error", error: error.message },
+            { message: "Internal server error", error: errorMessage },
             { status: 500 }
         );
     }

@@ -12,16 +12,13 @@ import {
     type SortingState,
     type VisibilityState,
 } from "@tanstack/react-table"
-import { Archive, ArrowUpDown, Check, CheckCircle, ChevronDown, MoreHorizontal, Trash2, X, XCircle, Activity, Clock, Hourglass, Ban, AlertTriangle } from "lucide-react"
+import { Check, CheckCircle, ChevronDown, X, XCircle, Activity, Clock, Hourglass, Ban, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
@@ -35,11 +32,9 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"  // Add this import
 import { useAuth } from "@/context/user_context"
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"  // Add this import
 import { ArchiveDialog } from "./ArchiveDialog"
 import { CancelDialog } from "./CancelDialog"
-import { DeleteDialog } from "./DeleteDialog"
 
 export type ConsultationStatus = 'pending' | 'declined' | 'in-progress' | 'completed' | 'cancelled' | 'cancel-requested' | 'complete-requested';
 

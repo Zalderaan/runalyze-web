@@ -186,7 +186,7 @@ function HistoryCard({ analysis, allHistory, compareMode, isSelected, selectionO
                                     return (
                                         <Tooltip key={badgeDef.id}>
                                             <TooltipTrigger className="cursor-default">
-                                                <div 
+                                                <div
                                                     className="flex items-center gap-1.5 px-2 py-1 rounded bg-blue-50 border border-blue-100 hover:bg-blue-100 transition-colors"
                                                 >
                                                     <Icon className={`h-3.5 w-3.5 ${badgeDef.color}`} />
@@ -302,7 +302,7 @@ export default function HistoryPage() {
         const firstRun = sortedHistory[0];
         const lastRun = sortedHistory[sortedHistory.length - 1];
         const improvement = lastRun.overall_score - firstRun.overall_score;
-        let trendStr = improvement > 2 ? "Improving" : improvement < -2 ? "Declining" : "Stable";
+        const trendStr = improvement > 2 ? "Improving" : improvement < -2 ? "Declining" : "Stable";
 
         const insightRows = [
             [], // Blank spacer row

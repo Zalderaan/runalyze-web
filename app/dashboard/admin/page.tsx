@@ -24,9 +24,9 @@ export default function AdminPage() {
 
     const { count, isLoading, error, refetch } = useGetDrillCount();
     const { users, usersLoading, usersError, refreshUsers } = useUsers();
-    const { drills, loading: drillsLoading } = useDrills(1, 50); // Get a larger sample for insights
+    const { drills } = useDrills(1, 50); // Get a larger sample for insights
 
-    const { applications, applicationsLoading, applicationsError, refreshApplications } = useApplications();
+    const { applications, refreshApplications } = useApplications();
     const [showQuickStart, setShowQuickStart] = useState(true);
 
     const recentApplications = applications

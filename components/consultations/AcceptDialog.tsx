@@ -23,7 +23,7 @@ export function AcceptDialog({ username, onConfirm }: AcceptDialogProps) {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Accept Consultation</DialogTitle>
-                    <DialogDescription>Accept consultation from USER NAME HERE</DialogDescription>
+                    <DialogDescription>Accept consultation from {username}</DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
                     <DialogClose asChild>

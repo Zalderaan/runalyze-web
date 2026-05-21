@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Activity, Ruler, Weight, Timer, ArrowRight, SkipForward, CheckCircle2 } from 'lucide-react';
+import { Activity, Ruler, Timer, ArrowRight, SkipForward, CheckCircle2 } from 'lucide-react';
 
 const secsToTime = (totalSeconds: number): string => {
     if (totalSeconds <= 0 || !Number.isInteger(totalSeconds)) return '';
@@ -65,6 +65,8 @@ export default function OnboardingPage() {
         time_10k: user?.time_10k ? secsToTime(user.time_10k) : '',
     });
 
+    const { updateProfileAsync, isUpdatingProfile } = useUpdateProfile(user?.id ?? "");
+
     // Guard: must have user to call hook
     if (!user) {
         return (
@@ -76,8 +78,6 @@ export default function OnboardingPage() {
             </div>
         );
     }
-
-    const { updateProfileAsync, isUpdatingProfile } = useUpdateProfile(user.id);
 
     const bmi = calculateBMI(Number(formData.height_cm), Number(formData.weight_kg));
     const bmiNum = parseFloat(bmi);
@@ -101,7 +101,7 @@ export default function OnboardingPage() {
             toast.success(
                 <div className="flex flex-col">
                     <strong>Profile saved!</strong>
-                    <span className="text-xs text-gray-500">You're all set to start analysing your runs.</span>
+                    <span className="text-xs text-gray-500">{"You're all set to start analysing your runs."}</span>
                 </div>,
                 { duration: 4000 }
             );

@@ -5,15 +5,16 @@ import { supabase } from '@/lib/supabase'
 // Helper: Merge a drills row with its joined drill_template into a flat object
 // that is backwards-compatible with the existing Drill interface.
 // ---------------------------------------------------------------------------
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mergeDrillWithTemplate(drill: any) {
     const tplRaw = drill.drill_templates;
     const tpl = Array.isArray(tplRaw) ? tplRaw[0] : (tplRaw ?? {});
-    
+
     // Check if instructions_override has actual custom steps.
     // An empty steps array {"steps": []} is treated as no override.
     const hasOverrideSteps = drill.instructions_override &&
-                             Array.isArray(drill.instructions_override.steps) &&
-                             drill.instructions_override.steps.length > 0;
+        Array.isArray(drill.instructions_override.steps) &&
+        drill.instructions_override.steps.length > 0;
 
     return {
         ...drill,
@@ -82,11 +83,11 @@ export async function POST(req: NextRequest) {
                 .insert([{
                     template_id: existingTemplateId,
                     // Seed legacy compat columns from template so Python backend sees them
-                    drill_name:    template.name,
-                    instructions:  template.instructions,
+                    drill_name: template.name,
+                    instructions: template.instructions,
                     justification: template.justification,
-                    reference:     template.reference,
-                    video_url:     template.video_url,
+                    reference: template.reference,
+                    video_url: template.video_url,
                     thumbnail_url: template.thumbnail_url,
                     area,
                     performance_level,
@@ -154,8 +155,8 @@ export async function POST(req: NextRequest) {
             const filePath = `drill-thumbnails/${uuid}-${thumbnailFile.name}`;
             const { error: storageError } = await supabase.storage
                 .from("videos") // Reusing "videos" bucket or should I use a new one?
-                                // Usually better to use the same or a specific one.
-                                // Let's check if "videos" bucket exists.
+                // Usually better to use the same or a specific one.
+                // Let's check if "videos" bucket exists.
                 .upload(filePath, thumbnailFile, { cacheControl: "3600", upsert: false });
 
             if (!storageError) {

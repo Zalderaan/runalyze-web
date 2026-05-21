@@ -1,11 +1,12 @@
 import { Flag, Compass, Zap, CheckCircle2 } from "lucide-react";
 import { HistoryItem } from "@/hooks/use-history";
+import { ComponentType } from "react";
 
 export interface BadgeDefinition {
     id: string;
     name: string;
     description: string;
-    icon: any; // Lucide icon
+    icon: ComponentType<{ className?: string }>; // Lucide icon
     color: string;
     evaluate: (history: HistoryItem[]) => boolean; // Global unlock
     evaluateForRun: (run: HistoryItem, runIndex: number) => boolean; // Specific run unlock 
@@ -37,7 +38,7 @@ export const BADGES: BadgeDefinition[] = [
         icon: CheckCircle2,
         color: "text-purple-500",
         evaluate: (history: HistoryItem[]) => history.some(item => item.overall_score >= 80),
-        evaluateForRun: (run: HistoryItem, runIndex: number) => run.overall_score >= 80
+        evaluateForRun: (run: HistoryItem) => run.overall_score >= 80
     },
     {
         id: "elite_stride",
@@ -46,7 +47,7 @@ export const BADGES: BadgeDefinition[] = [
         icon: Zap,
         color: "text-amber-500",
         evaluate: (history: HistoryItem[]) => history.some(item => item.overall_score >= 90),
-        evaluateForRun: (run: HistoryItem, runIndex: number) => run.overall_score >= 90
+        evaluateForRun: (run: HistoryItem) => run.overall_score >= 90
     }
 ];
 

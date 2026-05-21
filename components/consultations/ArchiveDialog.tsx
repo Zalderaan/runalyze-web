@@ -10,7 +10,7 @@ interface ArchiveDialogProps {
     coach_email?: string;
 }
 
-export function ArchiveDialog({ isOpen, onClose, onConfirm, consultationDate, coach_email }: ArchiveDialogProps) {
+export function ArchiveDialog({ isOpen, onClose, onConfirm }: ArchiveDialogProps) {
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogTrigger asChild>

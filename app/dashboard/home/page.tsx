@@ -5,7 +5,7 @@ import { NoAnalysis } from "@/components/home/NoAnalysis";
 import { useHistory } from "@/hooks/use-history";
 import { useBadges } from "@/hooks/use-badges";
 import { BiomechanicsRadar } from "@/components/charts/biomechanics-radar";
-import { BADGES, getAchievementsForRun } from "@/lib/badges.config";
+import { getAchievementsForRun } from "@/lib/badges.config";
 import {
     Card,
     CardContent,
@@ -36,7 +36,7 @@ export default function HomePage() {
     }, [fetchHistory, history.length, isLoading]);
 
     // Badges logic
-    const { earnedBadges, fetchBadges, evaluateAndAwardBadges, isLoadingBadges } = useBadges();
+    const { fetchBadges, evaluateAndAwardBadges } = useBadges();
     const hasFetchedBadgesRef = useRef(false);
     useEffect(() => {
         if (!hasFetchedBadgesRef.current) {
@@ -275,6 +275,7 @@ export default function HomePage() {
                                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Average Joint Scores</h3>
                                 <p className="text-sm text-gray-500 mb-6">Aggregate biomechanics across all your analyses.</p>
                                 <div className="relative -mx-2">
+                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                     <BiomechanicsRadar data={jointAverages as any} />
                                 </div>
                             </Card>

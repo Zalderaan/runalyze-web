@@ -33,17 +33,20 @@ import { step3Schema, step4SchemaEdit, step5schema } from "@/schemas/admin/drill
 export function EditTemplateDialog({ template, onSuccess }: { template: DrillTemplate, onSuccess?: (updatedTemplate?: DrillTemplate) => void }) {
     const [isOpen, setIsOpen] = useState(false);
     const [step, setStep] = useState(1);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [formData, setFormData] = useState<any>({});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [fetchedTemplate, setFetchedTemplate] = useState<any | null>(null);
     const [isFetchingDetails, setIsFetchingDetails] = useState(false);
     // Stable defaults keyed by step, rebuilt when fetchedTemplate changes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [stepDefaults, setStepDefaults] = useState<Record<number, any>>({
         1: { drill_name: template?.name },
         2: { instructions: undefined },
         3: { video: undefined },
         4: { justification: undefined, reference: undefined },
     });
-    
+
     const { updateTemplate, updateLoading, updateError } = useUpdateDrillTemplate();
 
     const TOTAL_STEPS = 4;
@@ -57,7 +60,7 @@ export function EditTemplateDialog({ template, onSuccess }: { template: DrillTem
     // getStepDefaults/getSourceTemplate replaced by `stepDefaults` state
 
     const currentSchema = stepSchemas[step as keyof typeof stepSchemas] as z.ZodTypeAny;
-    const defaultValues = (stepDefaults as any)[step] ?? {};
+    const defaultValues = stepDefaults[step] ?? {};
 
     const form = useForm({
         resolver: zodResolver(currentSchema),
@@ -72,7 +75,7 @@ export function EditTemplateDialog({ template, onSuccess }: { template: DrillTem
         if (step < TOTAL_STEPS) {
             const nextStep = step + 1;
             setStep(nextStep);
-            form.reset({ ...((stepDefaults as any)[nextStep] ?? {}), ...updatedData });
+            form.reset({ ...(stepDefaults[nextStep] ?? {}), ...updatedData });
         } else {
             const formPayload = new FormData();
 
@@ -80,12 +83,11 @@ export function EditTemplateDialog({ template, onSuccess }: { template: DrillTem
                 if (value === undefined || value === null) return;
 
                 if (key === "drill_name") {
-                    formPayload.append("name", value as any);
+                    formPayload.append("name", value as string);
                 } else if (key === "instructions") {
                     formPayload.append(key, JSON.stringify(value));
                 } else {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    formPayload.append(key, value as any);
+                    formPayload.append(key, value as string | Blob);
                 }
             });
 
@@ -107,13 +109,13 @@ export function EditTemplateDialog({ template, onSuccess }: { template: DrillTem
     function prevStep() {
         const prev = step - 1;
         setStep(prev);
-        form.reset({ ...((stepDefaults as any)[prev] ?? {}), ...formData });
+        form.reset({ ...(stepDefaults[prev] ?? {}), ...formData });
     }
 
     // Fetch full template details when dialog opens so we can populate training defaults
     // and other fields that may not be present on the lightweight `template` prop.
     // Reset the form when data arrives.
-    
+
     async function fetchTemplateDetails(id: number | string) {
         try {
             const res = await fetch(`/api/admin/drill-templates/${id}`);
@@ -128,7 +130,7 @@ export function EditTemplateDialog({ template, onSuccess }: { template: DrillTem
 
     // When opening the dialog, fetch details. When closing, clear fetched data.
     // Also reset the form to the correct defaults when fetchedTemplate or step changes.
-    
+
     useEffect(() => {
         let mounted = true;
         if (isOpen) {
@@ -149,7 +151,7 @@ export function EditTemplateDialog({ template, onSuccess }: { template: DrillTem
             form.reset();
         }
         return () => { mounted = false };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
 
     // Rebuild stable `stepDefaults` when fetchedTemplate arrives and re-apply for current step
@@ -157,7 +159,7 @@ export function EditTemplateDialog({ template, onSuccess }: { template: DrillTem
         if (!fetchedTemplate) return;
 
         const src = (() => {
-            const s: any = { ...fetchedTemplate };
+            const s = { ...fetchedTemplate };
             if ((!s.sets && !s.reps && !s.rep_type && !s.frequency) && fetchedTemplate.sample_drill) {
                 s.sets = fetchedTemplate.sample_drill.sets;
                 s.reps = fetchedTemplate.sample_drill.reps;
@@ -184,8 +186,8 @@ export function EditTemplateDialog({ template, onSuccess }: { template: DrillTem
 
         setStepDefaults(newDefaults);
         // Re-apply defaults for the current step (merging any already-accumulated formData)
-        form.reset({ ...((newDefaults as any)[step] ?? {}), ...formData });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        form.reset({ ...(newDefaults[step as keyof typeof newDefaults] ?? {}), ...formData });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [fetchedTemplate]);
 
     return (

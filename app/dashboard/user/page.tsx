@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import {
-    User,
     Mail,
     Calendar,
     Edit3,
@@ -67,6 +66,8 @@ export default function UserPage() {
         time_10k: user?.time_10k ? secsToTime(user.time_10k) : '',  // Convert seconds to time string
     });
 
+    const { updateProfileAsync, isUpdatingProfile } = useUpdateProfile(user?.id ?? "");
+
     // Wait until user is loaded before calling the hook
     if (!user) {
         return (
@@ -79,8 +80,6 @@ export default function UserPage() {
         );
     }
 
-    // Now user.id is guaranteed to exist
-    const { updateProfileAsync, isUpdatingProfile, } = useUpdateProfile(user.id);
     const calculateBMI = (height: number, weight: number) => {
         if (height && weight) {
             const heightInMeters = height / 100;

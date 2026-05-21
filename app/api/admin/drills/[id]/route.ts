@@ -5,6 +5,8 @@ import { cookies } from 'next/headers'
 // ---------------------------------------------------------------------------
 // Helper: Merge drills row with its joined drill_template
 // ---------------------------------------------------------------------------
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mergeDrillWithTemplate(drill: any) {
     const tplRaw = drill.drill_templates;
     const tpl = Array.isArray(tplRaw) ? tplRaw[0] : (tplRaw ?? {});
@@ -296,6 +298,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                     if (video_url !== null) assignmentUpdate.video_url = video_url;
 
                     // ── NEW: cascade to sibling drills that share this template ──────────────
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const siblingCascade: Record<string, any> = {};
                     if (drill_name !== null) siblingCascade.drill_name = drill_name;
                     if (instructions !== null) siblingCascade.instructions = instructions;
