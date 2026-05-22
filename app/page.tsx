@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Activity, BarChart3, Target, ArrowRight } from "lucide-react";
 import { LandingHeader } from "@/components/landing/landing-header";
 import Image from 'next/image'
+import { PageIndexStats } from "@/components/landing/page-index-stats";
 
 export default function LandingPage() {
 
@@ -52,6 +53,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Page Views Hit Counter */}
+      <PageIndexStats />
 
       {/* Features Section */}
       <section className="container mx-auto px-4 py-20">
