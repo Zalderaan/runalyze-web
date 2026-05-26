@@ -25,43 +25,72 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
     const [recordingTime, setRecordingTime] = useState(0);
     const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
 
-    const startCamera = useCallback(async () => {
-        console.log('[CameraCapture] startCamera - Initiating camera with facingMode:', facingMode);
-        try {
-            const mediaStream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 },
-                    facingMode: facingMode // Use state value instead of hardcoded 'environment'
-                },
-                audio: false
-            });
-
-            if (videoRef.current) {
-                videoRef.current.srcObject = mediaStream;
-                setStream(mediaStream);
-                setError(null);
-                console.log('[CameraCapture] startCamera - Camera stream successfully acquired and bound.');
-            }
-        } catch (err) {
-            console.error('[CameraCapture] Error accessing camera:', err);
-            setError('Could not access camera. Please check permissions.');
-        }
-    }, [facingMode]);
+    const streamRef = useRef<MediaStream | null>(null);
 
     const stopCamera = useCallback(() => {
-        console.log('[CameraCapture] stopCamera - Stopping stream tracks...');
-        if (stream) {
-            stream.getTracks().forEach(track => {
-                console.log('[CameraCapture] stopCamera - stopping track:', track.label);
+        console.log('[CameraCapture] stopCamera called');
+        const activeStream = streamRef.current;
+        if (activeStream) {
+            activeStream.getTracks().forEach(track => {
+                console.log('[CameraCapture] stopping track:', track.label);
                 track.stop();
             });
-            setStream(null);
+            streamRef.current = null;
         }
+        setStream(null);
         if (videoRef.current) {
             videoRef.current.srcObject = null;
         }
-    }, [stream]);
+    }, []);
+
+    // Consolidated effect to start/stop the camera cleanly based on facingMode state, preventing loop conditions
+    useEffect(() => {
+        console.log('[CameraCapture] Mount/facingMode change effect - starting camera with facingMode:', facingMode);
+        
+        let activeStream: MediaStream | null = null;
+        
+        const initCamera = async () => {
+            try {
+                const mediaStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: facingMode
+                    },
+                    audio: false
+                });
+
+                activeStream = mediaStream;
+                streamRef.current = mediaStream;
+                if (videoRef.current) {
+                    videoRef.current.srcObject = mediaStream;
+                    setStream(mediaStream);
+                    setError(null);
+                    console.log('[CameraCapture] Camera stream successfully acquired and bound.');
+                }
+            } catch (err) {
+                console.error('[CameraCapture] Error accessing camera:', err);
+                setError('Could not access camera. Please check permissions.');
+            }
+        };
+
+        initCamera();
+
+        return () => {
+            console.log('[CameraCapture] Cleanup effect - stopping camera for facingMode:', facingMode);
+            if (activeStream) {
+                activeStream.getTracks().forEach(track => {
+                    console.log('[CameraCapture] stopping track:', track.label);
+                    track.stop();
+                });
+            }
+            if (videoRef.current) {
+                videoRef.current.srcObject = null;
+            }
+            setStream(null);
+            streamRef.current = null;
+        };
+    }, [facingMode]);
 
     const stopRecording = useCallback(() => {
         console.log('[CameraCapture] stopRecording - current state:', mediaRecorderRef.current?.state);
@@ -144,28 +173,8 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
 
     const toggleCamera = useCallback(() => {
         console.log('[CameraCapture] toggleCamera - switching facingMode...');
-        stopCamera();
         setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
-    }, [stopCamera]);
-
-    // Mount effect to start camera
-    useEffect(() => {
-        console.log('[CameraCapture] Mounted - starting camera...');
-        startCamera();
-        return () => {
-            console.log('[CameraCapture] Unmounting - stopping camera...');
-            stopCamera();
-        };
-    }, [startCamera, stopCamera]);
-
-    // Active change effect for facingMode
-    useEffect(() => {
-        console.log('[CameraCapture] facingMode changed - restarting camera if stream is active');
-        if (stream) {
-            stopCamera();
-            startCamera();
-        }
-    }, [facingMode]);
+    }, []);
 
     const handleRetake = useCallback(() => {
         console.log('[CameraCapture] handleRetake called. Clearing previous recorded video.');
