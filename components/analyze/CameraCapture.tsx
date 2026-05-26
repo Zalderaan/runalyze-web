@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Camera, Video, StopCircle, RotateCcw, X, SwitchCamera } from 'lucide-react';
@@ -26,12 +26,13 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
     const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
 
     const startCamera = useCallback(async () => {
+        console.log('[CameraCapture] startCamera - Initiating camera with facingMode:', facingMode);
         try {
             const mediaStream = await navigator.mediaDevices.getUserMedia({
                 video: {
                     width: { ideal: 1280 },
                     height: { ideal: 720 },
-                    facingMode: 'environment' // Use back camera on mobile
+                    facingMode: facingMode // Use state value instead of hardcoded 'environment'
                 },
                 audio: false
             });
@@ -40,16 +41,21 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
                 videoRef.current.srcObject = mediaStream;
                 setStream(mediaStream);
                 setError(null);
+                console.log('[CameraCapture] startCamera - Camera stream successfully acquired and bound.');
             }
         } catch (err) {
-            console.error('Error accessing camera:', err);
+            console.error('[CameraCapture] Error accessing camera:', err);
             setError('Could not access camera. Please check permissions.');
         }
     }, [facingMode]);
 
     const stopCamera = useCallback(() => {
+        console.log('[CameraCapture] stopCamera - Stopping stream tracks...');
         if (stream) {
-            stream.getTracks().forEach(track => track.stop());
+            stream.getTracks().forEach(track => {
+                console.log('[CameraCapture] stopCamera - stopping track:', track.label);
+                track.stop();
+            });
             setStream(null);
         }
         if (videoRef.current) {
@@ -58,6 +64,7 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
     }, [stream]);
 
     const stopRecording = useCallback(() => {
+        console.log('[CameraCapture] stopRecording - current state:', mediaRecorderRef.current?.state);
         if (mediaRecorderRef.current?.state === 'recording') {
             mediaRecorderRef.current.stop();
             setIsRecording(false);
@@ -66,9 +73,13 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
     }, []);
 
     const startRecording = useCallback(() => {
-        if (!stream) return;
+        if (!stream) {
+            console.warn('[CameraCapture] Cannot start recording: stream is null');
+            return;
+        }
 
         chunksRef.current = [];
+        console.log('[CameraCapture] startRecording - Initializing MediaRecorder...');
         
         // Find the best supported MIME type
         const mimeTypes = [
@@ -88,19 +99,24 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
             }
         }
 
+        console.log('[CameraCapture] Selected MIME Type for MediaRecorder:', selectedMimeType || 'default');
+
         const options = selectedMimeType ? { mimeType: selectedMimeType } : undefined;
         const mediaRecorder = new MediaRecorder(stream, options);
 
         mediaRecorder.ondataavailable = (event) => {
+            console.log('[CameraCapture] ondataavailable received chunk size:', event.data.size);
             if (event.data.size > 0) {
                 chunksRef.current.push(event.data);
             }
         };
 
         mediaRecorder.onstop = () => {
+            console.log('[CameraCapture] MediaRecorder stopped. Total chunks collected:', chunksRef.current.length);
             const blob = new Blob(chunksRef.current, { 
                 type: mediaRecorder.mimeType || 'video/webm' 
             });
+            console.log('[CameraCapture] Created Blob. Size:', blob.size, 'MIME Type:', blob.type);
             setRecordedVideo(blob);
             setIsPreviewing(true);
         };
@@ -108,6 +124,7 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
         mediaRecorderRef.current = mediaRecorder;
         mediaRecorder.start();
         setIsRecording(true);
+        console.log('[CameraCapture] MediaRecorder started.');
 
         // Start timer
         const startTime = Date.now();
@@ -118,6 +135,7 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
         // Auto-stop after 30 seconds
         setTimeout(() => {
             if (mediaRecorderRef.current?.state === 'recording') {
+                console.log('[CameraCapture] Auto-stopping recording after 30 seconds...');
                 stopRecording();
             }
             clearInterval(timer);
@@ -125,33 +143,32 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
     }, [stream, stopRecording]);
 
     const toggleCamera = useCallback(() => {
+        console.log('[CameraCapture] toggleCamera - switching facingMode...');
         stopCamera();
         setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
     }, [stopCamera]);
 
-    // Update useEffect to restart camera when facingMode changes
-    useState(() => {
+    // Mount effect to start camera
+    useEffect(() => {
+        console.log('[CameraCapture] Mounted - starting camera...');
         startCamera();
-        return () => stopCamera();
-    });
+        return () => {
+            console.log('[CameraCapture] Unmounting - stopping camera...');
+            stopCamera();
+        };
+    }, [startCamera, stopCamera]);
 
-    // Add effect to restart camera when facingMode changes
-    useCallback(() => {
+    // Active change effect for facingMode
+    useEffect(() => {
+        console.log('[CameraCapture] facingMode changed - restarting camera if stream is active');
         if (stream) {
             stopCamera();
             startCamera();
         }
     }, [facingMode]);
 
-    // const stopRecording = useCallback(() => {
-    //     if (mediaRecorderRef.current?.state === 'recording') {
-    //         mediaRecorderRef.current.stop();
-    //         setIsRecording(false);
-    //         setRecordingTime(0);
-    //     }
-    // }, []);
-
     const handleRetake = useCallback(() => {
+        console.log('[CameraCapture] handleRetake called. Clearing previous recorded video.');
         setRecordedVideo(null);
         setIsPreviewing(false);
         setRecordingTime(0);
@@ -165,16 +182,20 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
             const file = new File([recordedVideo], `recording-${Date.now()}.${extension}`, {
                 type: recordedVideo.type
             });
+            console.log('[CameraCapture] handleUseVideo - generated File object:', {
+                name: file.name,
+                type: file.type,
+                size: file.size
+            });
             stopCamera();
             onCapture(file);
+        } else {
+            console.warn('[CameraCapture] handleUseVideo - recordedVideo is null!');
         }
     }, [recordedVideo, stopCamera, onCapture]);
 
-    // Start camera on mount
-    useState(() => {
-        startCamera();
-        return () => stopCamera();
-    });
+
+
 
     return (
         <Card className="w-full max-w-2xl mx-auto">

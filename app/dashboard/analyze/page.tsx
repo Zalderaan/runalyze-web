@@ -332,52 +332,64 @@ export default function AnalyzePage() {
     }
 
     async function handleAnalyze() {
-        if (!videoFile) return;
+        console.log('[AnalyzePage] handleAnalyze called.');
+        if (!videoFile) {
+            console.warn('[AnalyzePage] handleAnalyze - No videoFile selected!');
+            return;
+        }
         if (!user) {
+            console.warn('[AnalyzePage] handleAnalyze - No user signed in!');
             setError("Please sign in to analyze videos");
             return;
         }
+
+        console.log('[AnalyzePage] Selected videoFile details:', {
+            name: videoFile.name,
+            type: videoFile.type,
+            size: videoFile.size
+        });
 
         // Clear previous errors and results
         setError(null);
         setResults(null);
         setIsProcessing(true);
         setProgress(null);
-        // setJobId(null);
 
         try {
             const formData = new FormData();
             formData.append("file", videoFile);
             formData.append("user_id", user.id.toString());
 
-            console.log("Starting upload to:", `${API_URL}/process-video-async`); // ✅ Debug
+            console.log('[AnalyzePage] Starting upload POST request to:', `${API_URL}/process-video-async`);
 
-            // ✅ STEP 1: Start processing and get job_id
             const response = await fetch(`${API_URL}/process-video-async`, {
                 method: 'POST',
                 body: formData,
             });
 
+            console.log('[AnalyzePage] Upload response status:', response.status, response.statusText);
+
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
+                console.error('[AnalyzePage] Error details from response:', errorData);
                 throw new Error(errorData.detail || "Failed to start processing");
             }
 
             const { job_id, status } = await response.json();
-            console.log("✅ Received job_id:", job_id, "Status:", status);
+            console.log("✅ [AnalyzePage] Received job_id:", job_id, "Status:", status);
 
             // ✅ Persist job_id
             localStorage.setItem('activeJobId', job_id);
 
             // ✅ Wait for backend to initialize progress tracker
-            console.log("Waiting 1 second for backend to initialize...");
+            console.log("[AnalyzePage] Waiting 1 second for backend to initialize...");
             await new Promise(resolve => setTimeout(resolve, 1000));
 
             // ✅ Connect to stream
             connectToProgressStream(job_id);
 
         } catch (error) {
-            console.error('❌ Error starting analysis:', error);
+            console.error('❌ [AnalyzePage] Error starting analysis:', error);
 
             if (error instanceof TypeError && error.message.includes('fetch')) {
                 setError("Unable to connect to analysis service. Please check your internet connection and try again.");
@@ -392,6 +404,11 @@ export default function AnalyzePage() {
     
 
     function handleCameraCapture(file: File) {
+        console.log('[AnalyzePage] handleCameraCapture received captured file:', {
+            name: file.name,
+            type: file.type,
+            size: file.size
+        });
         setVideoFile(file);
         setShowCamera(false);
         setError(null);
