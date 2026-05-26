@@ -69,9 +69,27 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
         if (!stream) return;
 
         chunksRef.current = [];
-        const mediaRecorder = new MediaRecorder(stream, {
-            mimeType: 'video/webm;codecs=vp9'
-        });
+        
+        // Find the best supported MIME type
+        const mimeTypes = [
+            'video/mp4;codecs=h264',
+            'video/mp4',
+            'video/webm;codecs=vp9',
+            'video/webm;codecs=vp8',
+            'video/webm;codecs=h264',
+            'video/webm'
+        ];
+        
+        let selectedMimeType = '';
+        for (const type of mimeTypes) {
+            if (MediaRecorder.isTypeSupported(type)) {
+                selectedMimeType = type;
+                break;
+            }
+        }
+
+        const options = selectedMimeType ? { mimeType: selectedMimeType } : undefined;
+        const mediaRecorder = new MediaRecorder(stream, options);
 
         mediaRecorder.ondataavailable = (event) => {
             if (event.data.size > 0) {
@@ -80,7 +98,9 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
         };
 
         mediaRecorder.onstop = () => {
-            const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+            const blob = new Blob(chunksRef.current, { 
+                type: mediaRecorder.mimeType || 'video/webm' 
+            });
             setRecordedVideo(blob);
             setIsPreviewing(true);
         };
@@ -140,8 +160,10 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
 
     const handleUseVideo = useCallback(() => {
         if (recordedVideo) {
-            const file = new File([recordedVideo], `recording-${Date.now()}.webm`, {
-                type: 'video/webm'
+            const isMp4 = recordedVideo.type.includes('mp4');
+            const extension = isMp4 ? 'mp4' : 'webm';
+            const file = new File([recordedVideo], `recording-${Date.now()}.${extension}`, {
+                type: recordedVideo.type
             });
             stopCamera();
             onCapture(file);
