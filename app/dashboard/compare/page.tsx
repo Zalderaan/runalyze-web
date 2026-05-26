@@ -232,9 +232,9 @@ function CompareContent() {
     return (
         <div className="container mx-auto max-w-6xl px-4 py-8 space-y-8">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
+                    <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
                         <GitCompare className="h-6 w-6 text-blue-600" />
                     </div>
                     <div>
@@ -242,9 +242,9 @@ function CompareContent() {
                         <p className="text-muted-foreground">Side by side comparison of your running form</p>
                     </div>
                 </div>
-                <Link href="/dashboard/history">
-                    <Button variant="outline">
-                        <History className="h-4 w-4 mr-2" />
+                <Link href="/dashboard/history" className="w-full sm:w-auto">
+                    <Button variant="outline" className="w-full sm:w-auto">
+                        <History className="h-4 w-4 mr-2 flex-shrink-0" />
                         Compare Different Runs
                     </Button>
                 </Link>
@@ -298,20 +298,20 @@ function CompareContent() {
                 <CardContent>
                     <div className="space-y-4">
                         {metrics.map(({ label, key }) => (
-                            <div key={key} className="flex items-center justify-between py-3 border-b last:border-0">
-                                <span className="font-medium">{label}</span>
-                                <div className="flex items-center gap-8">
+                            <div key={key} className="flex flex-col sm:flex-row sm:items-center justify-between py-3 border-b last:border-0 gap-2 sm:gap-0">
+                                <span className="font-medium text-sm sm:text-base">{label}</span>
+                                <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-8 w-full sm:w-auto">
                                     <span className={cn(
-                                        "w-20 text-right",
+                                        "w-16 sm:w-20 text-left sm:text-right text-sm sm:text-base",
                                         getScoreColor(firstAnalysis[key])
                                     )}>
                                         {firstAnalysis[key].toFixed(1)}%
                                     </span>
-                                    <div className="w-24 flex justify-center">
+                                    <div className="w-20 sm:w-24 flex justify-center">
                                         {renderDiff(secondAnalysis[key], firstAnalysis[key])}
                                     </div>
                                     <span className={cn(
-                                        "w-20 text-right",
+                                        "w-16 sm:w-20 text-right text-sm sm:text-base",
                                         getScoreColor(secondAnalysis[key])
                                     )}>
                                         {secondAnalysis[key].toFixed(1)}%

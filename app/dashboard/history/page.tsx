@@ -493,7 +493,7 @@ export default function HistoryPage() {
 
                 {/* Header Section */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-blue-100 rounded-lg">
                                 <History className="h-6 w-6 text-blue-600" />
@@ -505,11 +505,12 @@ export default function HistoryPage() {
                         </div>
 
                         {/* Compare Mode & Export Toggle */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                             {history.length > 0 && (
                                 <Button
                                     variant="outline"
                                     onClick={exportHistoryToCSV}
+                                    className="w-full sm:w-auto"
                                 >
                                     <Download className="h-4 w-4 mr-2" />
                                     Export All
@@ -519,6 +520,7 @@ export default function HistoryPage() {
                                 <Button
                                     variant={compareMode ? "secondary" : "outline"}
                                     onClick={() => compareMode ? exitCompareMode() : setCompareMode(true)}
+                                    className="w-full sm:w-auto"
                                 >
                                     <GitCompare className="h-4 w-4 mr-2" />
                                     {compareMode ? "Cancel Compare" : "Compare Runs"}
