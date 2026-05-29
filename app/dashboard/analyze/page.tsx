@@ -22,7 +22,7 @@ import {
     Info,
     Camera
 } from 'lucide-react';
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Results } from "@/components/analyze/results";
 import { useAuth } from "@/context/user_context";
 import { useHistory } from "@/hooks/use-history";
@@ -97,6 +97,11 @@ export default function AnalyzePage() {
     const [fatigueLevel, setFatigueLevel] = useState<number | null>(null);
     const [isSavingFatigue, setIsSavingFatigue] = useState(false);
 
+    // Refs to manage progress stream state across callback updates and prevent stale closures
+    const progressStageRef = useRef<string>("");
+    const activeEventSourceRef = useRef<EventSource | null>(null);
+    const retryCountRef = useRef<number>(0);
+
     // ✅ NEW: Memoized fetchResults so it can be safely used in callbacks
     const fetchResults = useCallback(async (jobId: string) => {
         try {
@@ -152,59 +157,88 @@ export default function AnalyzePage() {
         }
     }, [API_URL, renameAnalysis]);
 
-    // ✅ NEW: Refactored SSE connection logic
+    // ✅ NEW: Refactored SSE connection logic with exponential backoff retries and Ref-safe state
     const connectToProgressStream = useCallback((jobId: string) => {
         const sseUrl = `${API_URL}/progress/${jobId}`;
-        console.log("🔌 Connecting to SSE:", sseUrl);
+        const MAX_RETRIES = 5;
 
-        const eventSource = new EventSource(sseUrl);
+        // Close any existing active connection cleanly first
+        if (activeEventSourceRef.current) {
+            activeEventSourceRef.current.close();
+            activeEventSourceRef.current = null;
+        }
 
-        eventSource.onopen = () => {
-            console.log("✅ SSE connection opened successfully");
+        const connect = () => {
+            console.log(`🔌 Connecting to SSE (Attempt ${retryCountRef.current + 1}/${MAX_RETRIES}):`, sseUrl);
+            const eventSource = new EventSource(sseUrl);
+            activeEventSourceRef.current = eventSource;
+
+            eventSource.onopen = () => {
+                console.log("✅ SSE connection opened successfully");
+                retryCountRef.current = 0; // Reset retries on successful connection
+            };
+
+            eventSource.onmessage = (event) => {
+                console.log("📨 SSE message received:", event.data);
+
+                try {
+                    const data: ProgressUpdate = JSON.parse(event.data);
+                    progressStageRef.current = data.stage;
+
+                    if (data.stage === "error") {
+                        console.error("❌ Backend error:", data);
+                        setError(data.message || "Analysis failed");
+                        localStorage.removeItem('activeJobId');
+                        eventSource.close();
+                        activeEventSourceRef.current = null;
+                        setIsProcessing(false);
+                        return;
+                    }
+
+                    setProgress(data);
+
+                    if (data.progress >= 100 || data.stage === "complete") {
+                        console.log("✅ Processing complete, fetching results...");
+                        eventSource.close();
+                        activeEventSourceRef.current = null;
+                        fetchResults(jobId);
+                    }
+                } catch (parseError) {
+                    console.error("❌ Failed to parse SSE data:", parseError, event.data);
+                }
+            };
+
+            eventSource.onerror = (error) => {
+                console.error('❌ SSE Error:', error);
+                eventSource.close();
+                activeEventSourceRef.current = null;
+
+                // Handle retries on connection loss if we're not complete/error
+                if (progressStageRef.current !== "complete" && progressStageRef.current !== "error") {
+                    if (retryCountRef.current < MAX_RETRIES) {
+                        const delay = Math.min(2000 * Math.pow(2, retryCountRef.current), 15000);
+                        console.log(`🔄 Lost connection. Retrying in ${delay}ms...`);
+                        retryCountRef.current++;
+                        setTimeout(connect, delay);
+                        return;
+                    }
+                    
+                    // Keep the jobId in localStorage so the user can try refreshing manually
+                    setError("Lost connection to server. You can try refreshing the page to resume.");
+                }
+                setIsProcessing(false);
+            };
         };
 
-        eventSource.onmessage = (event) => {
-            console.log("📨 SSE message received:", event.data);
+        connect();
 
-            try {
-                const data: ProgressUpdate = JSON.parse(event.data);
-
-                if (data.stage === "error") {
-                    console.error("❌ Backend error:", data);
-                    setError(data.message || "Analysis failed");
-                    localStorage.removeItem('activeJobId');
-                    eventSource.close();
-                    setIsProcessing(false);
-                    return;
-                }
-
-                setProgress(data);
-
-                if (data.progress >= 100) {
-                    console.log("✅ Processing complete, fetching results...");
-                    eventSource.close();
-                    fetchResults(jobId);
-                }
-            } catch (parseError) {
-                console.error("❌ Failed to parse SSE data:", parseError, event.data);
+        return () => {
+            if (activeEventSourceRef.current) {
+                activeEventSourceRef.current.close();
+                activeEventSourceRef.current = null;
             }
         };
-
-        eventSource.onerror = (error) => {
-            console.error('❌ SSE Error:', error);
-            eventSource.close();
-
-            // If we're still processing but lost connection, try to reconnect after a delay
-            // logic can be added here if needed, but for now we'll just show error
-            if (progress?.stage !== "complete") {
-                // Keep the jobId in localStorage so the user can try refreshing
-                setError("Lost connection to server. You can try refreshing the page to resume.");
-            }
-            setIsProcessing(false);
-        };
-
-        return () => eventSource.close();
-    }, [API_URL, progress, fetchResults]);
+    }, [API_URL, fetchResults]);
 
     // ✅ NEW: Resume analysis on mount
     useEffect(() => {
