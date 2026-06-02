@@ -20,7 +20,7 @@ interface DrillCardDialogProps {
     drillName: string;
     reason: string;
     targetMuscles?: string[];
-    sources?: { title: string; url: string }[];
+    reference?: string;
 }
 
 export function DrillCardDialog({ 
@@ -28,7 +28,7 @@ export function DrillCardDialog({
     drillName, 
     reason, 
     targetMuscles, 
-    sources 
+    reference 
 }: DrillCardDialogProps) {
     const [feedback, setFeedback] = useState<'helpful' | 'not_helpful' | null>(null);
     const { isLoading, error, markHelpful, markNotHelpful } = useDrillHelpful();
@@ -105,29 +105,49 @@ export function DrillCardDialog({
                         </div>
                     )}
 
-                    {/* Sources */}
-                    {sources && sources.length > 0 && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <div className="flex items-center gap-1 mb-2">
-                                <span className="text-sm font-semibold text-gray-900">📚 Learn more:</span>
+                    {/* Reference */}
+                    {reference && (() => {
+                        const urls = reference
+                            .split(/[\s,\n]+/)
+                            .map(u => u.trim())
+                            .filter(u => u.startsWith("http://") || u.startsWith("https://"));
+                        
+                        if (urls.length === 0) {
+                            return (
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <div className="flex items-center gap-1 mb-2">
+                                        <span className="text-sm font-semibold text-gray-900">📚 Reference:</span>
+                                    </div>
+                                    <p className="text-sm text-gray-700 leading-relaxed">
+                                        {reference}
+                                    </p>
+                                </div>
+                            );
+                        }
+
+                        return (
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div className="flex items-center gap-1 mb-2">
+                                    <span className="text-sm font-semibold text-gray-900">📚 Learn more:</span>
+                                </div>
+                                <ul className="space-y-2">
+                                    {urls.map((url, idx) => (
+                                        <li key={idx} className="flex items-start gap-2">
+                                            <span className="text-blue-600 text-xs mt-0.5">•</span>
+                                            <Link 
+                                                href={url} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline underline-offset-2 leading-relaxed block break-all"
+                                            >
+                                                {url}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
-                            <ul className="space-y-2">
-                                {sources.map((source, idx) => (
-                                    <li key={idx} className="flex items-start gap-2">
-                                        <span className="text-blue-600 text-xs mt-0.5">•</span>
-                                        <Link 
-                                            href={source.url} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline underline-offset-2 leading-relaxed"
-                                        >
-                                            {source.title}
-                                        </Link>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
+                        );
+                    })()}
 
                     {/* Error Display */}
                     {error && (

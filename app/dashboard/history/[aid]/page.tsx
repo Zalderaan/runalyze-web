@@ -816,7 +816,7 @@ export default function AnalysisDetails() {
                                             <CardTitle className="text-lg font-semibold text-gray-900 leading-tight flex-1">
                                                 {drill.drill_name || "Untitled Drill"}
                                             </CardTitle>
-                                            <DrillCardDialog drillId={drill.id} drillName={drill.drill_name} reason={drill.justification} />
+                                            <DrillCardDialog drillId={drill.id} drillName={drill.drill_name} reason={drill.justification} reference={drill.reference} />
                                         </div>
 
                                         <div className="flex items-center gap-2 flex-wrap">
