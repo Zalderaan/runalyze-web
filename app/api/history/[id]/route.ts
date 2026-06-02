@@ -62,7 +62,7 @@ export async function GET(
             // console.log("Hydrating drills:", allDrillIds);
             const { data: latestDrills, error: drillError } = await supabase
                 .from('drills')
-                .select('id, video_url, thumbnail_url, drill_templates(video_url, thumbnail_url)')
+                .select('id, video_url, thumbnail_url, instructions, instructions_override, drill_templates(video_url, thumbnail_url, instructions)')
                 .in('id', allDrillIds);
 
             if (drillError) {
@@ -79,11 +79,18 @@ export async function GET(
                     const resolvedVideo = tpl.video_url || d.video_url || null;
                     const resolvedThumb = tpl.thumbnail_url || d.thumbnail_url || null;
                     
+                    const hasOverrideSteps = d.instructions_override &&
+                        Array.isArray(d.instructions_override.steps) &&
+                        d.instructions_override.steps.length > 0;
+                        
+                    const resolvedInstructions = hasOverrideSteps ? d.instructions_override : (tpl.instructions || d.instructions || null);
+                    
                     // console.log(`Drill ${d.id} resolved video:`, resolvedVideo);
                     
                     return [d.id, {
                         video_url: resolvedVideo,
-                        thumbnail_url: resolvedThumb
+                        thumbnail_url: resolvedThumb,
+                        instructions: resolvedInstructions
                     }];
                 }));
 
@@ -96,6 +103,9 @@ export async function GET(
                             if (latest) {
                                 d.video_url = latest.video_url;
                                 d.thumbnail_url = latest.thumbnail_url;
+                                if (latest.instructions) {
+                                    d.instructions = latest.instructions;
+                                }
                             }
                         });
                     }
