@@ -41,7 +41,7 @@ export function VideoTrimmer({ file, onTrimComplete, onCancel }: VideoTrimmerPro
                 // Dynamically load script to bypass Turbopack dynamic import limitations
                 const loadScript = (src: string) => {
                     return new Promise((resolve, reject) => {
-                        // @ts-expect-error
+                        // @ts-expect-error ignore this
                         if (window.FFmpegWASM) {
                             return resolve(true);
                         }
@@ -68,12 +68,12 @@ export function VideoTrimmer({ file, onTrimComplete, onCancel }: VideoTrimmerPro
 
                 await loadScript("/ffmpeg/ffmpeg.js");
 
-                // @ts-expect-error
+                // @ts-expect-error ignore this
                 if (!window.FFmpegWASM) {
                     throw new Error("FFmpegWASM is not defined after loading script.");
                 }
 
-                // @ts-expect-error
+                // @ts-expect-error ignore this
                 const fm = new window.FFmpegWASM.FFmpeg();
 
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
