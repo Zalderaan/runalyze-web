@@ -225,7 +225,7 @@ export default function AnalyzePage() {
                         setTimeout(connect, delay);
                         return;
                     }
-                    
+
                     // Keep the jobId in localStorage so the user can try refreshing manually
                     setError("Lost connection to server. You can try refreshing the page to resume.");
                 }
@@ -280,39 +280,39 @@ export default function AnalyzePage() {
         }
     };
 
-    async function validateVideoDuration(file: File): Promise<{ valid: boolean; duration: number; error?: string }> {
-        return new Promise((resolve) => {
-            const video = document.createElement('video');
-            video.preload = 'metadata';
+    // async function validateVideoDuration(file: File): Promise<{ valid: boolean; duration: number; error?: string }> {
+    //     return new Promise((resolve) => {
+    //         const video = document.createElement('video');
+    //         video.preload = 'metadata';
 
-            video.onloadedmetadata = () => {
-                window.URL.revokeObjectURL(video.src);
-                const duration = video.duration;
+    //         video.onloadedmetadata = () => {
+    //             window.URL.revokeObjectURL(video.src);
+    //             const duration = video.duration;
 
-                const MAX_DURATION = 10; // 10 seconds
+    //             const MAX_DURATION = 10; // 10 seconds
 
-                if (duration > MAX_DURATION) {
-                    resolve({
-                        valid: false,
-                        duration,
-                        error: `Video too long (${duration.toFixed(1)}s). Maximum ${MAX_DURATION}s allowed. Please trim your video to ${MAX_DURATION} seconds or less.`
-                    });
-                } else {
-                    resolve({ valid: true, duration });
-                }
-            };
+    //             if (duration > MAX_DURATION) {
+    //                 resolve({
+    //                     valid: false,
+    //                     duration,
+    //                     error: `Video too long (${duration.toFixed(1)}s). Maximum ${MAX_DURATION}s allowed. Please trim your video to ${MAX_DURATION} seconds or less.`
+    //                 });
+    //             } else {
+    //                 resolve({ valid: true, duration });
+    //             }
+    //         };
 
-            video.onerror = () => {
-                resolve({
-                    valid: false,
-                    duration: 0,
-                    error: 'Unable to read video file. Please ensure it is a valid video format.'
-                });
-            };
+    //         video.onerror = () => {
+    //             resolve({
+    //                 valid: false,
+    //                 duration: 0,
+    //                 error: 'Unable to read video file. Please ensure it is a valid video format.'
+    //             });
+    //         };
 
-            video.src = URL.createObjectURL(file);
-        });
-    }
+    //         video.src = URL.createObjectURL(file);
+    //     });
+    // }
 
     const formatFileSize = (bytes: number) => {
         if (bytes === 0) return '0 Bytes';
@@ -429,7 +429,7 @@ export default function AnalyzePage() {
         }
     }
 
-    
+
 
     function handleCameraCapture(file: File) {
         console.log('[AnalyzePage] handleCameraCapture received captured file:', {

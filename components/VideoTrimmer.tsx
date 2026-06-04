@@ -14,6 +14,7 @@ interface VideoTrimmerProps {
 
 export function VideoTrimmer({ file, onTrimComplete, onCancel }: VideoTrimmerProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [ffmpeg, setFfmpeg] = useState<any>(null);
     const [isLoaded, setIsLoaded] = useState(false);
     const [isTrimming, setIsTrimming] = useState(false);
@@ -40,7 +41,7 @@ export function VideoTrimmer({ file, onTrimComplete, onCancel }: VideoTrimmerPro
                 // Dynamically load script to bypass Turbopack dynamic import limitations
                 const loadScript = (src: string) => {
                     return new Promise((resolve, reject) => {
-                        // @ts-ignore
+                        // @ts-expect-error
                         if (window.FFmpegWASM) {
                             return resolve(true);
                         }
@@ -67,13 +68,15 @@ export function VideoTrimmer({ file, onTrimComplete, onCancel }: VideoTrimmerPro
 
                 await loadScript("/ffmpeg/ffmpeg.js");
 
-                // @ts-ignore
+                // @ts-expect-error
                 if (!window.FFmpegWASM) {
                     throw new Error("FFmpegWASM is not defined after loading script.");
                 }
 
-                // @ts-ignore
+                // @ts-expect-error
                 const fm = new window.FFmpegWASM.FFmpeg();
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 fm.on("progress", ({ progress }: any) => {
                     setProgress(progress * 100);
                 });
@@ -108,7 +111,7 @@ export function VideoTrimmer({ file, onTrimComplete, onCancel }: VideoTrimmerPro
         if (videoRef.current) {
             const duration = videoRef.current.duration;
             setVideoDuration(duration);
-            
+
             // Set initial range: 0 to min(duration, 10s)
             setRange([0, Math.min(duration, 10)]);
         }
@@ -118,7 +121,7 @@ export function VideoTrimmer({ file, onTrimComplete, onCancel }: VideoTrimmerPro
     const handleTimeUpdate = () => {
         if (!videoRef.current) return;
         const currentTime = videoRef.current.currentTime;
-        
+
         // Loop back to start of range if playing hits the end of range
         if (isPlaying && currentTime >= range[1]) {
             videoRef.current.currentTime = range[0];
@@ -181,7 +184,7 @@ export function VideoTrimmer({ file, onTrimComplete, onCancel }: VideoTrimmerPro
             // Read the result
             const fileData = await ffmpeg.readFile(outputFileName);
             const data = new Uint8Array(fileData as ArrayBuffer);
-            
+
             // Create a new File object
             const trimmedBlob = new Blob([data.buffer], { type: file.type });
             const trimmedFile = new File([trimmedBlob], `trimmed_${file.name}`, { type: file.type });
@@ -206,7 +209,7 @@ export function VideoTrimmer({ file, onTrimComplete, onCancel }: VideoTrimmerPro
 
     return (
         <Dialog open={true} onOpenChange={(open) => !open && !isTrimming && onCancel()}>
-            <DialogContent 
+            <DialogContent
                 className="max-w-3xl sm:max-w-2xl bg-white w-[95vw] p-4 sm:p-6 rounded-lg overflow-hidden"
                 onPointerDownOutside={(e) => e.preventDefault()}
                 onEscapeKeyDown={(e) => e.preventDefault()}
@@ -231,7 +234,7 @@ export function VideoTrimmer({ file, onTrimComplete, onCancel }: VideoTrimmerPro
                     <div className="bg-orange-50 border border-orange-200 text-orange-800 px-4 py-2 rounded-md text-sm flex gap-2 items-center">
                         <AlertCircle className="w-4 h-4 shrink-0 text-orange-500" />
                         <p>
-                            Your video is <b>{videoDuration.toFixed(1)}s</b> long. 
+                            Your video is <b>{videoDuration.toFixed(1)}s</b> long.
                             You <b>must</b> trim it down to 10 seconds or less to process.
                         </p>
                     </div>
@@ -255,9 +258,9 @@ export function VideoTrimmer({ file, onTrimComplete, onCancel }: VideoTrimmerPro
                         )}
                         {/* Play/Pause Overlay */}
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <Button 
-                                variant="secondary" 
-                                size="icon" 
+                            <Button
+                                variant="secondary"
+                                size="icon"
                                 className="w-12 h-12 rounded-full opacity-0 hover:opacity-100 transition-opacity pointer-events-auto bg-white/50 backdrop-blur-sm"
                                 onClick={togglePlay}
                             >
@@ -275,7 +278,7 @@ export function VideoTrimmer({ file, onTrimComplete, onCancel }: VideoTrimmerPro
                             </span>
                             <span>{formatTime(range[1])}</span>
                         </div>
-                        
+
                         <Slider
                             min={0}
                             max={videoDuration || 100}
@@ -295,15 +298,15 @@ export function VideoTrimmer({ file, onTrimComplete, onCancel }: VideoTrimmerPro
 
                     {/* Actions */}
                     <div className="flex justify-end gap-3 pt-4 border-t">
-                        <Button 
-                            variant="outline" 
+                        <Button
+                            variant="outline"
                             onClick={onCancel}
                             disabled={isTrimming}
                         >
                             Cancel
                         </Button>
-                        <Button 
-                            onClick={handleTrim} 
+                        <Button
+                            onClick={handleTrim}
                             disabled={isTrimming || !isLoaded || selectedDuration > 10}
                             className="min-w-[120px]"
                         >
