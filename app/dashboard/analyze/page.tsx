@@ -31,6 +31,7 @@ import { SampleDialog } from "@/components/sample/sample-dialog";
 import { Progress } from "@/components/ui/progress";
 import { CameraCapture } from "@/components/analyze/CameraCapture";
 import { RoleGuard } from "@/components/RoleGuard";
+import { VideoTrimmer } from "@/components/VideoTrimmer";
 
 interface DatabaseRecords {
     success: boolean;
@@ -78,6 +79,8 @@ console.log("API_URL: ", API_URL);
 
 export default function AnalyzePage() {
     const [showCamera, setShowCamera] = useState(false);
+    const [showTrimmer, setShowTrimmer] = useState(false);
+    const [rawVideoFile, setRawVideoFile] = useState<File | null>(null);
     const [videoFile, setVideoFile] = useState<File | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState<ProgressUpdate | null>(null);
@@ -347,20 +350,11 @@ export default function AnalyzePage() {
                 return;
             }
 
-            // ✅ Validate video duration
-            const { valid, duration, error: durationError } = await validateVideoDuration(file);
-
-            if (!valid) {
-                setError(durationError || 'Video validation failed');
-                setVideoFile(null);
-                e.target.value = ''; // Reset input
-                return;
-            }
-
             // ✅ All validations passed
-            console.log(`✅ Video validation passed: ${duration.toFixed(1)}s`);
-            setVideoFile(file);
+            setRawVideoFile(file);
+            setShowTrimmer(true);
         } else {
+            setRawVideoFile(null);
             setVideoFile(null);
         }
     }
@@ -443,7 +437,8 @@ export default function AnalyzePage() {
             type: file.type,
             size: file.size
         });
-        setVideoFile(file);
+        setRawVideoFile(file);
+        setShowTrimmer(true);
         setShowCamera(false);
         setError(null);
         setResults(null);
@@ -585,6 +580,23 @@ export default function AnalyzePage() {
 
                 {/* See Example Button */}
                 <SampleDialog />
+
+                {/* Video Trimmer Modal */}
+                {showTrimmer && rawVideoFile && (
+                    <VideoTrimmer
+                        file={rawVideoFile}
+                        onTrimComplete={(trimmedFile) => {
+                            setVideoFile(trimmedFile);
+                            setRawVideoFile(null);
+                            setShowTrimmer(false);
+                        }}
+                        onCancel={() => {
+                            setRawVideoFile(null);
+                            setVideoFile(null);
+                            setShowTrimmer(false);
+                        }}
+                    />
+                )}
 
                 {/* Camera Modal */}
                 {showCamera && (
