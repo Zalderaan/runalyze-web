@@ -45,12 +45,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setIsLoading(true);
             try {
                 // Call your server action to get the current user
-                const user = await getCurrentUser();
-                // await getAllCookies();
-                // await getEachCookie();
-                // console.log("user from gcuser: ", user);
-                if (user) {
-                    setUser(user);
+                const result = await getCurrentUser();
+                if (result) {
+                    if ('error' in result) {
+                        if (result.error === 'USER_NOT_FOUND' || result.error === 'INVALID_SESSION') {
+                            await signOut();
+                            setUser(null);
+                            router.push("/auth/login");
+                        }
+                    } else {
+                        setUser(result);
+                    }
                 }
             } catch (error) {
                 console.error("Error loading user:", error);
@@ -60,7 +65,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         };
 
         loadUser();
-    }, []);
+    }, [router]);
 
     // sign up function
     const signUpHandler = async (username: string, email: string, password: string) => {
@@ -68,7 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
             await signUp({ username, email, password });
             const fullUser = await getCurrentUser();
-            if (fullUser) {
+            if (fullUser && !('error' in fullUser)) {
                 setUser(fullUser);
                 router.push("/onboarding");
             } else {
@@ -152,7 +157,7 @@ export const useAuth = () => {
     return context;
 };
 
-async function getCurrentUser() {
+async function getCurrentUser(): Promise<User | { error: string } | null> {
     // Example: get session cookie and decrypt
     // console.log("gcuser called")
     // const cookie = (typeof window === 'undefined')
@@ -165,23 +170,26 @@ async function getCurrentUser() {
     const session = await decrypt(cookie);
     // console.log("session decrypt ", session);
 
-    if (session?.userId) {
-        try {
-            const response = await fetch(`/api/user/${session.userId}`);
-            if (!response.ok) {
-                console.error("Error fetching user details: ", response.statusText);
-                return null;
+    if (!session?.userId) {
+        return { error: 'INVALID_SESSION' };
+    }
+
+    try {
+        const response = await fetch(`/api/user/${session.userId}`);
+        if (!response.ok) {
+            console.error("Error fetching user details: ", response.statusText);
+            if (response.status === 404) {
+                return { error: 'USER_NOT_FOUND' };
             }
-            const data = await response.json();
-            // console.log("data from gcuser: ", data);
-            return data.user;
-        } catch (error) {
-            console.error("Error fetching user details: ", error);
             return null;
         }
+        const data = await response.json();
+        // console.log("data from gcuser: ", data);
+        return data.user;
+    } catch (error) {
+        console.error("Error fetching user details: ", error);
+        return null;
     }
-    return null;
-    // return session?.userId ? { id: session.userId } : null;
 }
 
 // async function getCurrentUser() {
