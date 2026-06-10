@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
             height_cm: user.height_cm,
             weight_kg: user.weight_kg,
             bmi: user.bmi,
-            time_3k: user.timek_3k,
+            time_3k: user.time_3k,
             time_5k: user.time_5k,
             time_10k: user.time_10k
         },

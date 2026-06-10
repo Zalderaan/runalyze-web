@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/user_context';
+import { useAuth, User } from '@/context/user_context';
 import { useUpdateProfile, UpdateProfileData } from '@/hooks/users/user-specific/use-update-profile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,19 +55,7 @@ const getBMILabel = (bmi: number): { label: string; color: string } => {
 
 export default function OnboardingPage() {
     const { user } = useAuth();
-    const router = useRouter();
 
-    const [formData, setFormData] = useState({
-        height_cm: user?.height_cm?.toString() || '',
-        weight_kg: user?.weight_kg?.toString() || '',
-        time_3k: user?.time_3k ? secsToTime(user.time_3k) : '',
-        time_5k: user?.time_5k ? secsToTime(user.time_5k) : '',
-        time_10k: user?.time_10k ? secsToTime(user.time_10k) : '',
-    });
-
-    const { updateProfileAsync, isUpdatingProfile } = useUpdateProfile(user?.id ?? "");
-
-    // Guard: must have user to call hook
     if (!user) {
         return (
             <div className="flex-1 flex items-center justify-center">
@@ -78,6 +66,23 @@ export default function OnboardingPage() {
             </div>
         );
     }
+
+    return <OnboardingForm user={user} />;
+}
+
+function OnboardingForm({ user }: { user: User }) {
+    const { updateUser } = useAuth();
+    const router = useRouter();
+
+    const [formData, setFormData] = useState({
+        height_cm: user.height_cm?.toString() || '',
+        weight_kg: user.weight_kg?.toString() || '',
+        time_3k: user.time_3k ? secsToTime(user.time_3k) : '',
+        time_5k: user.time_5k ? secsToTime(user.time_5k) : '',
+        time_10k: user.time_10k ? secsToTime(user.time_10k) : '',
+    });
+
+    const { updateProfileAsync, isUpdatingProfile } = useUpdateProfile(user.id);
 
     const bmi = calculateBMI(Number(formData.height_cm), Number(formData.weight_kg));
     const bmiNum = parseFloat(bmi);
@@ -97,7 +102,8 @@ export default function OnboardingPage() {
         };
 
         try {
-            await updateProfileAsync(payload);
+            const res = await updateProfileAsync(payload);
+            updateUser(res.user);
             toast.success(
                 <div className="flex flex-col">
                     <strong>Profile saved!</strong>

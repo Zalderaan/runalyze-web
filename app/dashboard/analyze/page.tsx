@@ -82,7 +82,21 @@ export default function AnalyzePage() {
     const [showTrimmer, setShowTrimmer] = useState(false);
     const [rawVideoFile, setRawVideoFile] = useState<File | null>(null);
     const [videoFile, setVideoFile] = useState<File | null>(null);
+    const [videoUrl, setVideoUrl] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+
+    // Track preview URL for uploaded/trimmed video to prevent leaks
+    useEffect(() => {
+        if (videoFile) {
+            const url = URL.createObjectURL(videoFile);
+            setVideoUrl(url);
+            return () => {
+                URL.revokeObjectURL(url);
+            };
+        } else {
+            setVideoUrl(null);
+        }
+    }, [videoFile]);
     const [progress, setProgress] = useState<ProgressUpdate | null>(null);
     // const [jobId, setJobId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -493,7 +507,11 @@ export default function AnalyzePage() {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() => setError(null)}
+                                            onClick={() => {
+                                                setError(null);
+                                                setProgress(null);
+                                                setIsProcessing(false);
+                                            }}
                                             className="text-red-700 border-red-300 hover:bg-red-100"
                                         >
                                             Dismiss
@@ -687,11 +705,23 @@ export default function AnalyzePage() {
 
                             {/* File Info */}
                             {videoFile && (
-                                <div className="p-4 bg-gray-50 rounded-lg space-y-2">
+                                <div className="p-4 bg-gray-50 rounded-lg space-y-3">
                                     <div className="flex items-center gap-2">
                                         <FileVideo className="h-4 w-4 text-gray-600" />
                                         <span className="font-medium text-sm">{videoFile.name}</span>
                                     </div>
+                                    
+                                    {videoUrl && (
+                                        <div className="relative aspect-video max-w-md mx-auto bg-black rounded-lg overflow-hidden border border-gray-200">
+                                            <video
+                                                src={videoUrl}
+                                                controls
+                                                playsInline
+                                                className="w-full h-full object-contain"
+                                            />
+                                        </div>
+                                    )}
+
                                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                         <span>Size: {formatFileSize(videoFile.size)}</span>
                                         <span>Type: {videoFile.type}</span>

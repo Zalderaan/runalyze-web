@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from "@/context/user_context";
+import { useAuth, User } from "@/context/user_context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -20,6 +20,23 @@ import { UpdateProfileData, useUpdateProfile } from "@/hooks/users/user-specific
 
 export default function UserPage() {
     const { user, logout } = useAuth();
+
+    if (!user) {
+        return (
+            <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                    <h2 className="text-2xl font-semibold mb-2">Loading...</h2>
+                    <p className="text-muted-foreground">Please wait while we load your profile</p>
+                </div>
+            </div>
+        );
+    }
+
+    return <UserProfileForm user={user} logout={logout} />;
+}
+
+function UserProfileForm({ user, logout }: { user: User; logout: () => Promise<void> }) {
+    const { updateUser } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
 
     const secsToTime = (totalSeconds: number): string => {
@@ -59,26 +76,14 @@ export default function UserPage() {
         time_5k: string;
         time_10k: string;
     }>({
-        height_cm: user?.height_cm?.toString() || '',
-        weight_kg: user?.weight_kg?.toString() || '',
-        time_3k: user?.time_3k ? secsToTime(user.time_3k) : '',  // Convert seconds to time string
-        time_5k: user?.time_5k ? secsToTime(user.time_5k) : '',  // Convert seconds to time string
-        time_10k: user?.time_10k ? secsToTime(user.time_10k) : '',  // Convert seconds to time string
+        height_cm: user.height_cm?.toString() || '',
+        weight_kg: user.weight_kg?.toString() || '',
+        time_3k: user.time_3k ? secsToTime(user.time_3k) : '',  // Convert seconds to time string
+        time_5k: user.time_5k ? secsToTime(user.time_5k) : '',  // Convert seconds to time string
+        time_10k: user.time_10k ? secsToTime(user.time_10k) : '',  // Convert seconds to time string
     });
 
-    const { updateProfileAsync, isUpdatingProfile } = useUpdateProfile(user?.id ?? "");
-
-    // Wait until user is loaded before calling the hook
-    if (!user) {
-        return (
-            <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                    <h2 className="text-2xl font-semibold mb-2">Loading...</h2>
-                    <p className="text-muted-foreground">Please wait while we load your profile</p>
-                </div>
-            </div>
-        );
-    }
+    const { updateProfileAsync, isUpdatingProfile } = useUpdateProfile(user.id);
 
     const calculateBMI = (height: number, weight: number) => {
         if (height && weight) {
@@ -118,8 +123,6 @@ export default function UserPage() {
     };
 
     const handleSave = async () => {
-        if (!user?.id) return;
-
         try {
             // Convert empty strings to null for numeric fields; times are already strings
             const payload: UpdateProfileData = {
@@ -132,7 +135,8 @@ export default function UserPage() {
 
             console.log('Sending payload:', payload); // Debug log
 
-            await updateProfileAsync(payload);
+            const res = await updateProfileAsync(payload);
+            updateUser(res.user);
         } catch (error) {
             console.error('Error saving profile:', error);
         } finally {
@@ -142,11 +146,11 @@ export default function UserPage() {
 
     const handleCancel = () => {
         setFormData({
-            height_cm: user?.height_cm?.toString() || '',
-            weight_kg: user?.weight_kg?.toString() || '',
-            time_3k: user?.time_3k ? secsToTime(user.time_3k) : '',
-            time_5k: user?.time_5k ? secsToTime(user.time_5k) : '',
-            time_10k: user?.time_10k ? secsToTime(user.time_10k) : '',
+            height_cm: user.height_cm?.toString() || '',
+            weight_kg: user.weight_kg?.toString() || '',
+            time_3k: user.time_3k ? secsToTime(user.time_3k) : '',
+            time_5k: user.time_5k ? secsToTime(user.time_5k) : '',
+            time_10k: user.time_10k ? secsToTime(user.time_10k) : '',
         });
         setIsEditing(false);
     };
@@ -158,17 +162,6 @@ export default function UserPage() {
             console.error('Logout failed:', error);
         }
     };
-
-    // if (!user) {
-    //     return (
-    //         <div className="flex items-center justify-center h-full">
-    //             <div className="text-center">
-    //                 <h2 className="text-2xl font-semibold mb-2">Loading...</h2>
-    //                 <p className="text-muted-foreground">Please wait while we load your profile</p>
-    //             </div>
-    //         </div>
-    //     );
-    // }
 
     return (
         <div className="container mx-auto p-6 max-w-2xl space-y-6">

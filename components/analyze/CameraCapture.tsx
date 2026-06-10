@@ -19,10 +19,24 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
     const [isRecording, setIsRecording] = useState(false);
     const [isPreviewing, setIsPreviewing] = useState(false);
     const [recordedVideo, setRecordedVideo] = useState<Blob | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [stream, setStream] = useState<MediaStream | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [recordingTime, setRecordingTime] = useState(0);
     const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
+
+    // Track preview URL for recorded video to prevent leaks
+    useEffect(() => {
+        if (recordedVideo) {
+            const url = URL.createObjectURL(recordedVideo);
+            setPreviewUrl(url);
+            return () => {
+                URL.revokeObjectURL(url);
+            };
+        } else {
+            setPreviewUrl(null);
+        }
+    }, [recordedVideo]);
 
     const streamRef = useRef<MediaStream | null>(null);
     const [isPortrait, setIsPortrait] = useState(false);
@@ -64,7 +78,12 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
 
     // Consolidated effect to start/stop the camera cleanly based on facingMode state, preventing loop conditions
     useEffect(() => {
-        console.log('[CameraCapture] Mount/facingMode change effect - starting camera with facingMode:', facingMode);
+        console.log('[CameraCapture] Mount/facingMode change effect - starting camera with facingMode:', facingMode, 'isPreviewing:', isPreviewing);
+
+        if (isPreviewing) {
+            console.log('[CameraCapture] Skipped camera initialization because isPreviewing is true.');
+            return;
+        }
 
         let activeStream: MediaStream | null = null;
 
@@ -109,7 +128,7 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
             setStream(null);
             streamRef.current = null;
         };
-    }, [facingMode]);
+    }, [facingMode, isPreviewing]);
 
     const stopRecording = useCallback(() => {
         console.log('[CameraCapture] stopRecording - current state:', mediaRecorderRef.current?.state);
@@ -249,13 +268,21 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
                     <div className="p-4 mx-4 bg-red-500/20 border border-red-500/50 rounded-lg text-white text-center">
                         <p>{error}</p>
                     </div>
+                ) : isPreviewing && previewUrl ? (
+                    <video
+                        src={previewUrl}
+                        autoPlay
+                        playsInline
+                        controls
+                        loop
+                        className="w-full h-full object-contain"
+                    />
                 ) : (
                     <video
                         ref={videoRef}
                         autoPlay
                         playsInline
-                        muted={!isPreviewing}
-                        src={isPreviewing && recordedVideo ? URL.createObjectURL(recordedVideo) : undefined}
+                        muted
                         className="w-full h-full object-contain"
                     />
                 )}

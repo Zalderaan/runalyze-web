@@ -27,6 +27,7 @@ interface AuthContextType {
     isLoading: boolean;
     isSigningUp: boolean;
     isLoggingOut: boolean;
+    updateUser: (updatedUser: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -125,6 +126,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
+    const updateUser = (updatedUser: User) => {
+        setUser(updatedUser);
+    };
+
     const value: AuthContextType = {
         user,
         login,
@@ -132,7 +137,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         logout,
         isLoading,
         isSigningUp,
-        isLoggingOut
+        isLoggingOut,
+        updateUser
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
