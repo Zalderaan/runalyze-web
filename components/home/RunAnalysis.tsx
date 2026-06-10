@@ -55,7 +55,7 @@ export function RunAnalysis({ analysis }: Analysis) {
     return (
         <Link 
             href={`/dashboard/history/${analysis.id}`}
-            aria-label={`View analysis from ${formattedDate} with ${analysis.overall_score.toFixed(0)}% score`}   
+            aria-label={`View analysis from ${formattedDate} with ${analysis.overall_score?.toFixed(0) ?? 0}% score`}   
         >
             <Card className="flex flex-col w-full h-full border-2 border-dashed cursor-pointer p-0 gap-0 rounded-(--card-radius) [--card-radius:var(--radius-xl)]">
                 <CardHeader className="h-2/3 w-full p-0 rounded-t-(--card-radius)">
@@ -84,20 +84,20 @@ export function RunAnalysis({ analysis }: Analysis) {
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-xs">Score</span>
-                                <span className={`font-bold ${getScoreColor(analysis.overall_score)}`}>{analysis.overall_score.toFixed(0)}%</span>
+                                <span className={`font-bold ${getScoreColor(analysis.overall_score ?? 0)}`}>{analysis.overall_score?.toFixed(0) ?? 0}%</span>
                             </div>
                         </section>
 
                         <div className="flex flex-col flex-1 justify-center pb-2">
                             <section className="flex flex-row w-full justify-between items-center">
-                                <Metric label="Head Pos." value={Number(analysis.head_position.toFixed(0))}></Metric>
-                                <Metric label="Back Pos." value={Number(analysis.back_position.toFixed(0))}></Metric>
-                                <Metric label="Arm Pos." value={Number(analysis.arm_flexion.toFixed(0))}></Metric>
+                                <Metric label="Head Pos." value={Number(analysis.head_position?.toFixed(0) ?? 0)}></Metric>
+                                <Metric label="Back Pos." value={Number(analysis.back_position?.toFixed(0) ?? 0)}></Metric>
+                                <Metric label="Arm Pos." value={Number(analysis.arm_flexion?.toFixed(0) ?? 0)}></Metric>
                             </section>
                             <section className="flex flex-row w-full justify-between items-center">
-                                <Metric label="Front Knee" value={Number(analysis.right_knee.toFixed(0))}></Metric>
-                                <Metric label="Back Knee" value={Number(analysis.left_knee.toFixed(0))}></Metric>
-                                <Metric label="Foot Stk." value={Number(analysis.foot_strike.toFixed(0))}></Metric>
+                                <Metric label="Front Knee" value={Number(analysis.right_knee?.toFixed(0) ?? 0)}></Metric>
+                                <Metric label="Back Knee" value={Number(analysis.left_knee?.toFixed(0) ?? 0)}></Metric>
+                                <Metric label="Foot Stk." value={Number(analysis.foot_strike?.toFixed(0) ?? 0)}></Metric>
                             </section>
                         </div>
                     </div>

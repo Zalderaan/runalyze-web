@@ -282,8 +282,8 @@ function CompareContent() {
                                     {new Date(analysis.created_at).toLocaleDateString()}
                                 </span>
                             </div>
-                            <div className={`text-3xl font-bold ${getScoreColor(analysis.overall_score)}`}>
-                                {analysis.overall_score.toFixed(1)}%
+                            <div className={`text-3xl font-bold ${getScoreColor(analysis.overall_score ?? 0)}`}>
+                                {analysis.overall_score?.toFixed(1) ?? '0.0'}%
                             </div>
                         </CardContent>
                     </Card>
@@ -303,18 +303,18 @@ function CompareContent() {
                                 <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-8 w-full sm:w-auto">
                                     <span className={cn(
                                         "w-16 sm:w-20 text-left sm:text-right text-sm sm:text-base",
-                                        getScoreColor(firstAnalysis[key])
+                                        getScoreColor(firstAnalysis[key] ?? 0)
                                     )}>
-                                        {firstAnalysis[key].toFixed(1)}%
+                                        {(firstAnalysis[key] as number | null)?.toFixed(1) ?? '0.0'}%
                                     </span>
                                     <div className="w-20 sm:w-24 flex justify-center">
-                                        {renderDiff(secondAnalysis[key], firstAnalysis[key])}
+                                        {renderDiff((secondAnalysis[key] as number | null) ?? 0, (firstAnalysis[key] as number | null) ?? 0)}
                                     </div>
                                     <span className={cn(
                                         "w-16 sm:w-20 text-right text-sm sm:text-base",
-                                        getScoreColor(secondAnalysis[key])
+                                        getScoreColor(secondAnalysis[key] ?? 0)
                                     )}>
-                                        {secondAnalysis[key].toFixed(1)}%
+                                        {(secondAnalysis[key] as number | null)?.toFixed(1) ?? '0.0'}%
                                     </span>
                                 </div>
                             </div>
@@ -325,28 +325,28 @@ function CompareContent() {
 
             {/* Summary */}
             <Card className={cn(
-                secondAnalysis.overall_score > firstAnalysis.overall_score 
+                (secondAnalysis.overall_score ?? 0) > (firstAnalysis.overall_score ?? 0) 
                     ? "bg-green-50 border-green-200" 
-                    : secondAnalysis.overall_score < firstAnalysis.overall_score
+                    : (secondAnalysis.overall_score ?? 0) < (firstAnalysis.overall_score ?? 0)
                     ? "bg-red-50 border-red-200"
                     : "bg-gray-50"
             )}>
                 <CardContent className="py-6">
                     <div className="text-center">
-                        {secondAnalysis.overall_score > firstAnalysis.overall_score ? (
+                        {(secondAnalysis.overall_score ?? 0) > (firstAnalysis.overall_score ?? 0) ? (
                             <>
                                 <TrendingUp className="h-8 w-8 text-green-600 mx-auto mb-2" />
                                 <h3 className="text-lg font-semibold text-green-900">Great Progress!</h3>
                                 <p className="text-green-800">
-                                    Your overall score improved by {(secondAnalysis.overall_score - firstAnalysis.overall_score).toFixed(1)}%
+                                    Your overall score improved by {((secondAnalysis.overall_score ?? 0) - (firstAnalysis.overall_score ?? 0)).toFixed(1)}%
                                 </p>
                             </>
-                        ) : secondAnalysis.overall_score < firstAnalysis.overall_score ? (
+                        ) : (secondAnalysis.overall_score ?? 0) < (firstAnalysis.overall_score ?? 0) ? (
                             <>
                                 <TrendingDown className="h-8 w-8 text-red-600 mx-auto mb-2" />
                                 <h3 className="text-lg font-semibold text-red-900">Room for Improvement</h3>
                                 <p className="text-red-800">
-                                    Your overall score decreased by {(firstAnalysis.overall_score - secondAnalysis.overall_score).toFixed(1)}%
+                                    Your overall score decreased by {((firstAnalysis.overall_score ?? 0) - (secondAnalysis.overall_score ?? 0)).toFixed(1)}%
                                 </p>
                             </>
                         ) : (

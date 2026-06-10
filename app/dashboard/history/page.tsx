@@ -136,8 +136,8 @@ function HistoryCard({ analysis, allHistory, compareMode, isSelected, selectionO
                     </div>
                     <div className="text-right">
                         <div className="text-xs text-muted-foreground mb-1">Overall Score</div>
-                        <div className={`text-2xl font-bold ${getScoreColor(analysis.overall_score)}`}>
-                            {analysis.overall_score.toFixed(2)}%
+                        <div className={`text-2xl font-bold ${getScoreColor(analysis.overall_score ?? 0)}`}>
+                            {analysis.overall_score?.toFixed(2) ?? '0.00'}%
                         </div>
                     </div>
                 </div>
@@ -148,30 +148,30 @@ function HistoryCard({ analysis, allHistory, compareMode, isSelected, selectionO
                     <div className="grid grid-cols-3 gap-2 text-xs">
                         <div className="text-center p-2 bg-gray-50 rounded">
                             <div className="font-medium">Head</div>
-                            <div className={getScoreColor(analysis.head_position)}>{analysis.head_position.toFixed(2)}%</div>
+                            <div className={getScoreColor(analysis.head_position ?? 0)}>{analysis.head_position?.toFixed(2) ?? '0.00'}%</div>
                         </div>
                         <div className="text-center p-2 bg-gray-50 rounded">
                             <div className="font-medium">Back</div>
-                            <div className={getScoreColor(analysis.back_position)}>{analysis.back_position.toFixed(2)}%</div>
+                            <div className={getScoreColor(analysis.back_position ?? 0)}>{analysis.back_position?.toFixed(2) ?? '0.00'}%</div>
                         </div>
                         <div className="text-center p-2 bg-gray-50 rounded">
                             <div className="font-medium">Foot Strike</div>
-                            <div className={getScoreColor(analysis.foot_strike)}>{analysis.foot_strike.toFixed(2)}%</div>
+                            <div className={getScoreColor(analysis.foot_strike ?? 0)}>{analysis.foot_strike?.toFixed(2) ?? '0.00'}%</div>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2 text-xs">
                         <div className="text-center p-2 bg-blue-50 rounded">
                             <div className="font-medium">Arm Flexion</div>
-                            <div className={getScoreColor(analysis.arm_flexion)}>{analysis.arm_flexion.toFixed(2)}%</div>
+                            <div className={getScoreColor(analysis.arm_flexion ?? 0)}>{analysis.arm_flexion?.toFixed(2) ?? '0.00'}%</div>
                         </div>
                         <div className="text-center p-2 bg-blue-50 rounded">
                             <div className="font-medium">Right Knee</div>
-                            <div className={getScoreColor(analysis.right_knee)}>{analysis.right_knee.toFixed(2)}%</div>
+                            <div className={getScoreColor(analysis.right_knee ?? 0)}>{analysis.right_knee?.toFixed(2) ?? '0.00'}%</div>
                         </div>
                         <div className="text-center p-2 bg-blue-50 rounded">
                             <div className="font-medium">Left Knee</div>
-                            <div className={getScoreColor(analysis.left_knee)}>{analysis.left_knee.toFixed(2)}%</div>
+                            <div className={getScoreColor(analysis.left_knee ?? 0)}>{analysis.left_knee?.toFixed(2) ?? '0.00'}%</div>
                         </div>
                     </div>
                 </div>
@@ -262,19 +262,19 @@ export default function HistoryPage() {
 
             return [
                 date, time,
-                item.overall_score.toFixed(2),
-                item.head_position.toFixed(2),
-                item.back_position.toFixed(2),
-                item.arm_flexion.toFixed(2),
-                item.right_knee.toFixed(2),
-                item.left_knee.toFixed(2),
-                item.foot_strike.toFixed(2)
+                item.overall_score?.toFixed(2) ?? '0.00',
+                item.head_position?.toFixed(2) ?? '0.00',
+                item.back_position?.toFixed(2) ?? '0.00',
+                item.arm_flexion?.toFixed(2) ?? '0.00',
+                item.right_knee?.toFixed(2) ?? '0.00',
+                item.left_knee?.toFixed(2) ?? '0.00',
+                item.foot_strike?.toFixed(2) ?? '0.00'
             ];
         });
 
         // 2. Generate Data Generalization / Summary Insights
         const totalRuns = history.length;
-        const avgOverall = (history.reduce((sum, item) => sum + item.overall_score, 0) / totalRuns).toFixed(2);
+        const avgOverall = (history.reduce((sum, item) => sum + (item.overall_score ?? 0), 0) / totalRuns).toFixed(2);
 
         const metrics: { name: string, key: keyof HistoryItem }[] = [
             { name: "Head Position", key: "head_position" },
@@ -301,7 +301,7 @@ export default function HistoryPage() {
         const sortedHistory = [...history].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
         const firstRun = sortedHistory[0];
         const lastRun = sortedHistory[sortedHistory.length - 1];
-        const improvement = lastRun.overall_score - firstRun.overall_score;
+        const improvement = (lastRun.overall_score ?? 0) - (firstRun.overall_score ?? 0);
         const trendStr = improvement > 2 ? "Improving" : improvement < -2 ? "Declining" : "Stable";
 
         const insightRows = [

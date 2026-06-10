@@ -121,7 +121,7 @@ export default function HomePage() {
                             <div>
                                 <p className="text-sm text-gray-600">Best Score</p>
                                 <p className="text-2xl font-bold text-gray-900">
-                                    {history.length > 0 ? Math.max(...history.map(h => h.overall_score)).toFixed(2) : '0.00'}%
+                                    {history.length > 0 ? Math.max(...history.map(h => h.overall_score ?? 0)).toFixed(2) : '0.00'}%
                                 </p>
                             </div>
                         </div>
