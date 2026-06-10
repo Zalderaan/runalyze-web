@@ -2,7 +2,6 @@
 
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Camera, Video, StopCircle, RotateCcw, X, SwitchCamera, RotateCw } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -66,9 +65,9 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
     // Consolidated effect to start/stop the camera cleanly based on facingMode state, preventing loop conditions
     useEffect(() => {
         console.log('[CameraCapture] Mount/facingMode change effect - starting camera with facingMode:', facingMode);
-        
+
         let activeStream: MediaStream | null = null;
-        
+
         const initCamera = async () => {
             try {
                 const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -129,7 +128,7 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
 
         chunksRef.current = [];
         console.log('[CameraCapture] startRecording - Initializing MediaRecorder...');
-        
+
         // Find the best supported MIME type
         const mimeTypes = [
             'video/mp4;codecs=h264',
@@ -139,7 +138,7 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
             'video/webm;codecs=h264',
             'video/webm'
         ];
-        
+
         let selectedMimeType = '';
         for (const type of mimeTypes) {
             if (MediaRecorder.isTypeSupported(type)) {
@@ -162,8 +161,8 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
 
         mediaRecorder.onstop = () => {
             console.log('[CameraCapture] MediaRecorder stopped. Total chunks collected:', chunksRef.current.length);
-            const blob = new Blob(chunksRef.current, { 
-                type: mediaRecorder.mimeType || 'video/webm' 
+            const blob = new Blob(chunksRef.current, {
+                type: mediaRecorder.mimeType || 'video/webm'
             });
             console.log('[CameraCapture] Created Blob. Size:', blob.size, 'MIME Type:', blob.type);
             setRecordedVideo(blob);
@@ -308,7 +307,7 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
                                     <SwitchCamera className="h-6 w-6" />
                                 </Button>
                             )}
-                            
+
                             {!isRecording ? (
                                 <Button
                                     onClick={startRecording}
