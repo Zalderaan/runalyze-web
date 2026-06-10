@@ -162,32 +162,40 @@ export function VideoTrimmer({ file, onTrimComplete, onCancel }: VideoTrimmerPro
         setProgress(0);
 
         try {
-            const inputFileName = "input" + (file.name.substring(file.name.lastIndexOf('.')) || ".mp4");
-            const outputFileName = "output" + (file.name.substring(file.name.lastIndexOf('.')) || ".mp4");
+            const ext = file.name.substring(file.name.lastIndexOf('.')) || ".mp4";
+            const inputFileName = "input" + ext;
+            const outputFileName = "output.mp4";  // always mp4
 
-            // Inline fetchFile logic
             const fetchFile = async (f: File) => new Uint8Array(await f.arrayBuffer());
-
-            // Write the file to ffmpeg virtual file system
             await ffmpeg.writeFile(inputFileName, await fetchFile(file));
 
-            // Execute trim command
-            // -c copy is fast and doesn't re-encode, but depends on keyframes.
+            // Detect portrait from already-loaded video element
+            const isPortraitVideo = videoRef.current
+                ? videoRef.current.videoHeight > videoRef.current.videoWidth
+                : false;
+
+            const vfFilter = isPortraitVideo
+                ? "transpose=1,scale=trunc(iw/2)*2:trunc(ih/2)*2"
+                : "scale=trunc(iw/2)*2:trunc(ih/2)*2";
+
             await ffmpeg.exec([
                 "-i", inputFileName,
                 "-ss", range[0].toString(),
                 "-to", range[1].toString(),
-                "-c", "copy",
+                "-vf", vfFilter,
+                "-c:v", "libx264",
+                "-crf", "28",
+                "-preset", "fast",
+                "-movflags", "+faststart",
+                "-metadata:s:v", "rotate=0",
                 outputFileName
             ]);
 
-            // Read the result
             const fileData = await ffmpeg.readFile(outputFileName);
             const data = new Uint8Array(fileData as ArrayBuffer);
 
-            // Create a new File object
-            const trimmedBlob = new Blob([data.buffer], { type: file.type });
-            const trimmedFile = new File([trimmedBlob], `trimmed_${file.name}`, { type: file.type });
+            const trimmedBlob = new Blob([data.buffer], { type: "video/mp4" });
+            const trimmedFile = new File([trimmedBlob], `trimmed_${Date.now()}.mp4`, { type: "video/mp4" });
 
             onTrimComplete(trimmedFile);
         } catch (err) {

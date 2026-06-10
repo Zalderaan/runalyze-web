@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TrashIcon, Pencil, Loader2, Download } from "lucide-react";
+import { TrashIcon, Pencil, Loader2, Download, Video, Scaling, Activity, Database, HardDrive } from "lucide-react";
 import { AreaScore } from "@/components/history/area-score";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DrillCardDialog } from "./DrillCardDialog";
@@ -116,6 +116,66 @@ interface AnalysisDetails {
     fatigue_level?: number | null;
     bmi_category: "underweight" | "normal" | "overweight" | "obese";
     detailed_feedback: DetailedFeedback;
+    duration_seconds?: number | null;
+    fps?: number | null;
+    resolution?: string | null;
+    total_frames?: number | null;
+    analyzed_frames?: number | null;
+    file_size_mb?: number | null;
+}
+
+interface VideoMetaStripProps {
+    duration_seconds?: number | null;
+    fps?: number | null;
+    resolution?: string | null;
+    total_frames?: number | null;
+    analyzed_frames?: number | null;
+    file_size_mb?: number | null;
+}
+
+function VideoMetaStrip({
+    duration_seconds,
+    fps,
+    resolution,
+    total_frames,
+    analyzed_frames,
+    file_size_mb
+}: VideoMetaStripProps) {
+    const chips = [
+        duration_seconds != null && {
+            icon: <Video className="h-3.5 w-3.5 text-blue-500" />,
+            label: `${Number(duration_seconds).toFixed(1)}s`
+        },
+        resolution && {
+            icon: <Scaling className="h-3.5 w-3.5 text-indigo-500" />,
+            label: resolution
+        },
+        fps != null && {
+            icon: <Activity className="h-3.5 w-3.5 text-violet-500" />,
+            label: `${fps} fps`
+        },
+        (analyzed_frames != null && total_frames != null) && {
+            icon: <Database className="h-3.5 w-3.5 text-emerald-500" />,
+            label: `${analyzed_frames}/${total_frames} frames`
+        },
+        file_size_mb != null && {
+            icon: <HardDrive className="h-3.5 w-3.5 text-amber-500" />,
+            label: `${Number(file_size_mb).toFixed(1)} MB`
+        },
+    ].filter(Boolean) as { icon: React.ReactNode; label: string }[];
+
+    if (chips.length === 0) return null;
+
+    return (
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2.5 px-5 py-3 rounded-b-xl bg-gray-50 border border-t-0 border-gray-100 text-xs text-gray-500 font-medium">
+            {chips.map((chip, i) => (
+                <div key={i} className="flex items-center gap-2">
+                    {chip.icon}
+                    <span>{chip.label}</span>
+                </div>
+            ))}
+        </div>
+    );
 }
 
 export default function AnalysisDetails() {
@@ -743,7 +803,7 @@ export default function AnalysisDetails() {
 
                 {/* Video Section — full width */}
                 <div className="w-full">
-                    <div className="bg-gray-900 rounded-xl overflow-hidden shadow-lg">
+                    <div className="bg-gray-900 rounded-t-xl overflow-hidden shadow-lg border border-gray-100">
                         <video
                             src={video_url}
                             controls
@@ -753,6 +813,14 @@ export default function AnalysisDetails() {
                             Your browser does not support the video tag.
                         </video>
                     </div>
+                    <VideoMetaStrip
+                        duration_seconds={analysisDetails?.duration_seconds}
+                        fps={analysisDetails?.fps}
+                        resolution={analysisDetails?.resolution}
+                        total_frames={analysisDetails?.total_frames}
+                        analyzed_frames={analysisDetails?.analyzed_frames}
+                        file_size_mb={analysisDetails?.file_size_mb}
+                    />
                 </div>
 
 

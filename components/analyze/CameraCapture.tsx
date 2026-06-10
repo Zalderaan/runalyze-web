@@ -3,7 +3,7 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Camera, Video, StopCircle, RotateCcw, X, SwitchCamera } from 'lucide-react';
+import { Camera, Video, StopCircle, RotateCcw, X, SwitchCamera, RotateCw } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CameraCaptureProps {
@@ -26,6 +26,26 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
     const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
 
     const streamRef = useRef<MediaStream | null>(null);
+    const [isPortrait, setIsPortrait] = useState(false);
+
+    // Track orientation to warn mobile users when they hold the device in portrait mode
+    useEffect(() => {
+        if (!isMobile) return;
+
+        const checkOrientation = () => {
+            const portrait = window.innerHeight > window.innerWidth;
+            setIsPortrait(portrait);
+        };
+
+        checkOrientation();
+        window.addEventListener('resize', checkOrientation);
+        window.addEventListener('orientationchange', checkOrientation);
+
+        return () => {
+            window.removeEventListener('resize', checkOrientation);
+            window.removeEventListener('orientationchange', checkOrientation);
+        };
+    }, [isMobile]);
 
     const stopCamera = useCallback(() => {
         console.log('[CameraCapture] stopCamera called');
@@ -53,8 +73,9 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
             try {
                 const mediaStream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
+                        width: { ideal: 1280, min: 640 },
+                        height: { ideal: 720, min: 360 },
+                        aspectRatio: { ideal: 16 / 9 },
                         facingMode: facingMode
                     },
                     audio: false
@@ -231,6 +252,16 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
                     </div>
                 )}
 
+                {isMobile && isPortrait && (
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm flex items-center gap-3 animate-pulse">
+                        <RotateCw className="h-5 w-5 text-amber-600 shrink-0" />
+                        <div>
+                            <p className="font-semibold">Landscape mode required</p>
+                            <p className="text-xs">Please rotate your phone to landscape (horizontal) mode before recording.</p>
+                        </div>
+                    </div>
+                )}
+
                 {/* Video Preview */}
                 <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
                     <video
@@ -315,6 +346,7 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
 
                 {/* Tips */}
                 <div className="text-xs text-muted-foreground space-y-1 p-3 bg-gray-50 rounded-lg">
+                    <p className="text-amber-600 font-semibold">• Always record in landscape (horizontal) orientation</p>
                     <p>• Position camera 2-3 meters away, side view</p>
                     <p>• Ensure good lighting</p>
                     <p>• Keep runner in frame throughout</p>
