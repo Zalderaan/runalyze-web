@@ -3,48 +3,25 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Download, Loader2, Pencil } from "lucide-react"
+import { Download, Loader2, Pencil, AlertTriangle } from "lucide-react"
+
+interface JointSummary {
+    median_score: number
+    average_score: number
+    min_score: number
+    max_score: number
+}
 
 interface ResultsProps {
     download_url: string
     analysis_summary?: {
         overall_score: number
-        head_position: {
-            median_score: number
-            average_score: number
-            min_score: number
-            max_score: number
-        }
-        back_position: {
-            median_score: number
-            average_score: number
-            min_score: number
-            max_score: number
-        }
-        arm_flexion: {
-            median_score: number
-            average_score: number
-            min_score: number
-            max_score: number
-        }
-        right_knee: {
-            median_score: number
-            average_score: number
-            min_score: number
-            max_score: number
-        }
-        left_knee: {
-            median_score: number
-            average_score: number
-            min_score: number
-            max_score: number
-        }
-        foot_strike: {
-            median_score: number
-            average_score: number
-            min_score: number
-            max_score: number
-        }
+        head_position?: JointSummary
+        back_position?: JointSummary
+        arm_flexion?: JointSummary
+        right_knee?: JointSummary
+        left_knee?: JointSummary
+        foot_strike?: JointSummary
     }
     analysisName?: string
     setAnalysisName?: (name: string) => void
@@ -108,18 +85,40 @@ export function Results({
     const overallScore = Math.round(analysis_summary?.overall_score ?? 0)
     const [isEditingName, setIsEditingName] = useState(false)
 
+    const hasJointData = !!(
+        analysis_summary &&
+        (analysis_summary.head_position ||
+         analysis_summary.back_position ||
+         analysis_summary.arm_flexion ||
+         analysis_summary.right_knee ||
+         analysis_summary.left_knee ||
+         analysis_summary.foot_strike)
+    );
+
     const exportToCSV = () => {
         if (!analysis_summary) return;
 
         const headers = ["Metric", "Median Score (%)", "Average Score (%)", "Min Score (%)", "Max Score (%)"];
+        
+        const getJointRow = (label: string, joint?: JointSummary) => {
+            if (!joint) return [label, "N/A", "N/A", "N/A", "N/A"];
+            return [
+                label,
+                joint.median_score !== undefined ? Math.round(joint.median_score) : "N/A",
+                joint.average_score !== undefined ? Math.round(joint.average_score) : "N/A",
+                joint.min_score !== undefined ? Math.round(joint.min_score) : "N/A",
+                joint.max_score !== undefined ? Math.round(joint.max_score) : "N/A",
+            ];
+        };
+
         const rows = [
             ["Overall Score", overallScore, "", "", ""],
-            ["Head Position", Math.round(analysis_summary.head_position.median_score), Math.round(analysis_summary.head_position.average_score), Math.round(analysis_summary.head_position.min_score), Math.round(analysis_summary.head_position.max_score)],
-            ["Back Position", Math.round(analysis_summary.back_position.median_score), Math.round(analysis_summary.back_position.average_score), Math.round(analysis_summary.back_position.min_score), Math.round(analysis_summary.back_position.max_score)],
-            ["Arm Flexion", Math.round(analysis_summary.arm_flexion.median_score), Math.round(analysis_summary.arm_flexion.average_score), Math.round(analysis_summary.arm_flexion.min_score), Math.round(analysis_summary.arm_flexion.max_score)],
-            ["Front Knee (Landing)", Math.round(analysis_summary.right_knee.median_score), Math.round(analysis_summary.right_knee.average_score), Math.round(analysis_summary.right_knee.min_score), Math.round(analysis_summary.right_knee.max_score)],
-            ["Back Knee (Heel Kick)", Math.round(analysis_summary.left_knee.median_score), Math.round(analysis_summary.left_knee.average_score), Math.round(analysis_summary.left_knee.min_score), Math.round(analysis_summary.left_knee.max_score)],
-            ["Foot Strike", Math.round(analysis_summary.foot_strike.median_score), Math.round(analysis_summary.foot_strike.average_score), Math.round(analysis_summary.foot_strike.min_score), Math.round(analysis_summary.foot_strike.max_score)],
+            getJointRow("Head Position", analysis_summary.head_position),
+            getJointRow("Back Position", analysis_summary.back_position),
+            getJointRow("Arm Flexion", analysis_summary.arm_flexion),
+            getJointRow("Front Knee (Landing)", analysis_summary.right_knee),
+            getJointRow("Back Knee (Heel Kick)", analysis_summary.left_knee),
+            getJointRow("Foot Strike", analysis_summary.foot_strike),
         ];
 
         const csvContent = [
@@ -195,81 +194,121 @@ export function Results({
                     />
                 </div>
 
-                <div className={`${getScoreBgColor(overallScore)} rounded-lg p-6 mb-6`}>
-                    <div className="flex justify-between items-center mb-3">
-                        <h3 className="text-xl font-semibold text-gray-800">Overall Score</h3>
-                        <span className={`text-5xl font-bold ${getScoreColor(overallScore)}`}>
-                            {overallScore}%
-                        </span>
-                    </div>
-                    <ScoreBar score={overallScore} />
-                </div>
+                {hasJointData ? (
+                    <>
+                        <div className={`${getScoreBgColor(overallScore)} rounded-lg p-6 mb-6`}>
+                            <div className="flex justify-between items-center mb-3">
+                                <h3 className="text-xl font-semibold text-gray-800">Overall Score</h3>
+                                <span className={`text-5xl font-bold ${getScoreColor(overallScore)}`}>
+                                    {overallScore}%
+                                </span>
+                            </div>
+                            <ScoreBar score={overallScore} />
+                        </div>
 
-                {onSaveFatigue && (
-                    <div className="bg-white rounded-lg p-4 mb-6 shadow-sm border border-blue-100 relative">
-                        {isSavingFatigue && (
-                            <div className="absolute inset-0 bg-white/50 flex items-center justify-center rounded-lg z-10 backdrop-blur-[1px]">
-                                <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+                        {onSaveFatigue && (
+                            <div className="bg-white rounded-lg p-4 mb-6 shadow-sm border border-blue-100 relative">
+                                {isSavingFatigue && (
+                                    <div className="absolute inset-0 bg-white/50 flex items-center justify-center rounded-lg z-10 backdrop-blur-[1px]">
+                                        <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+                                    </div>
+                                )}
+                                <h3 className="text-sm font-semibold text-gray-700 mb-3 text-center sm:text-left">
+                                    How were you feeling during this run?
+                                </h3>
+                                <div className="flex justify-between items-center gap-2">
+                                    {[
+                                        { level: 1, label: "Fresh", emoji: "🔋" },
+                                        { level: 2, label: "Good", emoji: "🙂" },
+                                        { level: 3, label: "Normal", emoji: "😐" },
+                                        { level: 4, label: "Tired", emoji: "😮‍💨" },
+                                        { level: 5, label: "Exhausted", emoji: "🪫" },
+                                    ].map(item => (
+                                        <button
+                                            key={item.level}
+                                            onClick={() => onSaveFatigue(item.level)}
+                                            disabled={isSavingFatigue}
+                                            className={`flex-1 flex flex-col items-center py-2 px-1 rounded-xl border-2 transition-all duration-200 ${
+                                                fatigueLevel === item.level 
+                                                    ? 'border-blue-500 bg-blue-50 shadow-md scale-105 grayscale-0' 
+                                                    : 'border-transparent hover:bg-gray-50 hover:border-gray-200 grayscale hover:grayscale-0'
+                                            } ${fatigueLevel !== null && fatigueLevel !== item.level ? 'opacity-50' : 'opacity-100'}`}
+                                        >
+                                            <span className="text-2xl mb-1">{item.emoji}</span>
+                                            <span className={`text-[10px] font-bold uppercase tracking-wider hidden sm:block ${
+                                                fatigueLevel === item.level ? 'text-blue-700' : 'text-gray-500'
+                                            }`}>{item.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         )}
-                        <h3 className="text-sm font-semibold text-gray-700 mb-3 text-center sm:text-left">
-                            How were you feeling during this run?
-                        </h3>
-                        <div className="flex justify-between items-center gap-2">
-                            {[
-                                { level: 1, label: "Fresh", emoji: "🔋" },
-                                { level: 2, label: "Good", emoji: "🙂" },
-                                { level: 3, label: "Normal", emoji: "😐" },
-                                { level: 4, label: "Tired", emoji: "😮‍💨" },
-                                { level: 5, label: "Exhausted", emoji: "🪫" },
-                            ].map(item => (
-                                <button
-                                    key={item.level}
-                                    onClick={() => onSaveFatigue(item.level)}
-                                    disabled={isSavingFatigue}
-                                    className={`flex-1 flex flex-col items-center py-2 px-1 rounded-xl border-2 transition-all duration-200 ${
-                                        fatigueLevel === item.level 
-                                            ? 'border-blue-500 bg-blue-50 shadow-md scale-105 grayscale-0' 
-                                            : 'border-transparent hover:bg-gray-50 hover:border-gray-200 grayscale hover:grayscale-0'
-                                    } ${fatigueLevel !== null && fatigueLevel !== item.level ? 'opacity-50' : 'opacity-100'}`}
-                                >
-                                    <span className="text-2xl mb-1">{item.emoji}</span>
-                                    <span className={`text-[10px] font-bold uppercase tracking-wider hidden sm:block ${
-                                        fatigueLevel === item.level ? 'text-blue-700' : 'text-gray-500'
-                                    }`}>{item.label}</span>
-                                </button>
-                            ))}
+
+                        <div className="space-y-3">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-3">Form Breakdown</h3>
+                            <MetricCard
+                                label="Head Position"
+                                score={analysis_summary?.head_position?.median_score ?? 0}
+                            />
+                            <MetricCard
+                                label="Back Position"
+                                score={analysis_summary?.back_position?.median_score ?? 0}
+                            />
+                            <MetricCard
+                                label="Arm Flexion"
+                                score={analysis_summary?.arm_flexion?.median_score ?? 0}
+                            />
+                            <MetricCard
+                                label="Front Knee"
+                                score={analysis_summary?.right_knee?.median_score ?? 0}
+                            />
+                            <MetricCard
+                                label="Back Knee"
+                                score={analysis_summary?.left_knee?.median_score ?? 0}
+                            />
+                            <MetricCard
+                                label="Foot Strike"
+                                score={analysis_summary?.foot_strike?.median_score ?? 0}
+                            />
+                        </div>
+                    </>
+                ) : (
+                    <div className="bg-amber-50 border-2 border-dashed border-amber-300 rounded-xl p-6 text-gray-800 shadow-inner">
+                        <div className="flex items-start gap-4 mb-4">
+                            <div className="p-3 bg-amber-100 rounded-full text-amber-700 shrink-0">
+                                <AlertTriangle className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-amber-950 mb-1">Insufficient Posture Data Detected</h3>
+                                <p className="text-sm text-amber-800 leading-relaxed">
+                                    We successfully processed your video but could not track enough body landmarks to compute your biomechanical form metrics.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div className="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-amber-200">
+                            <h4 className="text-sm font-bold text-amber-950 mb-2">Tips to get a complete analysis:</h4>
+                            <ul className="text-sm text-amber-900 space-y-2">
+                                <li className="flex items-start gap-2">
+                                    <span className="font-bold text-amber-600">🎥</span>
+                                    <span><strong>Side Profile Only:</strong> Ensure you are filming from a perpendicular side view. Front or back-facing angles cannot be mapped.</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="font-bold text-amber-600">🏃</span>
+                                    <span><strong>Active Running:</strong> The AI requires you to be actively running in the frame. Walking or standing frames will be filtered out.</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="font-bold text-amber-600">📏</span>
+                                    <span><strong>Distance:</strong> Stand 2–3 meters away so your entire body (head to toe) is visible as you pass across the frame.</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="font-bold text-amber-600">☀️</span>
+                                    <span><strong>Good Contrast:</strong> Avoid deep shadows, background clutter, or loose clothing that obscures your joints.</span>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 )}
-
-                <div className="space-y-3">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Form Breakdown</h3>
-                    <MetricCard
-                        label="Head Position"
-                        score={analysis_summary?.head_position.median_score ?? 0}
-                    />
-                    <MetricCard
-                        label="Back Position"
-                        score={analysis_summary?.back_position.median_score ?? 0}
-                    />
-                    <MetricCard
-                        label="Arm Flexion"
-                        score={analysis_summary?.arm_flexion.median_score ?? 0}
-                    />
-                    <MetricCard
-                        label="Front Knee"
-                        score={analysis_summary?.right_knee.median_score ?? 0}
-                    />
-                    <MetricCard
-                        label="Back Knee"
-                        score={analysis_summary?.left_knee.median_score ?? 0}
-                    />
-                    <MetricCard
-                        label="Foot Strike"
-                        score={analysis_summary?.foot_strike.median_score ?? 0}
-                    />
-                </div>
             </div>
         </div>
     )

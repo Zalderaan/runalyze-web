@@ -600,12 +600,10 @@ export default function AnalyzePage() {
 
                 {/* Camera Modal */}
                 {showCamera && (
-                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 max-w-full h-full">
-                        <CameraCapture
-                            onCapture={handleCameraCapture}
-                            onClose={() => setShowCamera(false)}
-                        />
-                    </div>
+                    <CameraCapture
+                        onCapture={handleCameraCapture}
+                        onClose={() => setShowCamera(false)}
+                    />
                 )}
 
                 {/* Upload Section */}

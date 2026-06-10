@@ -73,10 +73,9 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
             try {
                 const mediaStream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        width: { ideal: 1280, min: 640 },
-                        height: { ideal: 720, min: 360 },
-                        aspectRatio: { ideal: 16 / 9 },
-                        facingMode: facingMode
+                        facingMode: facingMode,
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
                     },
                     audio: false
                 });
@@ -228,42 +227,30 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
 
 
     return (
-        <Card className="w-full max-w-2xl mx-auto">
-            <CardHeader>
-                <div className="flex items-center justify-between">
-                    <div>
-                        <CardTitle className="flex items-center gap-2">
-                            <Camera className="h-5 w-5" />
-                            Record Running Video
-                        </CardTitle>
-                        <CardDescription>
-                            Record 6-10 seconds of side-view running
-                        </CardDescription>
-                    </div>
-                    <Button variant="ghost" size="icon" onClick={() => { stopCamera(); onClose(); }}>
-                        <X className="h-4 w-4" />
-                    </Button>
+        <div className="fixed inset-0 z-[100] bg-black text-white flex flex-col">
+            {/* Header / Top Bar */}
+            <div className="relative z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/80 to-transparent">
+                <div className="flex flex-col">
+                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                        <Camera className="h-5 w-5" />
+                        Record Running Video
+                    </h2>
+                    <p className="text-xs text-gray-300">
+                        Record 6-10 seconds of side-view running
+                    </p>
                 </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {error && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
-                        {error}
-                    </div>
-                )}
+                <Button variant="ghost" size="icon" onClick={() => { stopCamera(); onClose(); }} className="text-white hover:bg-white/20">
+                    <X className="h-6 w-6" />
+                </Button>
+            </div>
 
-                {isMobile && isPortrait && (
-                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm flex items-center gap-3 animate-pulse">
-                        <RotateCw className="h-5 w-5 text-amber-600 shrink-0" />
-                        <div>
-                            <p className="font-semibold">Landscape mode required</p>
-                            <p className="text-xs">Please rotate your phone to landscape (horizontal) mode before recording.</p>
-                        </div>
+            {/* Main Camera View */}
+            <div className="flex-1 relative flex items-center justify-center overflow-hidden">
+                {error ? (
+                    <div className="p-4 mx-4 bg-red-500/20 border border-red-500/50 rounded-lg text-white text-center">
+                        <p>{error}</p>
                     </div>
-                )}
-
-                {/* Video Preview */}
-                <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+                ) : (
                     <video
                         ref={videoRef}
                         autoPlay
@@ -272,87 +259,103 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
                         src={isPreviewing && recordedVideo ? URL.createObjectURL(recordedVideo) : undefined}
                         className="w-full h-full object-contain"
                     />
+                )}
 
-                    {isMobile && !isRecording && !isPreviewing && (
-                        <Button
-                            onClick={toggleCamera}
-                            variant="secondary"
-                            size="icon"
-                            className="absolute top-4 left-4"
-                        >
-                            <SwitchCamera className="h-4 w-4" />
-                        </Button>
-                    )}
-
-                    {/* Recording Indicator */}
-                    {isRecording && (
-                        <div className="absolute top-4 right-4 flex items-center gap-2 bg-red-600 text-white px-3 py-1 rounded-full">
-                            <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
-                            <span className="text-sm font-medium">
-                                {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
-                            </span>
+                {/* Overlays */}
+                {isMobile && isPortrait && !isPreviewing && !error && (
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 w-11/12 max-w-sm p-3 bg-amber-500/90 backdrop-blur-md rounded-xl text-white text-sm flex items-center gap-3 animate-pulse shadow-lg">
+                        <RotateCw className="h-6 w-6 shrink-0" />
+                        <div>
+                            <p className="font-semibold">Landscape mode required</p>
+                            <p className="text-xs text-amber-50">Please rotate your phone to landscape mode before recording.</p>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
 
-                {/* Controls */}
-                <div className="flex justify-center gap-3">
+                {/* Recording Indicator */}
+                {isRecording && (
+                    <div className="absolute top-4 right-4 flex items-center gap-2 bg-red-600/90 backdrop-blur-md text-white px-4 py-1.5 rounded-full shadow-lg">
+                        <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
+                        <span className="text-sm font-medium tracking-wider">
+                            {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
+                        </span>
+                    </div>
+                )}
+            </div>
+
+            {/* Bottom Controls */}
+            <div className="relative z-10 p-6 bg-gradient-to-t from-black via-black/80 to-transparent flex flex-col gap-4">
+                {/* Tips */}
+                {!isPreviewing && !isRecording && (
+                    <div className="text-xs text-gray-300 space-y-1 p-3 bg-white/10 backdrop-blur-md rounded-lg max-w-md mx-auto w-full">
+                        <p className="text-amber-400 font-semibold">• Always record in landscape (horizontal) orientation</p>
+                        <p>• Position camera 2-3 meters away, side view</p>
+                        <p>• Keep runner in frame throughout</p>
+                        <p>• Recording will auto-stop after 30 seconds</p>
+                    </div>
+                )}
+
+                <div className="flex items-center justify-center gap-6 mt-2">
                     {!isPreviewing ? (
                         <>
+                            {isMobile && !isRecording && (
+                                <Button
+                                    onClick={toggleCamera}
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-14 w-14 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                                >
+                                    <SwitchCamera className="h-6 w-6" />
+                                </Button>
+                            )}
+                            
                             {!isRecording ? (
                                 <Button
                                     onClick={startRecording}
                                     disabled={!stream || !!error}
-                                    size="lg"
-                                    className="gap-2"
+                                    size="icon"
+                                    className="h-20 w-20 rounded-full bg-red-600 hover:bg-red-700 border-4 border-white shadow-xl"
                                 >
-                                    <Video className="h-4 w-4" />
-                                    Start Recording
+                                    <Video className="h-8 w-8 text-white" />
                                 </Button>
                             ) : (
                                 <Button
                                     onClick={stopRecording}
                                     variant="destructive"
-                                    size="lg"
-                                    className="gap-2"
+                                    size="icon"
+                                    className="h-20 w-20 rounded-full bg-red-600 hover:bg-red-700 border-4 border-white shadow-xl animate-pulse"
                                 >
-                                    <StopCircle className="h-4 w-4" />
-                                    Stop Recording
+                                    <StopCircle className="h-8 w-8" />
                                 </Button>
+                            )}
+
+                            {isMobile && !isRecording && (
+                                <div className="h-14 w-14" /> /* spacer to balance switch camera button */
                             )}
                         </>
                     ) : (
-                        <>
+                        <div className="flex gap-4 w-full max-w-md mx-auto">
                             <Button
                                 onClick={handleRetake}
                                 variant="outline"
                                 size="lg"
-                                className="gap-2"
+                                className="flex-1 gap-2 bg-white/10 hover:bg-white/20 border-white/20 text-white"
                             >
-                                <RotateCcw className="h-4 w-4" />
+                                <RotateCcw className="h-5 w-5" />
                                 Retake
                             </Button>
                             <Button
                                 onClick={handleUseVideo}
                                 size="lg"
-                                className="gap-2"
+                                className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700 text-white"
                             >
-                                <Camera className="h-4 w-4" />
-                                Use This Video
+                                <Camera className="h-5 w-5" />
+                                Use Video
                             </Button>
-                        </>
+                        </div>
                     )}
                 </div>
-
-                {/* Tips */}
-                <div className="text-xs text-muted-foreground space-y-1 p-3 bg-gray-50 rounded-lg">
-                    <p className="text-amber-600 font-semibold">• Always record in landscape (horizontal) orientation</p>
-                    <p>• Position camera 2-3 meters away, side view</p>
-                    <p>• Ensure good lighting</p>
-                    <p>• Keep runner in frame throughout</p>
-                    <p>• Recording will auto-stop after 30 seconds</p>
-                </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }

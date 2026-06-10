@@ -169,25 +169,13 @@ export function VideoTrimmer({ file, onTrimComplete, onCancel }: VideoTrimmerPro
             const fetchFile = async (f: File) => new Uint8Array(await f.arrayBuffer());
             await ffmpeg.writeFile(inputFileName, await fetchFile(file));
 
-            // Detect portrait from already-loaded video element
-            const isPortraitVideo = videoRef.current
-                ? videoRef.current.videoHeight > videoRef.current.videoWidth
-                : false;
-
-            const vfFilter = isPortraitVideo
-                ? "transpose=1,scale=trunc(iw/2)*2:trunc(ih/2)*2"
-                : "scale=trunc(iw/2)*2:trunc(ih/2)*2";
-
+            // Fast seek and stream copy without re-encoding
             await ffmpeg.exec([
-                "-i", inputFileName,
                 "-ss", range[0].toString(),
                 "-to", range[1].toString(),
-                "-vf", vfFilter,
-                "-c:v", "libx264",
-                "-crf", "28",
-                "-preset", "fast",
-                "-movflags", "+faststart",
-                "-metadata:s:v", "rotate=0",
+                "-i", inputFileName,
+                "-c:v", "copy",
+                "-c:a", "copy",
                 outputFileName
             ]);
 
