@@ -200,19 +200,19 @@ function UserProfileForm({ user, logout }: { user: User; logout: () => Promise<v
                     {!isEditing ? (
                         <>
                             <div className="grid grid-cols-2 gap-4">
-                                <div>
+                                <div className="space-y-2">
                                     <Label>Height (cm)</Label>
                                     <p className="text-lg font-medium">{formData.height_cm || 'Not set'}</p>
                                 </div>
-                                <div>
+                                <div className="space-y-2">
                                     <Label>Weight (kg)</Label>
                                     <p className="text-lg font-medium">{formData.weight_kg || 'Not set'}</p>
                                 </div>
-                                <div>
+                                <div className="space-y-2">
                                     <Label>BMI</Label>
                                     <p className="text-lg font-medium">{calculateBMI(Number(formData.height_cm), Number(formData.weight_kg)) || 'N/A'}</p>
                                 </div>
-                                <div>
+                                <div className="space-y-2">
                                     <Label>Avg Pace/km</Label>
                                     <p className="text-lg font-medium">{calculateAvgPace()}</p>
                                 </div>
@@ -245,9 +245,9 @@ function UserProfileForm({ user, logout }: { user: User; logout: () => Promise<v
                             </Button>
                         </>
                     ) : (
-                        <>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="space-y-2">
                                     <Label htmlFor="height">Height (cm)</Label>
                                     <Input
                                         id="height"
@@ -256,7 +256,7 @@ function UserProfileForm({ user, logout }: { user: User; logout: () => Promise<v
                                         onChange={(e) => handleInputChange('height_cm', e.target.value)}
                                     />
                                 </div>
-                                <div>
+                                <div className="space-y-2">
                                     <Label htmlFor="weight">Weight (kg)</Label>
                                     <Input
                                         id="weight"
@@ -265,21 +265,21 @@ function UserProfileForm({ user, logout }: { user: User; logout: () => Promise<v
                                         onChange={(e) => handleInputChange('weight_kg', e.target.value)}
                                     />
                                 </div>
-                                <div>
+                                <div className="space-y-2">
                                     <Label>BMI</Label>
-                                    <p className="text-lg font-medium">{calculateBMI(Number(formData.height_cm), Number(formData.weight_kg)) || 'N/A'}</p>
+                                    <p className="text-lg font-medium py-2">{calculateBMI(Number(formData.height_cm), Number(formData.weight_kg)) || 'N/A'}</p>
                                 </div>
-                                <div>
+                                <div className="space-y-2">
                                     <Label>Avg Pace/km</Label>
-                                    <p className="text-lg font-medium">{calculateAvgPace()}</p>
+                                    <p className="text-lg font-medium py-2">{calculateAvgPace()}</p>
                                 </div>
                             </div>
                             <Separator />
-                            <div className="space-y-2">
-                                <Label>Best Times</Label>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <Label htmlFor="time_3k" className="text-sm">3K</Label>
+                            <div className="space-y-3">
+                                <Label className="text-sm font-semibold text-muted-foreground">Best Times</Label>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="time_3k" className="text-xs text-muted-foreground">3K</Label>
                                         <Input
                                             id="time_3k"
                                             placeholder="e.g., 12:30"
@@ -287,8 +287,8 @@ function UserProfileForm({ user, logout }: { user: User; logout: () => Promise<v
                                             onChange={(e) => handleInputChange('time_3k', e.target.value)}
                                         />
                                     </div>
-                                    <div>
-                                        <Label htmlFor="time_5k" className="text-sm">5K</Label>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="time_5k" className="text-xs text-muted-foreground">5K</Label>
                                         <Input
                                             id="time_5k"
                                             placeholder="e.g., 20:45"
@@ -296,8 +296,8 @@ function UserProfileForm({ user, logout }: { user: User; logout: () => Promise<v
                                             onChange={(e) => handleInputChange('time_5k', e.target.value)}
                                         />
                                     </div>
-                                    <div>
-                                        <Label htmlFor="time_10k" className="text-sm">10K</Label>
+                                    <div className="space-y-2 col-span-2 sm:col-span-1">
+                                        <Label htmlFor="time_10k" className="text-xs text-muted-foreground">10K</Label>
                                         <Input
                                             id="time_10k"
                                             placeholder="e.g., 42:10"
@@ -307,7 +307,7 @@ function UserProfileForm({ user, logout }: { user: User; logout: () => Promise<v
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex flex-col sm:flex-row gap-3 pt-2">
                                 <Button onClick={handleSave} className="flex-1" disabled={isUpdatingProfile}>
                                     <Save className="h-4 w-4 mr-2" />
                                     {
@@ -321,7 +321,7 @@ function UserProfileForm({ user, logout }: { user: User; logout: () => Promise<v
                                     Cancel
                                 </Button>
                             </div>
-                        </>
+                        </div>
                     )}
                 </CardContent>
             </Card>
