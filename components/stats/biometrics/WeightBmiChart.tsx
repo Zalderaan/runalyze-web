@@ -1,5 +1,4 @@
 import { useGetBiometrics } from "@/hooks/stats/use-biometrics";
-import { formatBMI } from "@/lib/stats/formatters";
 import {
   LineChart,
   Line,

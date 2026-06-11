@@ -39,6 +39,7 @@ export async function GET(req: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json({ data }, { status: 200 });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error fetching biometrics:", error);
     return NextResponse.json({ message: "Server error", error: error.message }, { status: 500 });
@@ -87,6 +88,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ data }, { status: 201 });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error creating biometric entry:", error);
     return NextResponse.json({ message: "Server error", error: error.message }, { status: 500 });

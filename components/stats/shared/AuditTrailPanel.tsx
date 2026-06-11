@@ -35,7 +35,7 @@ export function AuditTrailPanel({ auditLogs, isLoading }: AuditTrailPanelProps) 
       default: return key;
     };
   };
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const formatValue = (key: string, val: any) => {
     if (val === null || val === undefined) return "None";
     if (key.endsWith("_secs")) return secondsToMMSS(val);

@@ -31,6 +31,7 @@ export interface AuditEntry {
   snapshot_id: number;
   user_id: number;
   action: 'created' | 'edited' | 'deleted' | 'restored';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   changed_fields: Record<string, { from: any; to: any }> | null;
   performed_at: string;
 }

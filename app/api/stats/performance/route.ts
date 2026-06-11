@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
     if (error) throw error;
 
     // Inject formatted strings
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const formattedData = (data || []).map((row: any) => ({
       ...row,
       time_3k: secondsToMMSS(row.time_3k_secs),
@@ -48,6 +49,7 @@ export async function GET(req: NextRequest) {
     }));
 
     return NextResponse.json({ data: formattedData }, { status: 200 });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error fetching performance snapshots:", error);
     return NextResponse.json({ message: "Server error", error: error.message }, { status: 500 });
@@ -110,6 +112,7 @@ export async function POST(req: NextRequest) {
     };
 
     return NextResponse.json({ data: formattedResponse }, { status: 201 });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error creating performance entry:", error);
     return NextResponse.json({ message: "Server error", error: error.message }, { status: 500 });

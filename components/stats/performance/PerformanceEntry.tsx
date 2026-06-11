@@ -27,6 +27,7 @@ export function PerformanceEntry({ entry, onEdit }: PerformanceEntryProps) {
       await deletePerformance(entry.id);
       toast.success("Entry deleted successfully.");
       setShowDeleteConfirm(false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to delete entry.");
     }
@@ -39,6 +40,7 @@ export function PerformanceEntry({ entry, onEdit }: PerformanceEntryProps) {
         payload: { is_deleted: false },
       });
       toast.success("Entry restored successfully.");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to restore entry.");
     }

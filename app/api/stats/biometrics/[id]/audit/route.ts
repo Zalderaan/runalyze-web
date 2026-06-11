@@ -55,6 +55,7 @@ export async function GET(
     if (auditError) throw auditError;
 
     return NextResponse.json({ data: auditLogs }, { status: 200 });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error fetching biometric audit log:", error);
     return NextResponse.json({ message: "Server error", error: error.message }, { status: 500 });

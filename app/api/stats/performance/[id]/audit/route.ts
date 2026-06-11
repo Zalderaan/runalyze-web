@@ -13,7 +13,7 @@ async function getUserIdFromSession(): Promise<number | null> {
 }
 
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -55,6 +55,7 @@ export async function GET(
     if (auditError) throw auditError;
 
     return NextResponse.json({ data: auditLogs }, { status: 200 });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error fetching performance audit log:", error);
     return NextResponse.json({ message: "Server error", error: error.message }, { status: 500 });

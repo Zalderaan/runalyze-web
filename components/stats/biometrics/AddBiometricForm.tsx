@@ -42,6 +42,7 @@ export function AddBiometricForm() {
         notes: "",
       });
       setIsOpen(false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to log biometrics.");
     }

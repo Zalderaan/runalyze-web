@@ -46,7 +46,7 @@ export async function PATCH(
     if (existing.user_id !== userId) {
       return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updatePayload: any = {};
     if (time_3k !== undefined) updatePayload.time_3k_secs = time_3k ? MMSStoSeconds(time_3k) : null;
     if (time_5k !== undefined) updatePayload.time_5k_secs = time_5k ? MMSStoSeconds(time_5k) : null;
@@ -83,6 +83,7 @@ export async function PATCH(
     };
 
     return NextResponse.json({ data: formattedResponse }, { status: 200 });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error updating performance snapshot:", error);
     return NextResponse.json({ message: "Server error", error: error.message }, { status: 500 });
@@ -134,6 +135,7 @@ export async function DELETE(
     if (deleteError) throw deleteError;
 
     return NextResponse.json({ message: "Deleted successfully", data }, { status: 200 });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error deleting performance snapshot:", error);
     return NextResponse.json({ message: "Server error", error: error.message }, { status: 500 });

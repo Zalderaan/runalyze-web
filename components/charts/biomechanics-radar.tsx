@@ -125,6 +125,7 @@ export function BiomechanicsRadar({ data }: { data: JointScores | null }) {
         <ResponsiveContainer width="100%" height={300}>
             <RadarChart cx="50%" cy="50%" outerRadius="60%" data={chartData}>
                 <PolarGrid strokeOpacity={0.2} />
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 <PolarAngleAxis dataKey="subject" tick={renderCustomAngleTick as any} />
 
                 {/* Single radius axis to set the domain/ticks grid without drawing duplicate labels */}

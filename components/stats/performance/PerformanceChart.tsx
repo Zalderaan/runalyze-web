@@ -87,6 +87,7 @@ export function PerformanceChart() {
                   boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.05)",
                 }}
                 labelClassName="text-slate-500 font-medium text-xs mb-1"
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 formatter={(value: any) => [secondsToMMSS(Number(value)), "Time"]}
               />
               <Legend

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { cookies } from "next/headers";
 import { decrypt } from "@/lib/auth/session";
@@ -13,7 +13,7 @@ async function getUserIdFromSession(): Promise<number | null> {
   return userId ? Number(userId) : null;
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const userId = await getUserIdFromSession();
     if (!userId) {
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
         time_10k_formatted: secondsToMMSS(time_10k),
       }
     }, { status: 200 });
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error getting personal bests:", error);
     return NextResponse.json({ message: "Server error", error: error.message }, { status: 500 });

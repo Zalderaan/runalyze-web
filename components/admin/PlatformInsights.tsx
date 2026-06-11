@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 interface PlatformInsightsProps {
     drills: { area?: string }[];
@@ -13,6 +13,7 @@ interface PlatformInsightsProps {
     compact?: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function PlatformInsights({ drills, applicationCounts, compact = false }: PlatformInsightsProps) {
     // Group drills by area
     const formatLabel = (label: string) => {
@@ -34,11 +35,11 @@ export function PlatformInsights({ drills, applicationCounts, compact = false }:
 
     const areaData = Object.entries(drillsByArea).map(([name, value]) => ({ name, value }));
 
-    const appStatusData = [
-        { name: 'Pending', value: applicationCounts.pending, color: '#f59e0b' },
-        { name: 'Approved', value: applicationCounts.approved, color: '#10b981' },
-        { name: 'Rejected', value: applicationCounts.rejected, color: '#ef4444' },
-    ].filter(item => item.value > 0);
+    // const appStatusData = [
+    //     { name: 'Pending', value: applicationCounts.pending, color: '#f59e0b' },
+    //     { name: 'Approved', value: applicationCounts.approved, color: '#10b981' },
+    //     { name: 'Rejected', value: applicationCounts.rejected, color: '#ef4444' },
+    // ].filter(item => item.value > 0);
 
     return (
         <div className={`grid grid-cols-1 ${compact ? 'gap-4' : 'lg:grid-cols-2 gap-6'}`}>
