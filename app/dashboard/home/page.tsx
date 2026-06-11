@@ -274,7 +274,7 @@ export default function HomePage() {
                             <Card className="p-6 glass-card overflow-hidden">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Average Joint Scores</h3>
                                 <p className="text-sm text-gray-500 mb-6">Aggregate biomechanics across all your analyses.</p>
-                                <div className="relative -mx-2">
+                                <div className="relative -mx-2 mt-4">
                                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                     <BiomechanicsRadar data={jointAverages as any} />
                                 </div>
