@@ -6,9 +6,7 @@ export async function GET() {
     try {
         const { data: topDrills, error: topDrillsError } = await supabase
             .from("drills")
-            .select("id, drill_name, area, performance_level, helpful_count, not_helpful_count")
-            .order("helpful_count", { ascending: false })
-            .limit(5);
+            .select("id, drill_name, area, performance_level, helpful_count, not_helpful_count");
 
         if (topDrillsError) {
             console.error("Supabase error:", topDrillsError);
@@ -18,8 +16,16 @@ export async function GET() {
             );
         }
 
+        const sorted = (topDrills ?? [])
+            .sort((a, b) => {
+                const scoreA = (a.helpful_count ?? 0) - (a.not_helpful_count ?? 0);
+                const scoreB = (b.helpful_count ?? 0) - (b.not_helpful_count ?? 0);
+                return scoreB - scoreA;
+            })
+            .slice(0, 5);
+
         return NextResponse.json(
-            { data: topDrills },
+            { data: sorted },
             { status: 200 }
         );
     } catch (error) {

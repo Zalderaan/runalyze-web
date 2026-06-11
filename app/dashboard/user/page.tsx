@@ -17,6 +17,14 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { UpdateProfileData, useUpdateProfile } from "@/hooks/users/user-specific/use-update-profile";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AddBiometricForm } from "@/components/stats/biometrics/AddBiometricForm";
+import { BiometricTimeline } from "@/components/stats/biometrics/BiometricTimeline";
+import { WeightBmiChart } from "@/components/stats/biometrics/WeightBmiChart";
+import { AddPerformanceForm } from "@/components/stats/performance/AddPerformanceForm";
+import { PerformanceTimeline } from "@/components/stats/performance/PerformanceTimeline";
+import { PersonalBestDisplay } from "@/components/stats/performance/PersonalBestDisplay";
+import { PerformanceChart } from "@/components/stats/performance/PerformanceChart";
 
 export default function UserPage() {
     const { user, logout } = useAuth();
@@ -164,167 +172,202 @@ function UserProfileForm({ user, logout }: { user: User; logout: () => Promise<v
     };
 
     return (
-        <div className="container mx-auto p-6 max-w-2xl space-y-6">
+        <div className="container mx-auto p-6 max-w-5xl space-y-6">
             {/* Header Section */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Profile Settings</h1>
-                    <p className="text-muted-foreground">Update your personal running details</p>
+                    <h1 className="text-3xl font-bold tracking-tight">Profile & Analytics</h1>
+                    <p className="text-muted-foreground">Manage details and track running progress</p>
                 </div>
                 <Button onClick={handleLogout} variant="outline" className="w-fit">
                     Sign Out
                 </Button>
             </div>
 
-            {/* Profile Card */}
-            <Card>
-                <CardHeader className="text-center pb-4">
-                    <div className="flex justify-center mb-4">
-                        <Avatar className="h-24 w-24">
-                            <AvatarFallback className="text-lg font-semibold">
-                                {getInitials(user.username)}
-                            </AvatarFallback>
-                        </Avatar>
-                    </div>
-                    <CardTitle className="text-xl">{user.username}</CardTitle>
-                    <CardDescription className="flex items-center justify-center gap-2">
-                        <Mail className="h-4 w-4" />
-                        {user.email}
-                    </CardDescription>
-                    <Badge variant="secondary" className="w-fit mx-auto mt-2">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        Joined March 2024
-                    </Badge>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    {!isEditing ? (
-                        <>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label>Height (cm)</Label>
-                                    <p className="text-lg font-medium">{formData.height_cm || 'Not set'}</p>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Weight (kg)</Label>
-                                    <p className="text-lg font-medium">{formData.weight_kg || 'Not set'}</p>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>BMI</Label>
-                                    <p className="text-lg font-medium">{calculateBMI(Number(formData.height_cm), Number(formData.weight_kg)) || 'N/A'}</p>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Avg Pace/km</Label>
-                                    <p className="text-lg font-medium">{calculateAvgPace()}</p>
-                                </div>
+            <Tabs defaultValue="profile" className="w-full space-y-6">
+                <TabsList className="grid grid-cols-3 w-full max-w-md bg-slate-100/80 p-1 rounded-xl">
+                    <TabsTrigger value="profile">Profile Settings</TabsTrigger>
+                    <TabsTrigger value="biometrics">Biometrics</TabsTrigger>
+                    <TabsTrigger value="performance">Performance</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="profile" className="space-y-6">
+                    {/* Profile Card */}
+                    <Card className="max-w-2xl mx-auto">
+                        <CardHeader className="text-center pb-4">
+                            <div className="flex justify-center mb-4">
+                                <Avatar className="h-24 w-24">
+                                    <AvatarFallback className="text-lg font-semibold">
+                                        {getInitials(user.username)}
+                                    </AvatarFallback>
+                                </Avatar>
                             </div>
-                            <Separator />
-                            <div className="space-y-2">
-                                <Label>Best Times</Label>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <Label className="text-sm">3K</Label>
-                                        <p className="text-lg font-medium">{formData.time_3k || 'Not set'}</p>
+                            <CardTitle className="text-xl">{user.username}</CardTitle>
+                            <CardDescription className="flex items-center justify-center gap-2">
+                                <Mail className="h-4 w-4" />
+                                {user.email}
+                            </CardDescription>
+                            <Badge variant="secondary" className="w-fit mx-auto mt-2">
+                                <Calendar className="h-3 w-3 mr-1" />
+                                Joined March 2024
+                            </Badge>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {!isEditing ? (
+                                <>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>Height (cm)</Label>
+                                            <p className="text-lg font-medium">{formData.height_cm || 'Not set'}</p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Weight (kg)</Label>
+                                            <p className="text-lg font-medium">{formData.weight_kg || 'Not set'}</p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>BMI</Label>
+                                            <p className="text-lg font-medium">{calculateBMI(Number(formData.height_cm), Number(formData.weight_kg)) || 'N/A'}</p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Avg Pace/km</Label>
+                                            <p className="text-lg font-medium">{calculateAvgPace()}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <Label className="text-sm">5K</Label>
-                                        <p className="text-lg font-medium">{formData.time_5k || 'Not set'}</p>
-                                    </div>
-                                    <div>
-                                        <Label className="text-sm">10K</Label>
-                                        <p className="text-lg font-medium">{formData.time_10k || 'Not set'}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <Button
-                                variant="outline"
-                                className="w-full"
-                                onClick={() => setIsEditing(true)}
-                            >
-                                <Edit3 className="h-4 w-4 mr-2" />
-                                Edit Profile
-                            </Button>
-                        </>
-                    ) : (
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="height">Height (cm)</Label>
-                                    <Input
-                                        id="height"
-                                        type="number"
-                                        value={formData.height_cm}
-                                        onChange={(e) => handleInputChange('height_cm', e.target.value)}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="weight">Weight (kg)</Label>
-                                    <Input
-                                        id="weight"
-                                        type="number"
-                                        value={formData.weight_kg}
-                                        onChange={(e) => handleInputChange('weight_kg', e.target.value)}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>BMI</Label>
-                                    <p className="text-lg font-medium py-2">{calculateBMI(Number(formData.height_cm), Number(formData.weight_kg)) || 'N/A'}</p>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Avg Pace/km</Label>
-                                    <p className="text-lg font-medium py-2">{calculateAvgPace()}</p>
-                                </div>
-                            </div>
-                            <Separator />
-                            <div className="space-y-3">
-                                <Label className="text-sm font-semibold text-muted-foreground">Best Times</Label>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                                    <Separator />
                                     <div className="space-y-2">
-                                        <Label htmlFor="time_3k" className="text-xs text-muted-foreground">3K</Label>
-                                        <Input
-                                            id="time_3k"
-                                            placeholder="e.g., 12:30"
-                                            value={formData.time_3k}
-                                            onChange={(e) => handleInputChange('time_3k', e.target.value)}
-                                        />
+                                        <Label>Best Times</Label>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <Label className="text-sm">3K</Label>
+                                                <p className="text-lg font-medium">{formData.time_3k || 'Not set'}</p>
+                                            </div>
+                                            <div>
+                                                <Label className="text-sm">5K</Label>
+                                                <p className="text-lg font-medium">{formData.time_5k || 'Not set'}</p>
+                                            </div>
+                                            <div>
+                                                <Label className="text-sm">10K</Label>
+                                                <p className="text-lg font-medium">{formData.time_10k || 'Not set'}</p>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="time_5k" className="text-xs text-muted-foreground">5K</Label>
-                                        <Input
-                                            id="time_5k"
-                                            placeholder="e.g., 20:45"
-                                            value={formData.time_5k}
-                                            onChange={(e) => handleInputChange('time_5k', e.target.value)}
-                                        />
+                                    <Button
+                                        variant="outline"
+                                        className="w-full"
+                                        onClick={() => setIsEditing(true)}
+                                    >
+                                        <Edit3 className="h-4 w-4 mr-2" />
+                                        Edit Profile
+                                    </Button>
+                                </>
+                            ) : (
+                                <div className="space-y-6">
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="height">Height (cm)</Label>
+                                            <Input
+                                                id="height"
+                                                type="number"
+                                                value={formData.height_cm}
+                                                onChange={(e) => handleInputChange('height_cm', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="weight">Weight (kg)</Label>
+                                            <Input
+                                                id="weight"
+                                                type="number"
+                                                value={formData.weight_kg}
+                                                onChange={(e) => handleInputChange('weight_kg', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>BMI</Label>
+                                            <p className="text-lg font-medium py-2">{calculateBMI(Number(formData.height_cm), Number(formData.weight_kg)) || 'N/A'}</p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Avg Pace/km</Label>
+                                            <p className="text-lg font-medium py-2">{calculateAvgPace()}</p>
+                                        </div>
                                     </div>
-                                    <div className="space-y-2 col-span-2 sm:col-span-1">
-                                        <Label htmlFor="time_10k" className="text-xs text-muted-foreground">10K</Label>
-                                        <Input
-                                            id="time_10k"
-                                            placeholder="e.g., 42:10"
-                                            value={formData.time_10k}
-                                            onChange={(e) => handleInputChange('time_10k', e.target.value)}
-                                        />
+                                    <Separator />
+                                    <div className="space-y-3">
+                                        <Label className="text-sm font-semibold text-muted-foreground">Best Times</Label>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="time_3k" className="text-xs text-muted-foreground">3K</Label>
+                                                <Input
+                                                    id="time_3k"
+                                                    placeholder="e.g., 12:30"
+                                                    value={formData.time_3k}
+                                                    onChange={(e) => handleInputChange('time_3k', e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="time_5k" className="text-xs text-muted-foreground">5K</Label>
+                                                <Input
+                                                    id="time_5k"
+                                                    placeholder="e.g., 20:45"
+                                                    value={formData.time_5k}
+                                                    onChange={(e) => handleInputChange('time_5k', e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="space-y-2 col-span-2 sm:col-span-1">
+                                                <Label htmlFor="time_10k" className="text-xs text-muted-foreground">10K</Label>
+                                                <Input
+                                                    id="time_10k"
+                                                    placeholder="e.g., 42:10"
+                                                    value={formData.time_10k}
+                                                    onChange={(e) => handleInputChange('time_10k', e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                                        <Button onClick={handleSave} className="flex-1" disabled={isUpdatingProfile}>
+                                            <Save className="h-4 w-4 mr-2" />
+                                            {
+                                                isUpdatingProfile
+                                                    ? "Saving changes... "
+                                                    : "Save Changes"
+                                            }
+                                        </Button>
+                                        <Button onClick={handleCancel} variant="outline" className="flex-1">
+                                            <X className="h-4 w-4 mr-2" />
+                                            Cancel
+                                        </Button>
                                     </div>
                                 </div>
-                            </div>
-                            <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                                <Button onClick={handleSave} className="flex-1" disabled={isUpdatingProfile}>
-                                    <Save className="h-4 w-4 mr-2" />
-                                    {
-                                        isUpdatingProfile
-                                            ? "Saving changes... "
-                                            : "Save Changes"
-                                    }
-                                </Button>
-                                <Button onClick={handleCancel} variant="outline" className="flex-1">
-                                    <X className="h-4 w-4 mr-2" />
-                                    Cancel
-                                </Button>
-                            </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="biometrics" className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                        <div className="lg:col-span-1 space-y-6">
+                            <AddBiometricForm />
+                            <BiometricTimeline />
                         </div>
-                    )}
-                </CardContent>
-            </Card>
+                        <div className="lg:col-span-2">
+                            <WeightBmiChart />
+                        </div>
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="performance" className="space-y-6">
+                    <PersonalBestDisplay />
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                        <div className="lg:col-span-1 space-y-6">
+                            <AddPerformanceForm />
+                            <PerformanceTimeline />
+                        </div>
+                        <div className="lg:col-span-2">
+                            <PerformanceChart />
+                        </div>
+                    </div>
+                </TabsContent>
+            </Tabs>
         </div>
     );
 }

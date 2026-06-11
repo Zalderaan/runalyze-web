@@ -5,10 +5,7 @@ export async function GET() {
     // get all admins
     try {
         const { data: admins, error: adminsGetError } = await supabase
-            .from('users')
-            .select('id, email, username, user_role, is_active')
-            .eq('user_role', 'admin')
-            .order('created_at', { ascending: false });
+            .rpc('get_coaches_with_ratings');
 
         if (adminsGetError) {
             throw adminsGetError;

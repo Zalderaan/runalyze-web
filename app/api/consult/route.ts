@@ -135,6 +135,7 @@ export async function GET() {
                 coach_email, user_email, analysis_id,
                 cancel_requested_by, complete_requested_by,
                 hidden_by_user, hidden_by_coach,
+                rating, rating_comment, rated_at,
                 analysis_results (
                     name
                 )

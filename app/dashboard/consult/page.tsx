@@ -13,8 +13,9 @@ import { useAdmins } from '@/hooks/users/use-admins';
 import { ConsultationTable } from '@/components/consultations/ConsultationTable';
 import { useGetConsultations } from '@/hooks/consultation/use-get-consultations';
 import { useHistory } from '@/hooks/use-history';
+import { useTopRatedCoach } from '@/hooks/users/use-top-rated-coach';
 import { motion } from 'framer-motion';
-import { UserIcon, Activity, MessageSquare, Send } from 'lucide-react';
+import { UserIcon, Activity, MessageSquare, Send, Star } from 'lucide-react';
 
 // import {
 //     useFormField,
@@ -49,6 +50,7 @@ export default function ConsultPage() {
 
     const { admins, usersLoading } = useAdmins();
     const { history } = useHistory();
+    const { coach: topCoach, loading: topCoachLoading, refreshTopRatedCoach } = useTopRatedCoach();
 
     const { consultations, consultationsLoading, refetchConsultations } = useGetConsultations();
 
@@ -157,6 +159,37 @@ export default function ConsultPage() {
                         <h2 className="text-xl font-semibold text-gray-800 border-b border-gray-100 pb-4 mb-6">New Request</h2>
                         <form onSubmit={handleSubmit} className="space-y-6">
 
+                            {/* Top Rated Coach Banner */}
+                            {!topCoachLoading && topCoach && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-4 rounded-xl bg-gradient-to-r from-amber-50/70 to-orange-50/30 border border-amber-200/50 shadow-sm flex items-center justify-between gap-4"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-amber-100/80 rounded-lg">
+                                            <Star className="w-5 h-5 text-amber-600 fill-amber-500" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700/80">Highest Rated Coach</p>
+                                            <h4 className="text-sm font-bold text-gray-900 mt-0.5">
+                                                {topCoach.username} <span className="text-amber-600 font-bold ml-1">★ {topCoach.avg_rating}</span>
+                                            </h4>
+                                            <p className="text-xs text-gray-500 mt-0.5">Recommended based on {topCoach.rating_count} client review{topCoach.rating_count > 1 ? "s" : ""}</p>
+                                        </div>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setSelectedCoach(topCoach.id.toString())}
+                                        className="border-amber-300 text-amber-800 hover:bg-amber-100 font-semibold text-xs h-9 px-3 rounded-lg transition-all active:scale-95 bg-white"
+                                    >
+                                        Quick Select
+                                    </Button>
+                                </motion.div>
+                            )}
+
                             {/* Coach Select */}
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold flex items-center gap-2 text-gray-700">
@@ -173,7 +206,16 @@ export default function ConsultPage() {
                                         <SelectContent>
                                             {admins.filter(a => a.is_active).map((a) => (
                                                 <SelectItem key={a.id} value={a.id.toString()}>
-                                                    {a.username} ({a.email})
+                                                    <span className="flex items-center gap-2">
+                                                        <span>{a.username}</span>
+                                                        {a.avg_rating ? (
+                                                            <span className="inline-flex items-center gap-0.5 text-amber-600 font-bold text-xs bg-amber-100/60 px-1.5 py-0.5 rounded border border-amber-200/50">
+                                                                <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                                                                {a.avg_rating}
+                                                            </span>
+                                                        ) : null}
+                                                        <span className="text-gray-400 text-xs font-normal">({a.email})</span>
+                                                    </span>
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -257,6 +299,10 @@ export default function ConsultPage() {
                                 onUpdateStatus={handleUpdateStatus}
                                 onDismiss={handleDismiss}
                                 isLoading={consultationsLoading}
+                                onRated={() => {
+                                    refetchConsultations();
+                                    refreshTopRatedCoach();
+                                }}
                             />
                         </CardContent>
                     </Card>

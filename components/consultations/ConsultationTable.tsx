@@ -35,6 +35,7 @@ import { useAuth } from "@/context/user_context"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"  // Add this import
 import { ArchiveDialog } from "./ArchiveDialog"
 import { CancelDialog } from "./CancelDialog"
+import { RateCoachDialog } from "./RateCoachDialog"
 
 export type ConsultationStatus = 'pending' | 'declined' | 'in-progress' | 'completed' | 'cancelled' | 'cancel-requested' | 'complete-requested';
 
@@ -56,16 +57,20 @@ export interface Consultation {
     } | null;
     cancel_requested_by?: number | null;
     complete_requested_by?: number | null;
+    rating?: number | null;
+    rating_comment?: string | null;
+    rated_at?: string | null;
 }
 
 interface ConsultationTableProps {
     consultations: Consultation[],
     onUpdateStatus?: (id: string, status: ConsultationStatus) => void,
     onDismiss?: (id: string) => void,
-    isLoading?: boolean
+    isLoading?: boolean,
+    onRated?: () => void
 }
 
-export function ConsultationTable({ consultations, onUpdateStatus, onDismiss, isLoading }: ConsultationTableProps) {
+export function ConsultationTable({ consultations, onUpdateStatus, onDismiss, isLoading, onRated }: ConsultationTableProps) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -129,7 +134,7 @@ export function ConsultationTable({ consultations, onUpdateStatus, onDismiss, is
                         dot: 'bg-blue-500',
                     },
                     'completed': {
-                        label: 'Completed',
+                        label: row.original.rating ? `Completed (★ ${row.original.rating})` : 'Completed',
                         icon: <CheckCircle className="h-3 w-3" />,
                         bg: 'bg-emerald-50',
                         text: 'text-emerald-700',
@@ -352,8 +357,16 @@ export function ConsultationTable({ consultations, onUpdateStatus, onDismiss, is
 
                 // --- TERMINAL STATES: completed, cancelled, declined ---
                 if (status === 'completed' || status === 'cancelled' || status === 'declined') {
+                    const showRate = status === 'completed' && !isCoach && !consultation.rated_at;
                     return (
-                        <div className="flex space-x-2">
+                        <div className="flex space-x-2 items-center">
+                            {showRate && (
+                                <RateCoachDialog
+                                    consultationId={consultation.id}
+                                    coachEmail={consultation.coach_email}
+                                    onRated={onRated || (() => {})}
+                                />
+                            )}
                             {onDismiss && (
                                 <ArchiveDialog
                                     coach_email={consultation.coach_email}

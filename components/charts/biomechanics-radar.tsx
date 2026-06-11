@@ -51,7 +51,7 @@ export function BiomechanicsRadar({ data }: { data: JointScores | null }) {
         const ticks = [20, 40, 60, 80, 100];
         const offset = 11; // Increased offset to push tick numbers away from spoke lines
         const labelOffset = 14; // Push category labels outward to prevent overlap with the 100% tick
-        
+
         const lx = x + labelOffset * ux;
         const ly = y + labelOffset * uy;
 
@@ -125,16 +125,17 @@ export function BiomechanicsRadar({ data }: { data: JointScores | null }) {
         <ResponsiveContainer width="100%" height={300}>
             <RadarChart cx="50%" cy="50%" outerRadius="60%" data={chartData}>
                 <PolarGrid strokeOpacity={0.2} />
-                <PolarAngleAxis dataKey="subject" tick={renderCustomAngleTick as unknown as (props: Record<string, unknown>) => React.ReactElement} />
-                
+                <PolarAngleAxis dataKey="subject" tick={renderCustomAngleTick as any} />
+
                 {/* Single radius axis to set the domain/ticks grid without drawing duplicate labels */}
                 <PolarRadiusAxis
                     domain={[0, 100]}
-                    ticks={[0, 20, 40, 60, 80, 100]}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    ticks={[0, 20, 40, 60, 80, 100] as any}
                     tick={false}
                     axisLine={false}
                 />
-                
+
                 <Radar name="Score" dataKey="A" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.3} />
                 <Tooltip
                     contentStyle={{ borderRadius: '8px', border: '1px solid #e4e4e7', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', background: 'rgba(255, 255, 255, 0.9)' }}
