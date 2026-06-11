@@ -315,7 +315,7 @@ export function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
                 {!isPreviewing && !isRecording && (
                     <div className="text-xs text-gray-300 space-y-1 p-3 bg-white/10 backdrop-blur-md rounded-lg max-w-md mx-auto w-full">
                         <p className="text-amber-400 font-semibold">• Always record in landscape (horizontal) orientation</p>
-                        <p>• Position camera 2-3 meters away, side view</p>
+                        <p>• Position camera 3-5 meters away, side view</p>
                         <p>• Keep runner in frame throughout</p>
                         <p>• Recording will auto-stop after 30 seconds</p>
                     </div>

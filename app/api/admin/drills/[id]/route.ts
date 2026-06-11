@@ -25,8 +25,8 @@ function mergeDrillWithTemplate(drill: any) {
         instructions: hasOverrideSteps ? drill.instructions_override : (tpl.instructions || drill.instructions || null),
         justification: drill.justification_override || tpl.justification || drill.justification || null,
         reference: tpl.reference || drill.reference || null,
-        helpful_count: tpl.helpful_count ?? drill.helpful_count ?? 0,
-        not_helpful_count: tpl.not_helpful_count ?? drill.not_helpful_count ?? 0,
+        helpful_count: drill.helpful_count ?? 0,
+        not_helpful_count: drill.not_helpful_count ?? 0,
         template_id: drill.template_id ?? null,
         template_name: tpl.name || drill.drill_name || null,
         drill_templates: undefined,
@@ -71,7 +71,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 // ---------------------------------------------------------------------------
 // PATCH /api/admin/drills/[id] — Helpful / not_helpful voting
-// Votes are tracked on drill_templates (global, per-drill feedback)
+// Votes are tracked directly on drills
 // ---------------------------------------------------------------------------
 export async function PATCH(
     request: Request,
@@ -88,10 +88,10 @@ export async function PATCH(
         const body = await request.json();
         const { action } = body; // 'helpful' or 'not_helpful'
 
-        // Resolve the template_id for this drill assignment
+        // Fetch current drill count
         const { data: drillRow, error: drillFetchError } = await supabase
             .from('drills')
-            .select('template_id, helpful_count, not_helpful_count')
+            .select('helpful_count, not_helpful_count')
             .eq('id', id)
             .single();
 
@@ -101,45 +101,20 @@ export async function PATCH(
 
         const columnToUpdate = action === 'helpful' ? 'helpful_count' : 'not_helpful_count';
 
-        if (drillRow.template_id) {
-            // Vote on the template (preferred path)
-            const { data: template } = await supabase
-                .from('drill_templates')
-                .select('helpful_count, not_helpful_count')
-                .eq('id', drillRow.template_id)
-                .single();
+        const { data, error } = await supabase
+            .from('drills')
+            .update({ [columnToUpdate]: (drillRow?.[columnToUpdate] || 0) + 1 })
+            .eq('id', id)
+            .select()
+            .single();
 
-            const { data, error } = await supabase
-                .from('drill_templates')
-                .update({ [columnToUpdate]: (template?.[columnToUpdate] || 0) + 1 })
-                .eq('id', drillRow.template_id)
-                .select()
-                .single();
-
-            if (error) {
-                return NextResponse.json(
-                    { message: "Error updating helpful count on template", error: error.message },
-                    { status: 500 }
-                );
-            }
-            return NextResponse.json({ data }, { status: 200 });
-        } else {
-            // Fallback: no template_id yet, vote on the drills row (legacy)
-            const { data, error } = await supabase
-                .from('drills')
-                .update({ [columnToUpdate]: (drillRow?.[columnToUpdate] || 0) + 1 })
-                .eq('id', id)
-                .select()
-                .single();
-
-            if (error) {
-                return NextResponse.json(
-                    { message: "Error updating helpful count", error: error.message },
-                    { status: 500 }
-                );
-            }
-            return NextResponse.json({ data }, { status: 200 });
+        if (error) {
+            return NextResponse.json(
+                { message: "Error updating helpful count", error: error.message },
+                { status: 500 }
+            );
         }
+        return NextResponse.json({ data }, { status: 200 });
     } catch (error) {
         console.error("Error updating helpful count:", error);
         return NextResponse.json({ message: "Server error" }, { status: 500 });

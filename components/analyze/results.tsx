@@ -299,7 +299,7 @@ export function Results({
                                 </li>
                                 <li className="flex items-start gap-2">
                                     <span className="font-bold text-amber-600">📏</span>
-                                    <span><strong>Distance:</strong> Stand 2–3 meters away so your entire body (head to toe) is visible as you pass across the frame.</span>
+                                    <span><strong>Distance:</strong> Stand 3–5 meters away so your entire body (head to toe) is visible as you pass across the frame.</span>
                                 </li>
                                 <li className="flex items-start gap-2">
                                     <span className="font-bold text-amber-600">☀️</span>

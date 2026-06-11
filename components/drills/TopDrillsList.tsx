@@ -57,11 +57,14 @@ export function TopDrillsList({ topDrills, isLoading, error }: TopDrillsListProp
 
     const getLevelBadgeVariant = (level: string) => {
         switch (level.toLowerCase()) {
-            case "beginner":
+            case "excellent":
                 return "bg-green-100 text-green-700";
-            case "intermediate":
+            case "good":
+                return "bg-blue-100 text-blue-700";
+            case "needs_improvement":
+            case "needs improvement":
                 return "bg-yellow-100 text-yellow-700";
-            case "advanced":
+            case "poor":
                 return "bg-red-100 text-red-700";
             default:
                 return "bg-gray-100 text-gray-700";

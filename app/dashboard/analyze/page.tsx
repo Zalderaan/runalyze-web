@@ -482,7 +482,7 @@ export default function AnalyzePage() {
                             <div className="space-y-2">
                                 <h3 className="font-semibold text-blue-900">Tips for best results:</h3>
                                 <ul className="text-sm text-blue-800 space-y-1">
-                                    <li>• Allow for 2-3 meters of distance when taking the video</li>
+                                    <li>• Allow for 3-5 meters of distance when taking the video</li>
                                     <li>• Record side-view running footage not exceeding 10s</li>
                                     <li>• Ensure good lighting and stable camera position</li>
                                     <li>• Keep the runner in frame throughout the video</li>

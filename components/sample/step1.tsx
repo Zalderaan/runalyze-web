@@ -34,6 +34,7 @@ export function Step1() {
                     <ul className="text-green-600">
                         <li>Seek assistance from fellow runners/nearby people to hold the camera, or;</li>
                         <li>Use a tripod to keep camera stable</li>
+                        <li>Stand <strong>3–5 meters</strong> away so the runner is fully visible</li>
                     </ul>
                 </div>
             </div>

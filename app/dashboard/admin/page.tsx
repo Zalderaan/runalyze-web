@@ -17,6 +17,7 @@ import { useApplications } from "@/hooks/users/use-applications";
 import { Button } from "@/components/ui/button";
 import { PlatformInsights } from "@/components/admin/PlatformInsights";
 import { useDrills } from "@/hooks/drills/use-drills";
+import { CoachRatingsTable } from "@/components/admin/CoachRatingsTable";
 
 export default function AdminPage() {
     const { user } = useAuth();
@@ -158,42 +159,58 @@ export default function AdminPage() {
                         description="Top Drill Rating"
                     />
                 </div>
-
-                {/* Platform Insights (Charts) */}
-                <div className="flex flex-col space-y-4">
-                    <div className="flex items-center justify-between px-1">
-                        <h2 className="text-xl font-semibold">Platform Insights</h2>
-                        <Button variant="ghost" size="sm" className="text-xs" onClick={handleRefreshStats}>
-                            Update Visuals
-                        </Button>
-                    </div>
-                    <PlatformInsights
-                        drills={drills}
-                        applicationCounts={counts}
-                    />
-                </div>
-
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Recent Applications Feed */}
-                    {isOwner && (
-                        <Card className="lg:col-span-2 glass-card">
+                    {/* Left Column: Recent Activity, Top Performers, & Coach Rankings */}
+                    <div className="lg:col-span-2 flex flex-col gap-6">
+                        {isOwner && (
+                            <Card className="glass-card">
+                                <CardHeader className="flex flex-row items-center justify-between">
+                                    <div>
+                                        <CardTitle className="text-xl">Recent Activity</CardTitle>
+                                        <CardDescription>Latest coach onboarding applications</CardDescription>
+                                    </div>
+                                    <Link href="/dashboard/admin/manage" className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
+                                        View History <ArrowUpRight className="h-3 w-3" />
+                                    </Link>
+                                </CardHeader>
+                                <CardContent>
+                                    <RecentApplications applications={recentApplications} />
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Top Drills Showcase */}
+                        <Card className="glass-card shadow-2xl">
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <div>
-                                    <CardTitle className="text-xl">Recent Activity</CardTitle>
-                                    <CardDescription>Latest coach onboarding applications</CardDescription>
+                                    <CardTitle className="text-xl">Top Performers</CardTitle>
+                                    <CardDescription>Most helpful drills in the library</CardDescription>
                                 </div>
-                                <Link href="/dashboard/admin/manage" className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
-                                    View History <ArrowUpRight className="h-3 w-3" />
+                                <Link
+                                    href="/dashboard/admin/drills"
+                                    className="text-primary hover:underline h-8 w-8 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800"
+                                >
+                                    <Plus className="h-4 w-4" />
                                 </Link>
                             </CardHeader>
                             <CardContent>
-                                <RecentApplications applications={recentApplications} />
+                                <TopDrillsList topDrills={topDrills} isLoading={isTopDrillsLoading} error={topDrillsError} />
                             </CardContent>
                         </Card>
-                    )}
 
-                    {/* Quick Access Actions */}
-                    <div className={`gap-6 ${isOwner ? 'flex flex-col' : 'lg:col-span-3 grid grid-cols-1 md:grid-cols-2'}`}>
+                        <Card className="glass-card">
+                            <CardHeader>
+                                <CardTitle className="text-xl">Coach Performance Rankings</CardTitle>
+                                <CardDescription>Coaches ranked according to their ratings</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <CoachRatingsTable />
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Right Column: Quick Access Actions & Compact Platform Insights */}
+                    <div className="flex flex-col gap-6">
                         <Card className="glass-card">
                             <CardHeader>
                                 <CardTitle className="text-xl">Quick Actions</CardTitle>
@@ -249,24 +266,20 @@ export default function AdminPage() {
                             </CardContent>
                         </Card>
 
-                        {/* Top Drills Showcase */}
-                        <Card className="glass-card flex-grow shadow-2xl">
-                            <CardHeader className="flex flex-row items-center justify-between">
-                                <div>
-                                    <CardTitle className="text-xl">Top Performers</CardTitle>
-                                    <CardDescription>Most helpful drills</CardDescription>
-                                </div>
-                                <Link
-                                    href="/dashboard/admin/drills"
-                                    className="text-primary hover:underline h-8 w-8 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800"
-                                >
-                                    <Plus className="h-4 w-4" />
-                                </Link>
-                            </CardHeader>
-                            <CardContent>
-                                <TopDrillsList topDrills={topDrills?.slice(0, 3)} isLoading={isTopDrillsLoading} error={topDrillsError} />
-                            </CardContent>
-                        </Card>
+                        {/* Compact Platform Insights */}
+                        <div className="flex flex-col space-y-3">
+                            <div className="flex items-center justify-between px-1">
+                                <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Platform Insights</h3>
+                                <Button variant="ghost" size="sm" className="h-7 px-2 text-[10px]" onClick={handleRefreshStats}>
+                                    Refresh
+                                </Button>
+                            </div>
+                            <PlatformInsights
+                                drills={drills}
+                                applicationCounts={counts}
+                                compact={true}
+                            />
+                        </div>
                     </div>
                 </div>
             </main>

@@ -26,9 +26,8 @@ function mergeDrillWithTemplate(drill: any) {
         instructions: hasOverrideSteps ? drill.instructions_override : (tpl.instructions || drill.instructions || null),
         justification: drill.justification_override || tpl.justification || drill.justification || null,
         reference: tpl.reference || drill.reference || null,
-        // Aggregate feedback lives on the template
-        helpful_count: tpl.helpful_count ?? drill.helpful_count ?? 0,
-        not_helpful_count: tpl.not_helpful_count ?? drill.not_helpful_count ?? 0,
+        helpful_count: drill.helpful_count ?? 0,
+        not_helpful_count: drill.not_helpful_count ?? 0,
         // Keep template metadata available for the UI
         template_id: drill.template_id ?? null,
         template_name: tpl.name || drill.drill_name || null,
