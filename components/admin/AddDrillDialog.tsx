@@ -180,7 +180,7 @@ export function AddDrillDialog({ onSuccess, defaultTemplate }: { onSuccess: () =
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <Button className="flex flex-row items-center justify-center w-fit">
+                <Button className="flex flex-row items-center justify-center w-fit bg-palette-mint-white text-palette-navy hover:bg-palette-mint-white/90 border border-palette-turquoise/30 font-semibold shadow-sm transition-all duration-200">
                     <Plus />
                     Add Drill
                 </Button>

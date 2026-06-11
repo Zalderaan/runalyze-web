@@ -1,15 +1,16 @@
 {
-    "name": "Runalyze PWA app",
+    "name": "Runalyze",
     "short_name": "Runalyze",
+    "description": "Runners' Pose Estimation-based form-fixing tool",
     "icons": [
         {
-            "src": "/runalyze-mobile-logo.png",
+            "src": "/android-icon-192x192.png",
             "sizes": "192x192",
             "type": "image/png",
-            "purpose": "maskable"
+            "purpose": "any maskable"
         },
         {
-            "src": "/runalyze-new-logo.png",
+            "src": "/runalyze-running-logo.png",
             "sizes": "512x512",
             "type": "image/png"
         }

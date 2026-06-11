@@ -58,24 +58,24 @@ export default function AdminPage() {
         <RoleGuard allowedRoles={["admin", "owner"]}>
             <main className={`flex flex-col space-y-8 pb-10 ${isOwner ? 'theme-owner' : ''}`}>
                 {/* Immersive Header */}
-                <div className="relative overflow-hidden rounded-3xl p-8 bg-gradient-to-br from-zinc-900 to-zinc-800 text-white shadow-2xl dark:from-zinc-950 dark:to-zinc-900">
+                <div className="relative overflow-hidden rounded-3xl p-8 bg-gradient-to-br from-palette-navy to-palette-slate-blue text-white shadow-2xl">
                     <div className="relative z-10">
-                        <div className={`flex items-center gap-2 mb-2 ${isOwner ? 'text-primary/80' : 'text-orange-500/80'}`}>
-                            <div className={`h-1.5 w-1.5 rounded-full animate-pulse ${isOwner ? 'bg-primary' : 'bg-orange-500'}`} />
+                        <div className={`flex items-center gap-2 mb-2 ${isOwner ? 'text-palette-turquoise/90' : 'text-palette-pale-red/90'}`}>
+                            <div className={`h-1.5 w-1.5 rounded-full animate-pulse ${isOwner ? 'bg-palette-turquoise' : 'bg-palette-pale-red'}`} />
                             <span className="text-xs font-semibold tracking-wider uppercase">
                                 {isOwner ? 'Owner Dashboard' : 'Administrator Overview'}
                             </span>
                         </div>
                         <h1 className="font-bold text-4xl tracking-tight mb-2">
-                            Welcome back, <span className={isOwner ? 'text-primary' : 'text-orange-500'}>{user?.username}</span>
+                            Welcome back, <span className={isOwner ? 'text-palette-turquoise' : 'text-palette-pale-red'}>{user?.username}</span>
                         </h1>
-                        <p className="text-zinc-400 max-w-md">
+                        <p className="text-palette-mint-white/80 max-w-md">
                             Monitor platform health, manage drill libraries, and review expert coach applications.
                         </p>
                     </div>
                     {/* Decorative elements */}
-                    <div className="absolute top-0 right-0 -mr-10 -mt-10 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
-                    <div className="absolute bottom-0 left-0 -ml-10 -mb-10 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
+                    <div className="absolute top-0 right-0 -mr-10 -mt-10 h-64 w-64 rounded-full bg-palette-coral/15 blur-3xl" />
+                    <div className="absolute bottom-0 left-0 -ml-10 -mb-10 h-64 w-64 rounded-full bg-palette-turquoise/20 blur-3xl" />
                 </div>
 
                 <AnimatePresence>

@@ -31,16 +31,16 @@ export default function AdminDrills() {
         <RoleGuard allowedRoles={["owner", "admin"]}>
             <main className={`flex flex-col space-y-8 pb-10 ${isOwner ? 'theme-owner' : ''}`}>
                 {/* Premium Header */}
-                <div className="relative overflow-hidden rounded-3xl p-8 bg-zinc-900 text-white shadow-xl dark:bg-zinc-950">
+                <div className="relative overflow-hidden rounded-3xl p-8 bg-gradient-to-br from-palette-slate-blue to-palette-navy text-white shadow-xl">
                     <div className="relative z-10 flex flex-col gap-8">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                             <div>
-                                <div className="flex items-center gap-2 text-primary/80 mb-2">
-                                    <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                <div className="flex items-center gap-2 text-palette-turquoise/90 mb-2">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-palette-coral" />
                                     <span className="text-xs font-semibold tracking-wider uppercase">Content Management</span>
                                 </div>
                                 <h1 className="font-bold text-4xl tracking-tight mb-2">Drill Library</h1>
-                                <p className="text-zinc-400 max-w-md text-sm">
+                                <p className="text-palette-mint-white/80 max-w-md text-sm">
                                     Manage and organize your exercise templates and assignments for athletes.
                                 </p>
                             </div>
@@ -51,7 +51,7 @@ export default function AdminDrills() {
                         </div>
                     </div>
                     {/* Decorative element */}
-                    <div className="absolute top-0 right-0 -mr-10 -mt-10 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
+                    <div className="absolute top-0 right-0 -mr-10 -mt-10 h-64 w-64 rounded-full bg-palette-turquoise/15 blur-3xl" />
                 </div>
 
                 {/* Tabs */}
@@ -75,7 +75,7 @@ export default function AdminDrills() {
 
                     {/* Drills tab */}
                     <TabsContent value="drills" className="mt-0 space-y-6">
-                        <div className="bg-zinc-800/50 dark:bg-zinc-900/50 p-1 rounded-2xl">
+                        <div className="bg-palette-mint-white/40 dark:bg-palette-navy/40 border border-palette-turquoise/20 p-1 rounded-2xl">
                             <DrillFilters 
                                 searchTerm={searchTerm}
                                 onSearchChange={(val) => { setSearchTerm(val); setCurrentPage(1); }}

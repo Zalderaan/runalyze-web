@@ -16,7 +16,7 @@ export function LandingHeader() {
                 <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
                     <div className="flex items-center gap-1.5 sm:gap-2">
                         {/* <Activity className="h-8 w-8 text-blue-600" /> */}
-                        <Image src="/runalyze-new-logo.png" alt="Runalyze logo" height={40} width={40} className="sm:w-[50px] sm:h-[50px]"/> 
+                        <Image src="/runalyze-running-logo.png" alt="Runalyze logo" height={40} width={40} className="sm:w-[50px] sm:h-[50px]"/> 
                         <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Runalyze</h1>
                     </div>
                     <div className="flex items-center gap-1.5 sm:gap-4">

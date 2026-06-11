@@ -52,7 +52,7 @@ export function AdminSidebar() {
                             <SidebarMenuItem>
                                 <SidebarMenuButton size="lg">
                                     <Image
-                                        src="/runalyze-new-logo.png"
+                                        src="/runalyze-running-logo.png"
                                         alt="runalyze-logo"
                                         width={state === "collapsed" ? 20 : 40}
                                         height={state === "collapsed" ? 20 : 40}

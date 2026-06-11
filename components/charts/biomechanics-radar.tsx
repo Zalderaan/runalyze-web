@@ -125,12 +125,12 @@ export function BiomechanicsRadar({ data }: { data: JointScores | null }) {
         <ResponsiveContainer width="100%" height={300}>
             <RadarChart cx="50%" cy="50%" outerRadius="60%" data={chartData}>
                 <PolarGrid strokeOpacity={0.2} />
-                <PolarAngleAxis dataKey="subject" tick={renderCustomAngleTick as any} />
+                <PolarAngleAxis dataKey="subject" tick={renderCustomAngleTick as unknown as (props: Record<string, unknown>) => React.ReactElement} />
                 
                 {/* Single radius axis to set the domain/ticks grid without drawing duplicate labels */}
                 <PolarRadiusAxis
                     domain={[0, 100]}
-                    ticks={[0, 20, 40, 60, 80, 100] as any}
+                    ticks={[0, 20, 40, 60, 80, 100]}
                     tick={false}
                     axisLine={false}
                 />

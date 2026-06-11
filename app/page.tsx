@@ -212,7 +212,7 @@ export default function LandingPage() {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 {/* <Activity className="h-6 w-6" /> */}
-                <Image src="/runalyze-new-logo-bnw.png" alt="runalyze logo black & white" height={25} width={25}/>
+                <Image src="/runalyze-running-logo.png" alt="runalyze logo" height={25} width={25} className="grayscale brightness-0 invert opacity-75"/>
                 <span className="text-xl font-bold">Runalyze</span>
               </div>
               <p className="text-gray-400">

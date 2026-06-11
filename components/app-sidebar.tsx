@@ -67,7 +67,7 @@ export function AppSidebar() {
                             <SidebarMenuItem>
                                 <SidebarMenuButton size="lg" className='flex flex-row space-x-7'>
                                     <Image
-                                        src="/runalyze-new-logo.png"
+                                        src="/runalyze-running-logo.png"
                                         alt="runalyze-logo"
                                         width={state === "collapsed" ? 20 : 40}
                                         height={state === "collapsed" ? 20 : 40}
